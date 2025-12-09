@@ -64,6 +64,14 @@
             <span class="nav-icon">➗</span>
             <span class="nav-text">Division</span>
         </button>
+        <button class="nav-btn" data-section="carry-over" onclick="showSection('carry-over')">
+            <span class="nav-icon">📤</span>
+            <span class="nav-text">Carrying</span>
+        </button>
+        <button class="nav-btn" data-section="borrowing" onclick="showSection('borrowing')">
+            <span class="nav-icon">📥</span>
+            <span class="nav-text">Borrowing</span>
+        </button>
         <button class="nav-btn" data-section="practice" onclick="showSection('practice')">
             <span class="nav-icon">🎯</span>
             <span class="nav-text">Practice</span>
@@ -97,6 +105,16 @@
                         <div class="feature-icon bounce">➗</div>
                         <h3>Division</h3>
                         <p>Learn how to share numbers equally!</p>
+                    </div>
+                    <div class="feature-card" onclick="showSection('carry-over')">
+                        <div class="feature-icon bounce">📤</div>
+                        <h3>Carrying</h3>
+                        <p>Learn to carry over when adding big numbers!</p>
+                    </div>
+                    <div class="feature-card" onclick="showSection('borrowing')">
+                        <div class="feature-icon bounce">📥</div>
+                        <h3>Borrowing</h3>
+                        <p>Learn to borrow when subtracting numbers!</p>
                     </div>
                 </div>
 
@@ -365,6 +383,164 @@
                     <div class="feedback" id="div-feedback"></div>
                     <div class="score-display">
                         Score: <span id="div-score">0</span> / <span id="div-total-score">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Carry-Over Section -->
+        <section id="carry-over" class="section">
+            <div class="module-card">
+                <h2>📤 Carrying in Addition</h2>
+                <p class="intro-text">When two digits add up to 10 or more, we "carry" to the next column!</p>
+
+                <div class="carry-demo">
+                    <h3>Watch How Carrying Works</h3>
+                    <div class="animated-problem" id="carry-demo-area">
+                        <div class="demo-numbers">
+                            <div class="carry-indicators" id="carry-indicators">
+                                <span class="carry-digit" id="carry-3"></span>
+                                <span class="carry-digit" id="carry-2"></span>
+                                <span class="carry-digit" id="carry-1"></span>
+                                <span class="carry-digit" id="carry-0"></span>
+                            </div>
+                            <div class="demo-row">
+                                <span class="demo-digit" id="demo-num1-0"></span>
+                                <span class="demo-digit" id="demo-num1-1"></span>
+                                <span class="demo-digit" id="demo-num1-2"></span>
+                            </div>
+                            <div class="demo-row operator-row">
+                                <span class="demo-operator">+</span>
+                                <span class="demo-digit" id="demo-num2-0"></span>
+                                <span class="demo-digit" id="demo-num2-1"></span>
+                                <span class="demo-digit" id="demo-num2-2"></span>
+                            </div>
+                            <div class="demo-line"></div>
+                            <div class="demo-row answer-row">
+                                <span class="demo-digit result" id="demo-ans-0"></span>
+                                <span class="demo-digit result" id="demo-ans-1"></span>
+                                <span class="demo-digit result" id="demo-ans-2"></span>
+                                <span class="demo-digit result" id="demo-ans-3"></span>
+                            </div>
+                        </div>
+                        <div class="step-explanation" id="carry-step-explanation">
+                            <p>Click "Show Steps" to see how carrying works!</p>
+                        </div>
+                    </div>
+                    <div class="demo-controls">
+                        <button class="btn btn-primary" onclick="animateCarryDemo()">Show Steps</button>
+                        <button class="btn btn-secondary" onclick="newCarryDemo()">New Problem</button>
+                        <button class="btn btn-success" onclick="resetCarryDemo()">Reset</button>
+                    </div>
+                </div>
+
+                <div class="carry-practice">
+                    <h3>Practice Carrying</h3>
+                    <div class="practice-problem-area" id="carry-practice-area">
+                        <div class="stacked-problem">
+                            <div class="stacked-numbers">
+                                <div class="carry-row-practice" id="carry-row-practice">
+                                    <input type="text" class="carry-input" id="carry-input-2" maxlength="1" oninput="checkCarryPractice()">
+                                    <input type="text" class="carry-input" id="carry-input-1" maxlength="1" oninput="checkCarryPractice()">
+                                    <input type="text" class="carry-input" id="carry-input-0" maxlength="1" oninput="checkCarryPractice()">
+                                </div>
+                                <div class="stacked-row top-number" id="carry-num1-row">
+                                </div>
+                                <div class="stacked-row operator-row" id="carry-num2-row">
+                                    <span class="operator">+</span>
+                                </div>
+                                <div class="stacked-line"></div>
+                                <div class="stacked-row answer-row" id="carry-answer-row">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stacked-controls">
+                        <button class="btn btn-secondary" onclick="showCarryHint()">Hint</button>
+                        <button class="btn btn-primary" onclick="newCarryPractice()">New Problem</button>
+                        <button class="btn btn-success" onclick="revealCarryAnswer()">Show Answer</button>
+                    </div>
+                    <div class="feedback" id="carry-feedback"></div>
+                    <div class="score-display">
+                        Score: <span id="carry-score">0</span> / <span id="carry-total">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Borrowing Section -->
+        <section id="borrowing" class="section">
+            <div class="module-card">
+                <h2>📥 Borrowing in Subtraction</h2>
+                <p class="intro-text">When the top digit is smaller than the bottom, we "borrow" from the next column!</p>
+
+                <div class="borrow-demo">
+                    <h3>Watch How Borrowing Works</h3>
+                    <div class="animated-problem" id="borrow-demo-area">
+                        <div class="demo-numbers">
+                            <div class="borrow-indicators" id="borrow-indicators">
+                                <span class="borrow-digit" id="borrow-from-2"></span>
+                                <span class="borrow-digit" id="borrow-from-1"></span>
+                                <span class="borrow-digit" id="borrow-from-0"></span>
+                            </div>
+                            <div class="demo-row">
+                                <span class="demo-digit" id="borrow-num1-0"></span>
+                                <span class="demo-digit" id="borrow-num1-1"></span>
+                                <span class="demo-digit" id="borrow-num1-2"></span>
+                            </div>
+                            <div class="demo-row operator-row">
+                                <span class="demo-operator">-</span>
+                                <span class="demo-digit" id="borrow-num2-0"></span>
+                                <span class="demo-digit" id="borrow-num2-1"></span>
+                                <span class="demo-digit" id="borrow-num2-2"></span>
+                            </div>
+                            <div class="demo-line"></div>
+                            <div class="demo-row answer-row">
+                                <span class="demo-digit result" id="borrow-ans-0"></span>
+                                <span class="demo-digit result" id="borrow-ans-1"></span>
+                                <span class="demo-digit result" id="borrow-ans-2"></span>
+                            </div>
+                        </div>
+                        <div class="step-explanation" id="borrow-step-explanation">
+                            <p>Click "Show Steps" to see how borrowing works!</p>
+                        </div>
+                    </div>
+                    <div class="demo-controls">
+                        <button class="btn btn-primary" onclick="animateBorrowDemo()">Show Steps</button>
+                        <button class="btn btn-secondary" onclick="newBorrowDemo()">New Problem</button>
+                        <button class="btn btn-success" onclick="resetBorrowDemo()">Reset</button>
+                    </div>
+                </div>
+
+                <div class="borrow-practice">
+                    <h3>Practice Borrowing</h3>
+                    <div class="practice-problem-area" id="borrow-practice-area">
+                        <div class="stacked-problem">
+                            <div class="stacked-numbers">
+                                <div class="borrow-row-practice" id="borrow-row-practice">
+                                    <span class="borrow-indicator" id="borrow-ind-2"></span>
+                                    <span class="borrow-indicator" id="borrow-ind-1"></span>
+                                    <span class="borrow-indicator" id="borrow-ind-0"></span>
+                                </div>
+                                <div class="stacked-row top-number" id="borrow-num1-row">
+                                </div>
+                                <div class="stacked-row operator-row" id="borrow-num2-row">
+                                    <span class="operator">-</span>
+                                </div>
+                                <div class="stacked-line"></div>
+                                <div class="stacked-row answer-row" id="borrow-answer-row">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stacked-controls">
+                        <button class="btn btn-secondary" onclick="showBorrowHint()">Hint</button>
+                        <button class="btn btn-primary" onclick="newBorrowPractice()">New Problem</button>
+                        <button class="btn btn-success" onclick="revealBorrowAnswer()">Show Answer</button>
+                    </div>
+                    <div class="feedback" id="borrow-feedback"></div>
+                    <div class="score-display">
+                        Score: <span id="borrow-score">0</span> / <span id="borrow-total">0</span>
                     </div>
                 </div>
             </div>
