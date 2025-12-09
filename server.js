@@ -58,6 +58,20 @@ function initializeSession(session) {
                 bestStreak: 0
             },
 
+            // Carry-over module progress
+            carryOver: {
+                questionsAttempted: 0,
+                questionsCorrect: 0,
+                bestStreak: 0
+            },
+
+            // Borrowing module progress
+            borrowing: {
+                questionsAttempted: 0,
+                questionsCorrect: 0,
+                bestStreak: 0
+            },
+
             // Practice area stats
             practice: {
                 totalSessions: 0,
