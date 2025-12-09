@@ -1397,7 +1397,7 @@ body::before {
 
 .timeline-progress {
     height: 100%;
-    background: linear-gradient(90deg, var(--coral), var(--sage));
+    background: var(--sky);
     border-radius: var(--radius-full);
     width: 0%;
     transition: width 0.4s ease;
@@ -1427,17 +1427,17 @@ body::before {
 }
 
 .timeline-dot.completed {
-    background: var(--sage);
-    border-color: var(--sage);
+    background: var(--sky);
+    border-color: var(--sky);
     color: white;
 }
 
 .timeline-dot.active {
-    background: var(--coral);
-    border-color: var(--coral);
+    background: var(--sky);
+    border-color: var(--sky);
     color: white;
     transform: scale(1.2);
-    box-shadow: 0 0 0 4px rgba(255, 127, 107, 0.3);
+    box-shadow: 0 0 0 4px rgba(126, 181, 214, 0.3);
 }
 
 .timeline-dot.upcoming {
@@ -1461,6 +1461,76 @@ body::before {
 
 .timeline-label .total-steps {
     color: var(--chocolate-light);
+}
+
+/* Demo Controls - Play Button Style */
+.demo-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+}
+
+.play-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--sky);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-md);
+}
+
+.play-btn:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
+}
+
+.play-btn:active {
+    transform: scale(0.95);
+}
+
+.play-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: white;
+}
+
+.play-btn.playing {
+    background: var(--coral);
+}
+
+.next-btn {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--paper);
+    border: 2px solid var(--cream-dark);
+    border-radius: var(--radius-full);
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--chocolate);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.next-btn:hover {
+    background: var(--cream);
+    border-color: var(--sky);
+    color: var(--sky);
+}
+
+.next-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
 }
 
 /* Sum Visualization Bubble (for carry-over demo) */

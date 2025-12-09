@@ -528,16 +528,24 @@
                             <div class="timeline-progress" id="carry-timeline-progress"></div>
                         </div>
                         <div class="timeline-steps" id="carry-timeline-steps"></div>
-                        <div class="timeline-label" id="carry-timeline-label">Click "Show Steps" to begin</div>
+                        <div class="timeline-label" id="carry-timeline-label">Press play to begin</div>
                     </div>
                     <div class="step-explanation" id="carry-step-explanation">
-                        <p>Click "Show Steps" to see how carrying works!</p>
+                        <p>Press play to see how carrying works!</p>
                     </div>
                 </div>
-                <div class="button-row">
-                    <button class="btn btn-primary" onclick="animateCarryDemo()">Show Steps</button>
-                    <button class="btn btn-secondary" onclick="newCarryDemo()">New Problem</button>
-                    <button class="btn btn-ghost" onclick="resetCarryDemo()">Reset</button>
+                <div class="demo-controls">
+                    <button class="next-btn" onclick="newCarryDemo()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 5H21M21 5V13M21 5L13 13L9 9L3 15"/>
+                        </svg>
+                        New
+                    </button>
+                    <button class="play-btn" id="carry-play-btn" onclick="toggleCarryDemo()">
+                        <svg id="carry-play-icon" viewBox="0 0 24 24">
+                            <polygon points="5,3 19,12 5,21"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -620,16 +628,24 @@
                             <div class="timeline-progress" id="borrow-timeline-progress"></div>
                         </div>
                         <div class="timeline-steps" id="borrow-timeline-steps"></div>
-                        <div class="timeline-label" id="borrow-timeline-label">Click "Show Steps" to begin</div>
+                        <div class="timeline-label" id="borrow-timeline-label">Press play to begin</div>
                     </div>
                     <div class="step-explanation" id="borrow-step-explanation">
-                        <p>Click "Show Steps" to see how borrowing works!</p>
+                        <p>Press play to see how borrowing works!</p>
                     </div>
                 </div>
-                <div class="button-row">
-                    <button class="btn btn-primary" onclick="animateBorrowDemo()">Show Steps</button>
-                    <button class="btn btn-secondary" onclick="newBorrowDemo()">New Problem</button>
-                    <button class="btn btn-ghost" onclick="resetBorrowDemo()">Reset</button>
+                <div class="demo-controls">
+                    <button class="next-btn" onclick="newBorrowDemo()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 5H21M21 5V13M21 5L13 13L9 9L3 15"/>
+                        </svg>
+                        New
+                    </button>
+                    <button class="play-btn" id="borrow-play-btn" onclick="toggleBorrowDemo()">
+                        <svg id="borrow-play-icon" viewBox="0 0 24 24">
+                            <polygon points="5,3 19,12 5,21"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
 

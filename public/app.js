@@ -1173,7 +1173,13 @@ function displayCarryDemo() {
     }
 
     document.getElementById('carry-step-explanation').innerHTML =
-        '<p>Click "Show Steps" to see how carrying works!</p>';
+        '<p>Press play to see how carrying works!</p>';
+
+    // Reset play button state
+    const playBtn = document.getElementById('carry-play-btn');
+    const playIcon = document.getElementById('carry-play-icon');
+    if (playBtn) playBtn.classList.remove('playing');
+    if (playIcon) playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
 }
 
 function resetCarryDemo() {
@@ -1187,7 +1193,31 @@ function resetCarryDemo() {
     if (sumViz) sumViz.classList.remove('visible');
     // Reset timeline
     resetTimeline('carry');
+    // Reset play button
+    const playBtn = document.getElementById('carry-play-btn');
+    const playIcon = document.getElementById('carry-play-icon');
+    if (playBtn) playBtn.classList.remove('playing');
+    if (playIcon) playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
     displayCarryDemo();
+}
+
+// Toggle carry demo play/pause
+function toggleCarryDemo() {
+    const playBtn = document.getElementById('carry-play-btn');
+    const playIcon = document.getElementById('carry-play-icon');
+
+    if (carryAnimationInterval) {
+        // Currently playing - stop it
+        clearInterval(carryAnimationInterval);
+        carryAnimationInterval = null;
+        playBtn.classList.remove('playing');
+        playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
+    } else {
+        // Not playing - start animation
+        playBtn.classList.add('playing');
+        playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+        animateCarryDemo();
+    }
 }
 
 // Helper to show sum visualization with dots
@@ -1316,7 +1346,7 @@ function resetTimeline(prefix) {
 
     stepsContainer.innerHTML = '';
     progressBar.style.width = '0%';
-    label.textContent = 'Click "Show Steps" to begin';
+    label.textContent = 'Press play to begin';
 }
 
 function animateCarryDemo() {
@@ -1417,6 +1447,11 @@ function animateCarryDemo() {
         if (currentStep >= steps.length) {
             clearInterval(carryAnimationInterval);
             carryAnimationInterval = null;
+            // Reset play button to play state
+            const playBtn = document.getElementById('carry-play-btn');
+            const playIcon = document.getElementById('carry-play-icon');
+            if (playBtn) playBtn.classList.remove('playing');
+            if (playIcon) playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
             return;
         }
 
@@ -1683,7 +1718,13 @@ function displayBorrowDemo() {
     }
 
     document.getElementById('borrow-step-explanation').innerHTML =
-        '<p>Click "Show Steps" to see how borrowing works!</p>';
+        '<p>Press play to see how borrowing works!</p>';
+
+    // Reset play button state
+    const playBtn = document.getElementById('borrow-play-btn');
+    const playIcon = document.getElementById('borrow-play-icon');
+    if (playBtn) playBtn.classList.remove('playing');
+    if (playIcon) playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
 }
 
 function resetBorrowDemo() {
@@ -1696,7 +1737,31 @@ function resetBorrowDemo() {
     if (borrowViz) borrowViz.classList.remove('visible');
     // Reset timeline
     resetTimeline('borrow');
+    // Reset play button
+    const playBtn = document.getElementById('borrow-play-btn');
+    const playIcon = document.getElementById('borrow-play-icon');
+    if (playBtn) playBtn.classList.remove('playing');
+    if (playIcon) playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
     displayBorrowDemo();
+}
+
+// Toggle borrow demo play/pause
+function toggleBorrowDemo() {
+    const playBtn = document.getElementById('borrow-play-btn');
+    const playIcon = document.getElementById('borrow-play-icon');
+
+    if (borrowAnimationInterval) {
+        // Currently playing - stop it
+        clearInterval(borrowAnimationInterval);
+        borrowAnimationInterval = null;
+        playBtn.classList.remove('playing');
+        playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
+    } else {
+        // Not playing - start animation
+        playBtn.classList.add('playing');
+        playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+        animateBorrowDemo();
+    }
 }
 
 // Helper to show borrow visualization - "I can't take X from Y!"
@@ -1908,6 +1973,11 @@ function animateBorrowDemo() {
         if (currentStep >= steps.length) {
             clearInterval(borrowAnimationInterval);
             borrowAnimationInterval = null;
+            // Reset play button to play state
+            const playBtn = document.getElementById('borrow-play-btn');
+            const playIcon = document.getElementById('borrow-play-icon');
+            if (playBtn) playBtn.classList.remove('playing');
+            if (playIcon) playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
             return;
         }
 
