@@ -417,6 +417,7 @@
                     <span class="quiz-symbol">=</span>
                     <input type="number" id="mult-quiz-answer" class="quiz-input" onkeypress="handleMultQuizEnter(event)">
                 </div>
+                <div class="quiz-dots-grid" id="mult-quiz-dots"></div>
                 <div class="button-row">
                     <button class="btn btn-primary" onclick="checkMultQuiz()">Check</button>
                     <button class="btn btn-secondary" onclick="newMultQuiz()">New Problem</button>
@@ -535,15 +536,15 @@
                     </div>
                 </div>
                 <div class="demo-controls">
-                    <button class="next-btn" onclick="newCarryDemo()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M13 5H21M21 5V13M21 5L13 13L9 9L3 15"/>
-                        </svg>
-                        New
-                    </button>
                     <button class="play-btn" id="carry-play-btn" onclick="toggleCarryDemo()">
                         <svg id="carry-play-icon" viewBox="0 0 24 24">
                             <polygon points="5,3 19,12 5,21"/>
+                        </svg>
+                    </button>
+                    <button class="refresh-btn" onclick="newCarryDemo()" title="New Problem">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/>
                         </svg>
                     </button>
                 </div>
@@ -636,15 +637,15 @@
                     </div>
                 </div>
                 <div class="demo-controls">
-                    <button class="next-btn" onclick="newBorrowDemo()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M13 5H21M21 5V13M21 5L13 13L9 9L3 15"/>
-                        </svg>
-                        New
-                    </button>
                     <button class="play-btn" id="borrow-play-btn" onclick="toggleBorrowDemo()">
                         <svg id="borrow-play-icon" viewBox="0 0 24 24">
                             <polygon points="5,3 19,12 5,21"/>
+                        </svg>
+                    </button>
+                    <button class="refresh-btn" onclick="newBorrowDemo()" title="New Problem">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/>
                         </svg>
                     </button>
                 </div>

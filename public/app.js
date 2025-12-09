@@ -646,10 +646,31 @@ function newMultQuiz() {
     document.getElementById('mult-quiz-a').textContent = a;
     document.getElementById('mult-quiz-b').textContent = b;
     document.getElementById('mult-quiz-answer').value = '';
-    document.getElementById('mult-feedback').innerHTML = '';
+    document.getElementById('mult-feedback').textContent = '';
     document.getElementById('mult-feedback').className = 'feedback';
 
+    // Render dots visualization for the quiz
+    renderMultQuizDots(a, b);
+
     document.getElementById('mult-quiz-answer').focus();
+}
+
+function renderMultQuizDots(a, b) {
+    const grid = document.getElementById('mult-quiz-dots');
+    grid.replaceChildren(); // Clear existing dots safely
+
+    // Create a rows × b columns grid of dots
+    for (let i = 0; i < a; i++) {
+        const row = document.createElement('div');
+        row.className = 'mult-row';
+        for (let j = 0; j < b; j++) {
+            const dot = document.createElement('div');
+            dot.className = 'mult-dot quiz-dot';
+            dot.style.animationDelay = ((i * b + j) * 0.015) + 's';
+            row.appendChild(dot);
+        }
+        grid.appendChild(row);
+    }
 }
 
 function checkMultQuiz() {
