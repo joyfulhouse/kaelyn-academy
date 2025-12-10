@@ -143,27 +143,21 @@ function updateProgressDisplay() {
 // Initialization
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
-    // Load session state first (don't let it block initialization)
+    // Load session state first
     try {
         await loadSessionState();
     } catch (e) {
-        console.warn('Session state load failed, continuing...', e);
+        // Session state is optional, continue without it
     }
 
     // Initialize all modules
-    try {
-        createStars();
-        updatePlaceValues();
-        updateMultVisual();
-        showTimesTable();
-        updateDivVisual();
-        newMultQuiz();
-        newDivQuiz();
-        newStackedProblem();
-        initCarryBorrowModules();
-    } catch (e) {
-        console.error('Module initialization error:', e);
-    }
+    createStars();
+    updatePlaceValues();
+    updateMultVisual();
+    showTimesTable();
+    updateDivVisual();
+    newStackedProblem();
+    initCarryBorrowModules();
 });
 
 // Create background stars
@@ -200,6 +194,19 @@ function showSection(sectionId) {
             btn.classList.add('active');
         }
     });
+
+    // Initialize section-specific content when section becomes visible
+    if (sectionId === 'carry-over') {
+        newCarryDemo();
+        newCarryPractice();
+    } else if (sectionId === 'borrowing') {
+        newBorrowDemo();
+        newBorrowPractice();
+    } else if (sectionId === 'multiplication') {
+        newMultQuiz();
+    } else if (sectionId === 'division') {
+        newDivQuiz();
+    }
 
     // Record lesson visit
     if (sectionId !== 'home') {
@@ -1172,7 +1179,6 @@ function newCarryDemo() {
 
 function displayCarryDemo() {
     const { num1, num2, answer } = carryDemoProblem;
-    console.log('displayCarryDemo called with:', { num1, num2, answer });
     const str1 = num1.toString().padStart(3, '0');
     const str2 = num2.toString().padStart(3, '0');
     const ansStr = answer.toString().padStart(4, '0');
@@ -1183,8 +1189,6 @@ function displayCarryDemo() {
         if (el) {
             el.textContent = str1[i];
             el.className = 'demo-digit';
-        } else {
-            console.error(`Element demo-num1-${i} not found`);
         }
     }
 
@@ -2223,32 +2227,16 @@ function revealBorrowAnswer() {
     feedback.className = 'feedback';
 }
 
-// Initialize new modules on page load
+// Initialize new modules on page load (pre-generate problems so they're ready)
 function initCarryBorrowModules() {
-    console.log('Initializing carry/borrow modules...');
+    // Pre-generate problems so data is ready when sections become visible
     try {
-        newCarryDemo();
-        console.log('Carry demo initialized');
+        carryDemoProblem = generateCarryProblem();
+        carryPracticeProblem = generateCarryProblem();
+        carryPracticeProblem.carries = calculateCarries(carryPracticeProblem.num1, carryPracticeProblem.num2);
+        borrowDemoProblem = generateBorrowProblem();
+        borrowPracticeProblem = generateBorrowProblem();
     } catch (e) {
-        console.error('Carry demo init failed:', e);
+        console.error('Problem generation failed:', e);
     }
-    try {
-        newCarryPractice();
-        console.log('Carry practice initialized');
-    } catch (e) {
-        console.error('Carry practice init failed:', e);
-    }
-    try {
-        newBorrowDemo();
-        console.log('Borrow demo initialized');
-    } catch (e) {
-        console.error('Borrow demo init failed:', e);
-    }
-    try {
-        newBorrowPractice();
-        console.log('Borrow practice initialized');
-    } catch (e) {
-        console.error('Borrow practice init failed:', e);
-    }
-    console.log('All carry/borrow modules initialized');
 }
