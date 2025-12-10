@@ -20,6 +20,132 @@ let practiceDifficulty = 'easy';
 let sessionState = null;
 
 // ==========================================
+// Stacked Math Utilities (Shared)
+// ==========================================
+
+/**
+ * Calculate carry positions for addition
+ * @param {number} num1 - First number
+ * @param {number} num2 - Second number
+ * @param {number} totalLen - Total digit length
+ * @returns {boolean[]} Array of carry flags by position
+ */
+function calculateCarryPositions(num1, num2, totalLen) {
+    const str1 = num1.toString().padStart(totalLen, '0');
+    const str2 = num2.toString().padStart(totalLen, '0');
+    const carries = [];
+    let carry = 0;
+
+    for (let i = totalLen - 1; i >= 0; i--) {
+        const d1 = parseInt(str1[i]) || 0;
+        const d2 = parseInt(str2[i]) || 0;
+        const sum = d1 + d2 + carry;
+        carry = sum >= 10 ? 1 : 0;
+        carries[i] = carry === 1;
+    }
+    return carries;
+}
+
+/**
+ * Calculate borrow adjustments for subtraction
+ * @param {number} num1 - Number being subtracted from
+ * @param {number} num2 - Number being subtracted
+ * @param {number} totalLen - Total digit length
+ * @returns {{borrows: boolean[], adjusted: number[]}} Borrow info
+ */
+function calculateBorrowAdjustments(num1, num2, totalLen) {
+    const str1 = num1.toString().padStart(totalLen, '0');
+    const str2 = num2.toString().padStart(totalLen, '0');
+    const adjusted = str1.split('').map(Number);
+    const borrows = [];
+
+    for (let i = totalLen - 1; i >= 0; i--) {
+        const d2 = parseInt(str2[i]) || 0;
+        if (adjusted[i] < d2 && i > 0) {
+            borrows[i] = true;
+            adjusted[i] += 10;
+            let j = i - 1;
+            while (j >= 0 && adjusted[j] === 0) {
+                adjusted[j] = 9;
+                j--;
+            }
+            if (j >= 0) {
+                adjusted[j] -= 1;
+            }
+        }
+    }
+    return { borrows, adjusted };
+}
+
+/**
+ * Render a number row with carry/borrow visual aids
+ * @param {HTMLElement} container - Container element
+ * @param {number} num - The number to display
+ * @param {number} totalLen - Total digit length
+ * @param {Object} options - Display options
+ * @param {boolean[]} [options.borrows] - Which positions borrowed
+ * @param {number[]} [options.adjusted] - Adjusted digits after borrowing
+ * @param {boolean} [options.hideLeadingZeros] - Hide leading zeros
+ */
+function renderStackedNumberRow(container, num, totalLen, options = {}) {
+    const { borrows = [], adjusted = [], hideLeadingZeros = true } = options;
+    const numStr = num.toString().padStart(totalLen, '0');
+    const digits = numStr.split('').map(Number);
+
+    container.innerHTML = '';
+
+    for (let i = 0; i < totalLen; i++) {
+        const originalDigit = digits[i];
+        const adjustedDigit = adjusted[i] !== undefined ? adjusted[i] : originalDigit;
+        const wasBorrowedFrom = adjusted.length > 0 && originalDigit !== adjustedDigit && !borrows[i];
+        const didBorrow = borrows[i];
+        const isLeadingZero = hideLeadingZeros && originalDigit === 0 && i === 0;
+
+        const digitContainer = document.createElement('span');
+        digitContainer.className = 'digit-container';
+
+        if (wasBorrowedFrom) {
+            digitContainer.innerHTML = `
+                <span class="digit crossed-out">${originalDigit}</span>
+                <span class="digit-adjusted">${adjustedDigit}</span>
+            `;
+        } else if (didBorrow) {
+            digitContainer.innerHTML = `
+                <span class="borrow-indicator">1</span>
+                <span class="digit">${originalDigit}</span>
+            `;
+        } else {
+            const digit = document.createElement('span');
+            digit.className = 'digit';
+            digit.textContent = isLeadingZero ? '' : originalDigit;
+            digitContainer.appendChild(digit);
+        }
+
+        container.appendChild(digitContainer);
+    }
+}
+
+/**
+ * Render carry indicators row
+ * @param {HTMLElement} container - Container element
+ * @param {boolean[]} carries - Carry flags by position
+ * @param {number} totalLen - Total length
+ */
+function renderCarryRow(container, carries, totalLen) {
+    container.innerHTML = '';
+    for (let i = 0; i < totalLen; i++) {
+        const span = document.createElement('span');
+        span.className = 'carry-digit';
+        // Carry at position i means previous column (i+1) generated a carry
+        if (carries[i + 1]) {
+            span.textContent = '1';
+            span.classList.add('visible');
+        }
+        container.appendChild(span);
+    }
+}
+
+// ==========================================
 // Session State Management
 // ==========================================
 async function loadSessionState() {
@@ -997,104 +1123,30 @@ function renderPracticeStacked(problem) {
     const answerLen = problem.answer.toString().length;
     const totalLen = Math.max(maxLen, answerLen);
 
-    // Pad numbers to same length
-    const paddedNum1 = num1Str.padStart(totalLen, '0');
-    const paddedNum2 = num2Str.padStart(totalLen, '0');
-
-    // Calculate carries (addition) or borrows (subtraction)
-    const carries = [];
-    const borrows = [];
-    const adjustedNum1 = paddedNum1.split('').map(Number);
+    // Calculate carries or borrows using shared utilities
+    let carries = [];
+    let borrowInfo = { borrows: [], adjusted: [] };
 
     if (problem.type === 'addition') {
-        let carry = 0;
-        for (let i = totalLen - 1; i >= 0; i--) {
-            const d1 = parseInt(paddedNum1[i]) || 0;
-            const d2 = parseInt(paddedNum2[i]) || 0;
-            const sum = d1 + d2 + carry;
-            carry = sum >= 10 ? 1 : 0;
-            carries[i] = carry;
-        }
+        carries = calculateCarryPositions(problem.num1, problem.num2, totalLen);
     } else if (problem.type === 'subtraction') {
-        // Calculate borrows working right to left
-        for (let i = totalLen - 1; i >= 0; i--) {
-            const d1 = adjustedNum1[i];
-            const d2 = parseInt(paddedNum2[i]) || 0;
-            if (d1 < d2 && i > 0) {
-                // Need to borrow
-                borrows[i] = true;
-                adjustedNum1[i] += 10;
-                // Find next column to borrow from
-                let j = i - 1;
-                while (j >= 0 && adjustedNum1[j] === 0) {
-                    adjustedNum1[j] = 9;
-                    j--;
-                }
-                if (j >= 0) {
-                    adjustedNum1[j] -= 1;
-                }
-            }
-        }
+        borrowInfo = calculateBorrowAdjustments(problem.num1, problem.num2, totalLen);
     }
 
     // Render carry row (for addition)
     const carryRow = document.getElementById('practice-carry-row');
-    carryRow.innerHTML = '';
-    for (let i = 0; i < totalLen; i++) {
-        const span = document.createElement('span');
-        span.className = 'carry-digit';
-        if (problem.type === 'addition' && carries[i + 1]) {
-            span.textContent = '1';
-            span.classList.add('visible');
-        }
-        carryRow.appendChild(span);
-    }
+    renderCarryRow(carryRow, carries, totalLen);
 
     // Render top number with borrow annotations
     const num1Row = document.getElementById('practice-stacked-num1');
-    num1Row.innerHTML = '';
-    for (let i = 0; i < totalLen; i++) {
-        const originalDigit = parseInt(paddedNum1[i]) || 0;
-        const adjustedDigit = adjustedNum1[i];
-        const wasBorrowedFrom = problem.type === 'subtraction' && originalDigit !== adjustedDigit && !borrows[i];
-        const didBorrow = problem.type === 'subtraction' && borrows[i];
-
-        const digitContainer = document.createElement('span');
-        digitContainer.className = 'digit-container';
-
-        if (wasBorrowedFrom) {
-            // Show crossed out original with new value
-            const crossedOut = document.createElement('span');
-            crossedOut.className = 'digit crossed-out';
-            crossedOut.textContent = originalDigit;
-            digitContainer.appendChild(crossedOut);
-
-            const newValue = document.createElement('span');
-            newValue.className = 'digit-adjusted';
-            newValue.textContent = adjustedDigit;
-            digitContainer.appendChild(newValue);
-        } else if (didBorrow) {
-            // Show the "1" prefix for borrowed column
-            const borrowIndicator = document.createElement('span');
-            borrowIndicator.className = 'borrow-indicator';
-            borrowIndicator.textContent = '1';
-            digitContainer.appendChild(borrowIndicator);
-
-            const digit = document.createElement('span');
-            digit.className = 'digit';
-            digit.textContent = originalDigit;
-            digitContainer.appendChild(digit);
-        } else {
-            const digit = document.createElement('span');
-            digit.className = 'digit';
-            digit.textContent = paddedNum1[i] === '0' && i === 0 ? '' : paddedNum1[i];
-            digitContainer.appendChild(digit);
-        }
-
-        num1Row.appendChild(digitContainer);
-    }
+    renderStackedNumberRow(num1Row, problem.num1, totalLen, {
+        borrows: borrowInfo.borrows,
+        adjusted: borrowInfo.adjusted,
+        hideLeadingZeros: true
+    });
 
     // Render second number with operator
+    const paddedNum2 = num2Str.padStart(totalLen, '0');
     const num2Row = document.getElementById('practice-stacked-num2-row');
     num2Row.innerHTML = '';
     const opSpan = document.createElement('span');
@@ -1760,18 +1812,27 @@ function newCarryPractice() {
 
 function displayCarryPractice() {
     const { num1, num2, answer } = carryPracticeProblem;
-    const str1 = num1.toString().padStart(3, '0');
-    const str2 = num2.toString().padStart(3, '0');
+    const totalLen = 3;
     const ansStr = answer.toString();
+
+    // Calculate carries using shared utility
+    const carries = calculateCarryPositions(num1, num2, totalLen);
 
     // Display num1
     const num1Row = document.getElementById('carry-num1-row');
-    num1Row.innerHTML = str1.split('').map(d => `<span class="digit">${d}</span>`).join('');
+    renderStackedNumberRow(num1Row, num1, totalLen, { hideLeadingZeros: false });
 
     // Display num2
+    const str2 = num2.toString().padStart(totalLen, '0');
     const num2Row = document.getElementById('carry-num2-row');
     num2Row.innerHTML = `<span class="operator">+</span>` +
         str2.split('').map(d => `<span class="digit">${d}</span>`).join('');
+
+    // Show carry indicators (pre-populated to help understanding)
+    const carryRow = document.getElementById('carry-practice-indicators');
+    if (carryRow) {
+        renderCarryRow(carryRow, carries, ansStr.length);
+    }
 
     // Create answer inputs
     const ansRow = document.getElementById('carry-answer-row');
@@ -2295,15 +2356,17 @@ function newBorrowPractice() {
 
 function displayBorrowPractice() {
     const { num1, num2, answer } = borrowPracticeProblem;
-    const str1 = num1.toString().padStart(3, '0');
-    const str2 = num2.toString().padStart(3, '0');
-    const ansStr = answer.toString().padStart(3, '0');
+    const totalLen = 3;
 
-    // Display num1
+    // Calculate borrows using shared utility
+    const { borrows, adjusted } = calculateBorrowAdjustments(num1, num2, totalLen);
+
+    // Display num1 with borrow annotations using shared utility
     const num1Row = document.getElementById('borrow-num1-row');
-    num1Row.innerHTML = str1.split('').map(d => `<span class="digit">${d}</span>`).join('');
+    renderStackedNumberRow(num1Row, num1, totalLen, { borrows, adjusted, hideLeadingZeros: false });
 
     // Display num2
+    const str2 = num2.toString().padStart(totalLen, '0');
     const num2Row = document.getElementById('borrow-num2-row');
     num2Row.innerHTML = `<span class="operator">-</span>` +
         str2.split('').map(d => `<span class="digit">${d}</span>`).join('');
@@ -2311,8 +2374,6 @@ function displayBorrowPractice() {
     // Create answer inputs
     const ansRow = document.getElementById('borrow-answer-row');
     ansRow.innerHTML = '';
-
-    // Find first non-zero digit in answer for proper input count
     const trimmedAns = answer.toString();
     for (let i = 0; i < trimmedAns.length; i++) {
         const input = document.createElement('input');
@@ -2327,9 +2388,7 @@ function displayBorrowPractice() {
     // Reset borrow indicators
     for (let i = 0; i < 3; i++) {
         const ind = document.getElementById(`borrow-ind-${i}`);
-        if (ind) {
-            ind.textContent = '';
-        }
+        if (ind) ind.textContent = '';
     }
 
     // Clear feedback
