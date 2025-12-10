@@ -14,6 +14,7 @@ let currentPracticeIndex = 0;
 let practiceScore = 0;
 let currentPVQuiz = { number: 0, place: '', answer: 0 };
 let practiceType = 'mixed';
+let practiceDifficulty = 'easy';
 
 // Session state (loaded from server)
 let sessionState = null;
@@ -859,6 +860,7 @@ async function startPractice() {
     const count = parseInt(document.getElementById('practice-count').value);
 
     practiceType = type;
+    practiceDifficulty = difficulty;
 
     // Generate problems
     if (type === 'mixed') {
@@ -913,6 +915,7 @@ function generateProblem(type, difficulty) {
     switch (type) {
         case 'addition':
             return {
+                type: 'addition',
                 num1,
                 num2,
                 operator: '+',
@@ -922,6 +925,7 @@ function generateProblem(type, difficulty) {
             const larger = Math.max(num1, num2);
             const smaller = Math.min(num1, num2);
             return {
+                type: 'subtraction',
                 num1: larger,
                 num2: smaller,
                 operator: '-',
@@ -931,6 +935,7 @@ function generateProblem(type, difficulty) {
             const mult1 = Math.floor(Math.random() * 12) + 1;
             const mult2 = Math.floor(Math.random() * 12) + 1;
             return {
+                type: 'multiplication',
                 num1: mult1,
                 num2: mult2,
                 operator: '×',
@@ -941,6 +946,7 @@ function generateProblem(type, difficulty) {
             const quotient = Math.floor(Math.random() * 11) + 1;
             const dividend = divisor * quotient;
             return {
+                type: 'division',
                 num1: dividend,
                 num2: divisor,
                 operator: '÷',
@@ -953,11 +959,9 @@ function generateProblem(type, difficulty) {
 
 function showPracticeProblem() {
     const problem = practiceProblems[currentPracticeIndex];
+    const isAddSub = problem.type === 'addition' || problem.type === 'subtraction';
+    const useStacked = isAddSub && (practiceDifficulty === 'medium' || practiceDifficulty === 'hard');
 
-    document.getElementById('practice-num1').textContent = problem.num1;
-    document.getElementById('practice-op').textContent = problem.operator;
-    document.getElementById('practice-num2').textContent = problem.num2;
-    document.getElementById('practice-answer').value = '';
     document.getElementById('practice-feedback').innerHTML = '';
     document.getElementById('practice-feedback').className = 'feedback';
 
@@ -967,13 +971,127 @@ function showPracticeProblem() {
     document.getElementById('practice-progress-text').textContent =
         `${currentPracticeIndex + 1} / ${practiceProblems.length}`;
 
-    document.getElementById('practice-answer').focus();
+    if (useStacked) {
+        // Show stacked format
+        document.getElementById('practice-horizontal').style.display = 'none';
+        document.getElementById('practice-stacked').style.display = 'block';
+
+        renderPracticeStacked(problem);
+    } else {
+        // Show horizontal format
+        document.getElementById('practice-horizontal').style.display = 'flex';
+        document.getElementById('practice-stacked').style.display = 'none';
+
+        document.getElementById('practice-num1').textContent = problem.num1;
+        document.getElementById('practice-op').textContent = problem.operator;
+        document.getElementById('practice-num2').textContent = problem.num2;
+        document.getElementById('practice-answer').value = '';
+        document.getElementById('practice-answer').focus();
+    }
+}
+
+function renderPracticeStacked(problem) {
+    const num1Str = problem.num1.toString();
+    const num2Str = problem.num2.toString();
+    const maxLen = Math.max(num1Str.length, num2Str.length, 3);
+    const answerLen = problem.answer.toString().length;
+    const totalLen = Math.max(maxLen, answerLen);
+
+    // Pad numbers to same length
+    const paddedNum1 = num1Str.padStart(totalLen, ' ');
+    const paddedNum2 = num2Str.padStart(totalLen, ' ');
+
+    // Render top number
+    const num1Row = document.getElementById('practice-stacked-num1');
+    num1Row.innerHTML = '';
+    for (const ch of paddedNum1) {
+        const span = document.createElement('span');
+        span.className = 'digit';
+        span.textContent = ch === ' ' ? '' : ch;
+        num1Row.appendChild(span);
+    }
+
+    // Render second number with operator
+    const num2Row = document.getElementById('practice-stacked-num2-row');
+    num2Row.innerHTML = '';
+    const opSpan = document.createElement('span');
+    opSpan.className = 'operator';
+    opSpan.textContent = problem.operator;
+    num2Row.appendChild(opSpan);
+    for (const ch of paddedNum2) {
+        const span = document.createElement('span');
+        span.className = 'digit';
+        span.id = 'practice-num2-digit';
+        span.textContent = ch === ' ' ? '' : ch;
+        num2Row.appendChild(span);
+    }
+
+    // Render carry row (empty for input)
+    const carryRow = document.getElementById('practice-carry-row');
+    carryRow.innerHTML = '';
+    for (let i = 0; i < totalLen; i++) {
+        const span = document.createElement('span');
+        span.className = 'carry-digit';
+        carryRow.appendChild(span);
+    }
+
+    // Render answer row with inputs
+    const answerRow = document.getElementById('practice-stacked-answer');
+    answerRow.innerHTML = '';
+    for (let i = 0; i < totalLen; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'digit-input';
+        input.id = `practice-ans-${i}`;
+        input.maxLength = 1;
+        input.oninput = () => handlePracticeStackedInput(i, totalLen);
+        input.onkeydown = (e) => handlePracticeStackedKeydown(e, i, totalLen);
+        answerRow.appendChild(input);
+    }
+
+    // Focus rightmost input
+    document.getElementById(`practice-ans-${totalLen - 1}`).focus();
+}
+
+function handlePracticeStackedInput(index, totalLen) {
+    const input = document.getElementById(`practice-ans-${index}`);
+    if (input.value.length === 1 && index > 0) {
+        document.getElementById(`practice-ans-${index - 1}`).focus();
+    }
+}
+
+function handlePracticeStackedKeydown(e, index, totalLen) {
+    if (e.key === 'Backspace' && e.target.value === '' && index < totalLen - 1) {
+        document.getElementById(`practice-ans-${index + 1}`).focus();
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+        document.getElementById(`practice-ans-${index - 1}`).focus();
+    } else if (e.key === 'ArrowRight' && index < totalLen - 1) {
+        document.getElementById(`practice-ans-${index + 1}`).focus();
+    } else if (e.key === 'Enter') {
+        checkPracticeAnswer();
+    }
 }
 
 function checkPracticeAnswer() {
-    const userAnswer = parseInt(document.getElementById('practice-answer').value);
     const problem = practiceProblems[currentPracticeIndex];
     const feedback = document.getElementById('practice-feedback');
+    const isAddSub = problem.type === 'addition' || problem.type === 'subtraction';
+    const useStacked = isAddSub && (practiceDifficulty === 'medium' || practiceDifficulty === 'hard');
+
+    let userAnswer;
+
+    if (useStacked) {
+        // Read from stacked inputs
+        const answerRow = document.getElementById('practice-stacked-answer');
+        const inputs = answerRow.querySelectorAll('input');
+        let answerStr = '';
+        for (const input of inputs) {
+            answerStr += input.value || '0';
+        }
+        userAnswer = parseInt(answerStr);
+    } else {
+        userAnswer = parseInt(document.getElementById('practice-answer').value);
+    }
 
     if (isNaN(userAnswer)) {
         feedback.textContent = 'Please enter a number!';

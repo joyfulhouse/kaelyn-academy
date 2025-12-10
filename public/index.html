@@ -730,12 +730,23 @@
                 <div class="progress-text" id="practice-progress-text">0 / 0</div>
 
                 <div class="practice-problem" id="practice-problem">
-                    <div class="problem-equation">
+                    <!-- Horizontal equation (for mult/div and easy mode) -->
+                    <div class="problem-equation" id="practice-horizontal">
                         <span class="problem-num" id="practice-num1">?</span>
                         <span class="problem-op" id="practice-op">+</span>
                         <span class="problem-num" id="practice-num2">?</span>
                         <span class="problem-eq">=</span>
                         <input type="number" id="practice-answer" class="problem-input" onkeypress="handlePracticeEnter(event)">
+                    </div>
+                    <!-- Stacked format (for add/sub medium/hard) -->
+                    <div class="practice-stacked" id="practice-stacked" style="display: none;">
+                        <div class="stacked-numbers">
+                            <div class="carry-row" id="practice-carry-row"></div>
+                            <div class="stacked-row top-number" id="practice-stacked-num1"></div>
+                            <div class="stacked-row operator-row" id="practice-stacked-num2-row"></div>
+                            <div class="stacked-line"></div>
+                            <div class="stacked-row answer-row" id="practice-stacked-answer"></div>
+                        </div>
                     </div>
                     <div class="button-row">
                         <button class="btn btn-primary" onclick="checkPracticeAnswer()">Check</button>
