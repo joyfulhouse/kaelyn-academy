@@ -2013,6 +2013,7 @@ body::before {
 .practice-stacked .stacked-numbers {
     display: inline-block;
     min-width: 150px;
+    padding-left: 50px;
 }
 
 .practice-stacked .stacked-line {
