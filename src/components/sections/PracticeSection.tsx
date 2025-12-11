@@ -43,6 +43,7 @@ export function PracticeSection() {
     setUserAnswer('');
     setIsCorrect(null);
     setResults([]);
+    setStarsEarned(0);
     setSessionState('active');
   }, [problemType, difficulty, problemCount]);
 
@@ -65,13 +66,13 @@ export function PracticeSection() {
   };
 
   const finishSession = async () => {
-    const correctCount = results.filter(Boolean).length + (isCorrect ? 1 : 0);
-    const totalCount = problems.length;
+    const answeredCorrect = results.filter(Boolean).length;
+    const totalCount = problems.length || results.length;
 
     try {
       const result = await dispatch(
         recordPracticeSession({
-          correct: correctCount,
+          correct: answeredCorrect,
           total: totalCount,
           type: problemType,
         })
@@ -80,7 +81,7 @@ export function PracticeSection() {
       setStarsEarned(result.starsEarned);
     } catch {
       // Calculate stars locally if API fails
-      const score = Math.round((correctCount / totalCount) * 100);
+      const score = totalCount ? Math.round((answeredCorrect / totalCount) * 100) : 0;
       if (score >= 100) setStarsEarned(5);
       else if (score >= 80) setStarsEarned(4);
       else if (score >= 60) setStarsEarned(3);
@@ -94,6 +95,8 @@ export function PracticeSection() {
   const currentProblem = problems[currentIndex];
   const correctCount = results.filter(Boolean).length;
   const totalAnswered = results.length;
+  const totalCount = problems.length;
+  const finalPercentage = totalCount ? Math.round((correctCount / totalCount) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -293,16 +296,11 @@ export function PracticeSection() {
               {/* Score */}
               <div className="rounded-2xl bg-cream px-8 py-6">
                 <p className="font-display text-6xl font-bold text-coral">
-                  {Math.round(
-                    ((results.filter(Boolean).length + (isCorrect ? 1 : 0)) /
-                      problems.length) *
-                      100
-                  )}
+                  {finalPercentage}
                   %
                 </p>
                 <p className="mt-2 font-body text-chocolate/70">
-                  {results.filter(Boolean).length + (isCorrect ? 1 : 0)} out of{' '}
-                  {problems.length} correct
+                  {correctCount} out of {problems.length} correct
                 </p>
               </div>
 
