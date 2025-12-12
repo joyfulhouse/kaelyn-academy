@@ -9,3 +9,4 @@ export { ScoreBadge, StarDisplay } from './ScoreBadge';
 export { ProgressBar, StepProgress } from './ProgressBar';
 export { ErrorBoundary } from './ErrorBoundary';
 export { StepIcon, labelToIconType, type StepIconType } from './StepIcon';
+export { Confetti } from './Confetti';

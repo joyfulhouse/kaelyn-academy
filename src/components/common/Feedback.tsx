@@ -2,6 +2,7 @@
 
 import { type HTMLAttributes, useEffect, useRef } from 'react';
 import { useAudio } from '@/hooks/useAudio';
+import { Confetti } from './Confetti';
 
 type FeedbackType = 'success' | 'error' | 'info' | 'warning';
 
@@ -68,27 +69,30 @@ export function Feedback({
   const styles = typeStyles[type];
 
   return (
-    <div
-      className={`
-        flex items-center gap-2 rounded-xl px-4 py-3 font-body
-        animate-[fadeIn_0.3s_ease-out]
-        ${styles.bg} ${styles.text}
-        ${className}
-      `}
-      role="alert"
-      {...props}
-    >
-      <svg
-        className="h-5 w-5 flex-shrink-0"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
+    <>
+      {type === 'success' && <Confetti count={40} />}
+      <div
+        className={`
+          flex items-center gap-2 rounded-xl px-4 py-3 font-body
+          animate-[fadeIn_0.3s_ease-out]
+          ${styles.bg} ${styles.text}
+          ${className}
+        `}
+        role="alert"
+        {...props}
       >
-        <path strokeLinecap="round" strokeLinejoin="round" d={styles.icon} />
-      </svg>
-      <span className="font-medium">{message}</span>
-    </div>
+        <svg
+          className="h-5 w-5 flex-shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d={styles.icon} />
+        </svg>
+        <span className="font-medium">{message}</span>
+      </div>
+    </>
   );
 }
 
@@ -121,12 +125,15 @@ export function AnswerFeedback({ isCorrect, correctAnswer, showText = true }: An
 
   if (isCorrect) {
     return (
-      <div className="flex items-center gap-2 text-sage animate-celebrate">
-        <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        {showText && <span className="font-display font-bold">Correct!</span>}
-      </div>
+      <>
+        <Confetti count={40} />
+        <div className="flex items-center gap-2 text-sage animate-celebrate">
+          <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {showText && <span className="font-display font-bold">Correct!</span>}
+        </div>
+      </>
     );
   }
 

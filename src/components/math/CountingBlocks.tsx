@@ -78,7 +78,7 @@ export function CountingBlocks({
           onClick={() => handleBlockClick(globalIndex)}
           disabled={!interactive || crossed}
           className={`
-            h-6 w-6 rounded transition-all duration-150
+            h-6 w-6 rounded transition-all duration-150 animate-blockAppear
             ${crossed
               ? 'bg-chocolate/10 opacity-50'
               : isHighlighted
@@ -90,6 +90,7 @@ export function CountingBlocks({
           style={{
             gridRow: row + 1,
             gridColumn: col + 1,
+            animationDelay: `${i * 0.03}s`,
           }}
           aria-label={`Block ${globalIndex + 1}${isHighlighted ? ' (counted)' : ''}`}
         >
@@ -166,13 +167,14 @@ export function CountingBlocks({
               onClick={() => handleBlockClick(i)}
               disabled={!interactive}
               className={`
-                h-6 w-6 rounded transition-all
+                h-6 w-6 rounded transition-all animate-blockAppear
                 ${isHighlighted
                   ? `bg-${COLORS[row % COLORS.length]} scale-105`
                   : `bg-${COLORS[row % COLORS.length]}/40 hover:bg-${COLORS[row % COLORS.length]}/60`
                 }
                 ${interactive ? 'cursor-pointer' : ''}
               `}
+              style={{ animationDelay: `${i * 0.015}s` }}
             />
           );
         })}

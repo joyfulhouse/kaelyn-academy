@@ -241,8 +241,9 @@ export function SightWordsSection() {
           <div className="space-y-8 py-8">
             {/* Word Display */}
             <button
+              key={currentWord}
               onClick={handleSpeakWord}
-              className="group mx-auto block rounded-3xl bg-gradient-to-br from-sage/20 to-sage/10 px-16 py-12 transition-all hover:scale-105 hover:shadow-lifted"
+              className="group mx-auto block rounded-3xl bg-gradient-to-br from-sage/20 to-sage/10 px-16 py-12 transition-all hover:scale-105 hover:shadow-lifted animate-pop-in"
             >
               <span className="font-display text-7xl font-bold text-chocolate group-hover:text-sage">
                 {currentWord}
