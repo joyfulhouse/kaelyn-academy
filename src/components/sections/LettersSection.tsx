@@ -39,7 +39,51 @@ const LETTER_WORDS: Record<string, string> = {
 };
 
 // Colors for each letter (cycling through theme colors)
-const LETTER_COLORS = ['coral', 'sage', 'yellow', 'sky'];
+const LETTER_COLORS = ['coral', 'sage', 'yellow', 'sky'] as const;
+type LetterColor = typeof LETTER_COLORS[number];
+
+// Static Tailwind class maps to ensure classes are included in production builds
+const COLOR_CLASSES: Record<LetterColor, {
+  gradient: string;
+  text: string;
+  textMuted: string;
+  bgCurrent: string;
+  bgLearned: string;
+  textLearned: string;
+}> = {
+  coral: {
+    gradient: 'bg-gradient-to-br from-coral/20 to-coral/10',
+    text: 'text-coral',
+    textMuted: 'text-coral/60',
+    bgCurrent: 'bg-coral text-cream scale-110 shadow-soft',
+    bgLearned: 'bg-coral/20 text-coral',
+    textLearned: 'text-coral',
+  },
+  sage: {
+    gradient: 'bg-gradient-to-br from-sage/20 to-sage/10',
+    text: 'text-sage',
+    textMuted: 'text-sage/60',
+    bgCurrent: 'bg-sage text-cream scale-110 shadow-soft',
+    bgLearned: 'bg-sage/20 text-sage',
+    textLearned: 'text-sage',
+  },
+  yellow: {
+    gradient: 'bg-gradient-to-br from-yellow/20 to-yellow/10',
+    text: 'text-yellow',
+    textMuted: 'text-yellow/60',
+    bgCurrent: 'bg-yellow text-cream scale-110 shadow-soft',
+    bgLearned: 'bg-yellow/20 text-yellow',
+    textLearned: 'text-yellow',
+  },
+  sky: {
+    gradient: 'bg-gradient-to-br from-sky/20 to-sky/10',
+    text: 'text-sky',
+    textMuted: 'text-sky/60',
+    bgCurrent: 'bg-sky text-cream scale-110 shadow-soft',
+    bgLearned: 'bg-sky/20 text-sky',
+    textLearned: 'text-sky',
+  },
+};
 
 export function LettersSection() {
   const dispatch = useAppDispatch();
@@ -242,28 +286,29 @@ export function LettersSection() {
           <div className="space-y-8 py-8">
             {/* Letter Display */}
             <button
+              key={currentLetter}
               onClick={handleSpeakLetter}
-              className={`group mx-auto block rounded-3xl bg-gradient-to-br from-${letterColor}/20 to-${letterColor}/10 px-16 py-12 transition-all hover:scale-105 hover:shadow-lifted`}
+              className={`group mx-auto block rounded-3xl ${COLOR_CLASSES[letterColor].gradient} px-16 py-12 transition-all hover:scale-105 hover:shadow-lifted animate-bounceIn`}
             >
               <div className="flex items-center justify-center gap-4">
                 {letterCase === 'both' ? (
                   <>
-                    <span className={`font-display text-8xl font-bold text-${letterColor}`}>
+                    <span className={`font-display text-8xl font-bold ${COLOR_CLASSES[letterColor].text}`}>
                       {currentLetter}
                     </span>
-                    <span className={`font-display text-6xl font-bold text-${letterColor}/60`}>
+                    <span className={`font-display text-6xl font-bold ${COLOR_CLASSES[letterColor].textMuted}`}>
                       {currentLetter.toLowerCase()}
                     </span>
                   </>
                 ) : (
-                  <span className={`font-display text-9xl font-bold text-${letterColor}`}>
+                  <span className={`font-display text-9xl font-bold ${COLOR_CLASSES[letterColor].text}`}>
                     {displayLetter}
                   </span>
                 )}
               </div>
               <div className="mt-6 space-y-2">
                 <p className="font-display text-2xl text-chocolate">
-                  {currentLetter} is for <span className={`font-bold text-${letterColor}`}>{LETTER_WORDS[currentLetter]}</span>
+                  {currentLetter} is for <span className={`font-bold ${COLOR_CLASSES[letterColor].text}`}>{LETTER_WORDS[currentLetter]}</span>
                 </p>
                 <div className="flex items-center justify-center gap-2 text-chocolate-muted">
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -297,6 +342,7 @@ export function LettersSection() {
                 const isLearned = lettersProgress.lettersLearned.includes(letter);
                 const isCurrent = idx === currentLetterIndex;
                 const color = LETTER_COLORS[idx % LETTER_COLORS.length];
+                const colorClasses = COLOR_CLASSES[color];
 
                 return (
                   <button
@@ -304,9 +350,9 @@ export function LettersSection() {
                     onClick={() => handleLetterClick(idx)}
                     className={`aspect-square rounded-lg font-display text-lg font-bold transition-all ${
                       isCurrent
-                        ? `bg-${color} text-cream scale-110 shadow-soft`
+                        ? colorClasses.bgCurrent
                         : isLearned
-                        ? `bg-${color}/20 text-${color}`
+                        ? colorClasses.bgLearned
                         : 'bg-cream text-chocolate hover:scale-105'
                     }`}
                   >

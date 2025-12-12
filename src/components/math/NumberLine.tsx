@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useCallback, useReducer } from 'react';
 
 interface NumberLineProps {
   min?: number;
@@ -12,6 +12,37 @@ interface NumberLineProps {
   interactive?: boolean;
 }
 
+interface NumberLineState {
+  position: number;
+  hops: number[];
+  animating: boolean;
+  startKey: number; // tracks which start value this state was initialized from
+}
+
+type NumberLineAction =
+  | { type: 'SET_POSITION'; position: number }
+  | { type: 'ADD_HOP'; hop: number }
+  | { type: 'CLEAR_HOPS' }
+  | { type: 'SET_ANIMATING'; animating: boolean }
+  | { type: 'RESET'; start: number };
+
+function numberLineReducer(state: NumberLineState, action: NumberLineAction): NumberLineState {
+  switch (action.type) {
+    case 'SET_POSITION':
+      return { ...state, position: action.position };
+    case 'ADD_HOP':
+      return { ...state, hops: [...state.hops, action.hop], position: action.hop };
+    case 'CLEAR_HOPS':
+      return { ...state, hops: [] };
+    case 'SET_ANIMATING':
+      return { ...state, animating: action.animating };
+    case 'RESET':
+      return { ...state, position: action.start, hops: [], startKey: action.start };
+    default:
+      return state;
+  }
+}
+
 export function NumberLine({
   min = 0,
   max = 20,
@@ -21,17 +52,34 @@ export function NumberLine({
   onPositionChange,
   interactive = true,
 }: NumberLineProps) {
-  const [position, setPosition] = useState(start);
-  const [hops, setHops] = useState<number[]>([]);
-  const [animating, setAnimating] = useState(false);
-  const [prevStart, setPrevStart] = useState(start);
+  const [state, dispatch] = useReducer(numberLineReducer, {
+    position: start,
+    hops: [],
+    animating: false,
+    startKey: start,
+  });
 
-  // Reset when start changes (using pattern to derive state from props)
-  if (start !== prevStart) {
-    setPrevStart(start);
-    setPosition(start);
-    setHops([]);
-  }
+  const { position, hops, animating, startKey } = state;
+
+  // Store callbacks in refs to avoid effect dependency issues
+  const onPositionChangeRef = useRef(onPositionChange);
+
+  // Sync callback ref with prop changes
+  useEffect(() => {
+    onPositionChangeRef.current = onPositionChange;
+  }, [onPositionChange]);
+
+  // Reset when start prop changes - tracked via startKey in reducer state
+  useEffect(() => {
+    if (start !== startKey) {
+      dispatch({ type: 'RESET', start });
+    }
+  }, [start, startKey]);
+
+  // Memoized position change handler
+  const notifyPositionChange = useCallback((newPos: number) => {
+    onPositionChangeRef.current?.(newPos);
+  }, []);
 
   // Animate hops when operation and amount are provided
   useEffect(() => {
@@ -40,26 +88,23 @@ export function NumberLine({
     let cancelled = false;
 
     const runAnimation = async () => {
-      setAnimating(true);
-      setHops([]);
+      dispatch({ type: 'SET_ANIMATING', animating: true });
+      dispatch({ type: 'CLEAR_HOPS' });
 
       const direction = operation === 'add' ? 1 : -1;
       let currentPos = position;
-      const newHops: number[] = [];
 
       for (let i = 0; i < amount; i++) {
         if (cancelled) break;
         await new Promise(resolve => setTimeout(resolve, 300));
         currentPos += direction;
         currentPos = Math.max(min, Math.min(max, currentPos));
-        newHops.push(currentPos);
-        setHops([...newHops]);
-        setPosition(currentPos);
-        onPositionChange?.(currentPos);
+        dispatch({ type: 'ADD_HOP', hop: currentPos });
+        notifyPositionChange(currentPos);
       }
 
       if (!cancelled) {
-        setAnimating(false);
+        dispatch({ type: 'SET_ANIMATING', animating: false });
       }
     };
 
@@ -68,12 +113,12 @@ export function NumberLine({
     return () => {
       cancelled = true;
     };
-  }, [operation, amount]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [operation, amount, position, min, max, notifyPositionChange, animating]);
 
   const handleNumberClick = (num: number) => {
     if (!interactive || animating) return;
-    setPosition(num);
-    setHops([]);
+    dispatch({ type: 'CLEAR_HOPS' });
+    dispatch({ type: 'SET_POSITION', position: num });
     onPositionChange?.(num);
   };
 
@@ -84,8 +129,7 @@ export function NumberLine({
       : Math.max(min, position - 1);
 
     if (newPos !== position) {
-      setHops([newPos]);
-      setPosition(newPos);
+      dispatch({ type: 'ADD_HOP', hop: newPos });
       onPositionChange?.(newPos);
     }
   };
@@ -198,7 +242,7 @@ export function NumberLine({
                     disabled={!interactive}
                     className={`mt-1 flex h-8 w-8 items-center justify-center rounded-full font-display text-sm font-bold transition-all ${
                       isPosition
-                        ? 'bg-sky text-cream scale-125 shadow-soft'
+                        ? `bg-sky text-cream scale-125 shadow-soft ${animating ? 'animate-hop' : ''}`
                         : isStart && operation
                         ? 'bg-coral/20 text-coral'
                         : isHop

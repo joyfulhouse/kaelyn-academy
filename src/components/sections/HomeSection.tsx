@@ -195,17 +195,18 @@ export function HomeSection() {
 
       {/* Module Grid - Large touch targets, icon-focused */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {modules.map((module) => {
+        {modules.map((module, index) => {
           const isCompleted = lessonsCompleted.includes(module.id);
           return (
             <button
               key={module.id}
               onClick={() => handleModuleClick(module)}
+              style={{ animationDelay: `${index * 0.1}s` }}
               className={`
                 group relative flex flex-col items-center justify-center gap-3 rounded-2xl p-6
                 shadow-soft transition-all duration-200
                 hover:-translate-y-1 hover:scale-105 hover:shadow-lifted
-                active:scale-95
+                active:scale-95 animate-blockAppear opacity-0
                 ${module.bgColor} text-cream
               `}
               aria-label={module.narration}

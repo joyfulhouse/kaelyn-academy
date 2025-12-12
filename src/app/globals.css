@@ -381,6 +381,12 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Hop animation */
+@keyframes hop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
 /* ==========================================
    Animation Utility Classes
    ========================================== */
@@ -459,6 +465,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-blend-together {
   animation: blendTogether 0.8s ease-in-out forwards;
+}
+
+.animate-hop {
+  animation: hop 0.3s ease-in-out;
 }
 
 /* ==========================================
