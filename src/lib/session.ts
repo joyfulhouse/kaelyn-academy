@@ -17,11 +17,17 @@ let warnedAboutSecret = false;
 
 function getSessionSecret(): string {
   const secret = process.env.SESSION_SECRET || process.env.AUTH_SECRET || '';
-  if (!secret && !warnedAboutSecret) {
-    warnedAboutSecret = true;
-    console.warn('SESSION_SECRET is not set; session cookies cannot be strongly authenticated.');
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SESSION_SECRET must be set in production environment');
+    }
+    if (!warnedAboutSecret) {
+      warnedAboutSecret = true;
+      console.warn('SESSION_SECRET is not set; using development fallback (unsafe for production)');
+    }
+    return 'development-session-secret';
   }
-  return secret || 'development-session-secret';
+  return secret;
 }
 
 function signPayload(payload: string): string {

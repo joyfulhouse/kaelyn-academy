@@ -208,7 +208,6 @@ export function generatePlaceValueQuiz(maxNumber: number = 9999): PlaceValueQuiz
 
   // Generate options - ALWAYS include the correct answer first
   const digits = number.toString().split('').map(Number);
-  const uniqueDigits = [...new Set(digits)];
 
   // Start with the answer
   const options: number[] = [answer];

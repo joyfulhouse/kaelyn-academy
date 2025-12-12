@@ -21,6 +21,9 @@ export const loadSessionState = createAsyncThunk(
   'session/load',
   async () => {
     const response = await fetch('/api/state');
+    if (!response.ok) {
+      throw new Error(`Failed to load session: ${response.status}`);
+    }
     const data = await response.json();
     return data.state as SessionState;
   }
@@ -32,8 +35,11 @@ export const saveSessionState = createAsyncThunk(
     const response = await fetch('/api/state', {
       method: 'POST',
       headers: withCsrf({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ updates }),
+      body: JSON.stringify(updates),
     });
+    if (!response.ok) {
+      throw new Error(`Failed to save session: ${response.status}`);
+    }
     const data = await response.json();
     return data.state as SessionState;
   }
@@ -45,23 +51,13 @@ export const updateModuleProgress = createAsyncThunk(
     const response = await fetch(`/api/progress/${module}`, {
       method: 'POST',
       headers: withCsrf({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ updates }),
+      body: JSON.stringify(updates),
     });
+    if (!response.ok) {
+      throw new Error(`Failed to update module progress: ${response.status}`);
+    }
     const data = await response.json();
     return { module, data: data.data };
-  }
-);
-
-export const recordLessonVisit = createAsyncThunk(
-  'session/lessonVisit',
-  async (lesson: string) => {
-    const response = await fetch('/api/lesson/visit', {
-      method: 'POST',
-      headers: withCsrf({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ lesson }),
-    });
-    const data = await response.json();
-    return data.lessonsVisited as string[];
   }
 );
 
@@ -73,6 +69,9 @@ export const recordPracticeSession = createAsyncThunk(
       headers: withCsrf({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ correct, total, type }),
     });
+    if (!response.ok) {
+      throw new Error(`Failed to record practice session: ${response.status}`);
+    }
     const data = await response.json();
     return {
       practice: data.practice,
@@ -90,6 +89,9 @@ export const addStars = createAsyncThunk(
       headers: withCsrf({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ stars }),
     });
+    if (!response.ok) {
+      throw new Error(`Failed to add stars: ${response.status}`);
+    }
     const data = await response.json();
     return data.totalStars as number;
   }
@@ -207,9 +209,6 @@ const sessionSlice = createSlice({
       })
       .addCase(saveSessionState.fulfilled, (state, action) => {
         return { ...state, ...action.payload, status: state.status, error: state.error };
-      })
-      .addCase(recordLessonVisit.fulfilled, (state, action) => {
-        state.lessonsVisited = action.payload;
       })
       .addCase(recordPracticeSession.fulfilled, (state, action) => {
         state.practice = action.payload.practice;

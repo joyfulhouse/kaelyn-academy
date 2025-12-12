@@ -73,8 +73,9 @@ Sessions persist for 30 days.
 
 ## Tech Stack
 
+- Next.js 16 with App Router
+- React 19 with TypeScript (strict mode)
+- Redux Toolkit for state management
+- Tailwind CSS v4 with CSS variable theming
 - Bun runtime (Node.js compatible)
-- Express.js server
-- cookie-session for state management
-- Vanilla HTML, CSS, and JavaScript
-- No external frontend dependencies (lightweight and fast)
+- Signed cookie sessions for persistence

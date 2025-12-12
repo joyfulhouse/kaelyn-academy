@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSessionState, setSessionState } from '@/lib/session';
-import { safeParseJson, apiError } from '@/lib/apiUtils';
+import { safeParseJson, apiError, filterAllowedKeys, ALLOWED_SESSION_KEYS, ALLOWED_MODULE_PROGRESS_KEYS } from '@/lib/apiUtils';
 import { ensureCsrfToken, requireCsrf } from '@/lib/csrf';
 import type { SessionState } from '@/types';
 
@@ -33,7 +33,8 @@ export async function POST(request: Request) {
       return apiError('Invalid JSON body');
     }
 
-    const updates = body as Partial<SessionState>;
+    // Filter to only allowed top-level keys
+    const updates = filterAllowedKeys(body, ALLOWED_SESSION_KEYS) as Partial<SessionState>;
     const state = await getSessionState();
 
     // Type-safe merge of updates into state
@@ -49,12 +50,16 @@ export async function POST(request: Request) {
         typeof currentValue === 'object' &&
         !Array.isArray(currentValue)
       ) {
+        // Filter nested object to only allowed module progress keys
+        const filteredValue = filterAllowedKeys(
+          value as unknown as Record<string, unknown>,
+          ALLOWED_MODULE_PROGRESS_KEYS
+        );
         // Deep merge for nested objects
-        Object.assign(currentValue, value);
+        Object.assign(currentValue, filteredValue);
       } else if (stateKey in state) {
         // Direct assignment for primitives and arrays
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (state as any)[stateKey] = value;
+        (state as unknown as Record<string, unknown>)[stateKey] = value;
       }
     }
 

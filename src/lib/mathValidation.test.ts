@@ -241,7 +241,7 @@ test('calculateBorrowAdjustments: 432 - 187', () => {
   // Tens: 3-1=2 < 8, borrow from hundreds
   // After borrow: 12 - 8 = 4 (tens)
   // Hundreds: 4-1=3 - 1 = 2 (hundreds)
-  const { borrows, adjusted } = calculateBorrowAdjustments(432, 187, 3);
+  const { borrows } = calculateBorrowAdjustments(432, 187, 3);
   expect(borrows[2]).toBeTrue();  // borrow for ones column
   expect(borrows[1]).toBeTrue();  // borrow for tens column
 });

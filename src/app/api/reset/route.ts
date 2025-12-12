@@ -4,9 +4,14 @@ import { apiError } from '@/lib/apiUtils';
 import { requireCsrf } from '@/lib/csrf';
 
 /**
- * POST /api/reset - Reset session state (for testing)
+ * POST /api/reset - Reset session state (development only)
  */
 export async function POST(request: Request) {
+  // Block this endpoint in production for security
+  if (process.env.NODE_ENV === 'production') {
+    return apiError('Reset endpoint is disabled in production', 403);
+  }
+
   try {
     const csrfError = await requireCsrf(request);
     if (csrfError) return csrfError;
