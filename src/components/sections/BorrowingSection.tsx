@@ -122,8 +122,13 @@ export function BorrowingSection() {
     if (targetStep >= 2) {
       if (borrows[totalLen - 1]) {
         newDisplayDigits = [...adjusted];
-        newBorrowed[totalLen - 2] = true;
         newReceived[totalLen - 1] = true;
+        // Mark ALL columns that were borrowed from (compare adjusted vs original)
+        for (let k = 0; k < totalLen - 1; k++) {
+          if (adjusted[k] < originalDigits[k]) {
+            newBorrowed[k] = true;
+          }
+        }
         if (targetStep === 2) {
           newBorrowVizData = {
             topDigit: originalDigits[totalLen - 1],
@@ -142,8 +147,13 @@ export function BorrowingSection() {
     if (targetStep >= 3) {
       newAnswerDigits[totalLen - 1] = answerStr[totalLen - 1];
       newDisplayDigits = [...adjusted];
+      // Mark ALL columns that were borrowed from (compare adjusted vs original)
+      for (let k = 0; k < totalLen - 1; k++) {
+        if (adjusted[k] < originalDigits[k]) {
+          newBorrowed[k] = true;
+        }
+      }
       if (borrows[totalLen - 2]) {
-        newBorrowed[totalLen - 3] = true;
         newReceived[totalLen - 2] = true;
       }
       if (targetStep === 3) {
