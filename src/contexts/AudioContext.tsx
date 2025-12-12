@@ -23,7 +23,7 @@ interface AudioContextValue {
 
 const AudioContext = createContext<AudioContextValue | null>(null);
 
-const MUTE_COOKIE_KEY = 'kaelyn-math-audio-muted';
+const MUTE_COOKIE_KEY = 'kaelyn-academy-audio-muted';
 
 // Sound synthesis parameters for Web Audio API
 const SOUND_PARAMS: Record<SoundType, { freq: number; duration: number; type: OscillatorType; volume: number }> = {

@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { apiError } from './apiUtils';
 import type { NextResponse } from 'next/server';
 
-const CSRF_COOKIE_NAME = 'kaelyn-math-csrf';
+const CSRF_COOKIE_NAME = 'kaelyn-academy-csrf';
 
 /**
  * Ensure a CSRF token cookie exists and return it.

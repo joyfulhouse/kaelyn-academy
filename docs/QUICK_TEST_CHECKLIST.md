@@ -1,5 +1,5 @@
 # Quick Testing Checklist
-## Kaelyn's Math Adventure - Manual Testing Guide
+## Kaelyn's Academy - Math Manual Testing Guide
 
 **Site:** http://localhost:3030
 

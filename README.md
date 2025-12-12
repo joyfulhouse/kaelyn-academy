@@ -1,6 +1,6 @@
-# Kaelyn's Math Adventure
+# Kaelyn's Academy
 
-An interactive math learning website designed for young children. Features colorful animations, engaging visualizations, and progressive learning modules.
+An interactive learning website designed for young children. Features colorful animations, engaging visualizations, and progressive learning modules for math, reading, and more.
 
 ## Features
 

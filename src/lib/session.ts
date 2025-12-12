@@ -5,8 +5,8 @@ import { getDefaultSessionState } from './sessionDefaults';
 
 export { getDefaultSessionState };
 
-const SESSION_COOKIE_NAME = 'kaelyn-math-session';
-const SESSION_SIG_COOKIE_NAME = 'kaelyn-math-session-sig';
+const SESSION_COOKIE_NAME = 'kaelyn-academy-session';
+const SESSION_SIG_COOKIE_NAME = 'kaelyn-academy-session-sig';
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 const MAX_SESSION_BYTES = 3800; // stay under 4KB header limit
 const MAX_LESSON_ENTRIES = 50;

@@ -10,7 +10,7 @@ import WebSocket from 'ws';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
-const SCREENSHOTS_DIR = '/Users/bryanli/Projects/joyfulhouse/websites/kaelyn-math/docs/screenshots';
+const SCREENSHOTS_DIR = '/Users/bryanli/Projects/joyfulhouse/websites/kaelyn-academy/docs/screenshots';
 const URL = 'http://localhost:3030';
 
 let chrome;

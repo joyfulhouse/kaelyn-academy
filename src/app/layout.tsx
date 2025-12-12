@@ -16,8 +16,8 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Kaelyn's Math Adventure",
-  description: "An interactive math learning website for young children with colorful animations, visual learning aids, and progressive practice modules.",
+  title: "Kaelyn's Academy",
+  description: "An interactive learning website for young children featuring math, reading, and more with colorful animations and visual learning aids.",
   icons: {
     icon: "/favicon.ico",
   },

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Kaelyn's Math Adventure is an interactive math learning website for young children featuring colorful animations, visual learning aids, and progressive practice modules for arithmetic fundamentals.
+Kaelyn's Academy is an interactive learning website for young children featuring colorful animations, visual learning aids, and progressive modules for math, reading (sight words), and more.
 
 ## Commands
 

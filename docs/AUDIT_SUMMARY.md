@@ -1,4 +1,4 @@
-# Kaelyn's Math Adventure - Audit Summary
+# Kaelyn's Academy - Math Audit Summary
 
 **Date:** December 10, 2025
 **Auditor:** Claude Code

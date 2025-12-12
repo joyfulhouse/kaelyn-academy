@@ -20,7 +20,7 @@ export function Header() {
             </svg>
           </div>
           <h1 className="font-display text-xl font-bold text-cream sm:text-2xl">
-            Kaelyn&apos;s Math Adventure
+            Kaelyn&apos;s Academy
           </h1>
         </div>
 

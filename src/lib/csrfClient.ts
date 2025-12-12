@@ -8,7 +8,7 @@ export function getCsrfToken(): string | null {
 
   const entry = document.cookie
     .split('; ')
-    .find((part) => part.startsWith('kaelyn-math-csrf='));
+    .find((part) => part.startsWith('kaelyn-academy-csrf='));
 
   return entry ? decodeURIComponent(entry.split('=')[1]) : null;
 }
