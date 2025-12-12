@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Kaelyn's Academy is an interactive learning website for young children featuring colorful animations, visual learning aids, and progressive modules for math, reading (sight words), and more.
+Kaelyn's Academy is an interactive learning website for young children featuring colorful animations, visual learning aids, and progressive modules for math and reading fundamentals.
 
 ## Commands
 
@@ -37,18 +37,24 @@ src/
 │   └── globals.css        # Tailwind + CSS variable theme tokens
 ├── components/
 │   ├── sections/          # Learning module sections (one per module)
+│   │   ├── HomeSection.tsx        # Landing with subject-specific module cards
+│   │   ├── SightWordsSection.tsx  # Reading: Dolch sight word flashcards
+│   │   ├── LettersSection.tsx     # Reading: Alphabet learning
+│   │   └── [Math modules...]      # NumberPlaces, StackedMath, etc.
 │   ├── math/              # Math visualization components
-│   ├── layout/            # Header, Navigation, FloatingShapes
-│   └── common/            # Reusable UI (Button, Card, Input, etc.)
+│   ├── layout/            # Header, Navigation, SubjectTabs, FloatingShapes
+│   └── common/            # Reusable UI (Button, Card, Input, StepIcon, etc.)
 ├── store/
-│   ├── sessionSlice.ts    # User progress, stars, achievements
-│   └── navigationSlice.ts # Active section state
+│   ├── sessionSlice.ts    # User progress, stars, achievements (math + reading)
+│   └── navigationSlice.ts # Active section and subject state
 ├── lib/
 │   ├── session.ts         # Signed cookie-based session persistence
 │   ├── csrf.ts            # Double-submit CSRF protection
+│   ├── constants.ts       # SUBJECTS config, NAV_ITEMS, helpers
+│   ├── sightWordLists.ts  # Dolch sight word lists by level (8 levels)
 │   ├── mathUtils.ts       # Carry/borrow calculation utilities
 │   └── problemGenerators.ts # Quiz and problem generation
-├── hooks/                 # Typed Redux hooks (useAppSelector, useAppDispatch)
+├── hooks/                 # Typed Redux hooks, useAudio for speech synthesis
 └── types/                 # TypeScript interfaces and type definitions
 ```
 
@@ -67,11 +73,24 @@ User Action → Redux dispatch → Async thunk → API route → Cookie update
 
 Session state persists for 30 days and includes per-module progress (questions attempted/correct, streaks), practice history, stars earned, and achievements.
 
+### Subject-Based Navigation
+
+The app uses tab-based subject navigation (`SubjectTabs` component):
+
+| Subject | Color | Modules |
+|---------|-------|---------|
+| Math | Coral | Number Places, Stacked Math, Carry Over, Borrowing, Multiplication, Division, Practice |
+| Reading | Sage | Sight Words, Letters |
+
+The `activeSubject` state in `navigationSlice` controls which modules appear in the Navigation bar and HomeSection.
+
 ### Learning Modules
+
+**Math Modules:**
 
 | Section ID | Component | Description |
 |------------|-----------|-------------|
-| `home` | HomeSection | Landing page with module cards |
+| `home` | HomeSection | Landing page with subject-specific module cards |
 | `number-places` | NumberPlacesSection | Place value visualization with blocks |
 | `stacked-math` | StackedMathSection | Vertical addition/subtraction |
 | `carry-over` | CarryOverSection | Animated step-by-step carrying demos |
@@ -80,14 +99,25 @@ Session state persists for 30 days and includes per-module progress (questions a
 | `division` | DivisionSection | Sharing scenarios with grouping visuals |
 | `practice` | PracticeSection | Configurable mixed practice sessions |
 
+**Reading Modules:**
+
+| Section ID | Component | Description |
+|------------|-----------|-------------|
+| `sight-words` | SightWordsSection | Dolch word flashcards with explore/quiz modes, 8 difficulty levels |
+| `letters` | LettersSection | Alphabet learning with letter sounds, uppercase/lowercase matching |
+
 ### Problem Generation
 
-Problems are generated via `src/lib/problemGenerators.ts` with difficulty tiers:
+**Math:** Generated via `src/lib/problemGenerators.ts` with difficulty tiers:
 - **easy**: 1-10
 - **medium**: 10-100
 - **hard**: 100-1000
 
-Multiplication/division are capped at 12×12. Carry/borrow problems use iterative generation to ensure the operation is actually required.
+Multiplication/division are capped at 12x12. Carry/borrow problems use iterative generation to ensure the operation is actually required.
+
+**Reading:** Sight words use Dolch word lists in `src/lib/sightWordLists.ts`:
+- 8 levels from "First Words" (a, I, the) to "Story Words" (have, make, want)
+- Quiz mode generates 4-option multiple choice from current level
 
 ### Security
 
@@ -103,11 +133,24 @@ Use `@/*` for imports (e.g., `@/components/common`, `@/lib/mathUtils`).
 ### Animation Cleanup
 Carry-over and borrowing modules use `setInterval` for step animations. Always clear intervals when unmounting or starting new animations.
 
+### Audio Feedback
+The `useAudio` hook provides:
+- `speak(text)` - Text-to-speech for words, letters, feedback
+- `clickSound()` - UI interaction feedback
+- `playSound('correct' | 'incorrect' | 'celebrate')` - Quiz feedback sounds
+
+### Explore/Quiz Pattern
+Reading modules follow a consistent dual-mode pattern:
+1. **Explore mode**: Flashcard-style learning with audio pronunciation
+2. **Quiz mode**: Multiple-choice recognition with streak tracking
+
 ### API Routes
 All state-mutating endpoints require CSRF validation via `requireCsrf()`. Response format is `{ success: boolean, ...data }`.
 
 ### Styling
 Uses Tailwind v4 with CSS variables defined in `globals.css`. Key color tokens: `--color-coral`, `--color-yellow`, `--color-sage`, `--color-sky`, `--color-cream` for the paper-craft aesthetic.
+
+Touch targets are minimum 48px for child-friendly interaction.
 
 ## Coding Style
 
@@ -119,11 +162,11 @@ Uses Tailwind v4 with CSS variables defined in `globals.css`. Key color tokens: 
 ## Testing
 
 - Run `bun run lint` before pushing (baseline gate)
-- Manual QA: verify navigation between sections, session state persistence
+- Manual QA: verify navigation between sections, subject switching, session state persistence
 - For animation/layout changes: capture before/after screenshots via the audit script
 
 ## Commits
 
-- Short imperative subjects (e.g., "Add interactive borrowing with click-to-borrow UI")
+- Short imperative subjects (e.g., "Add sight words module with Dolch word lists")
 - PRs include summary, linked issue, and screenshots for visual changes
 - List commands run (lint, dev smoke, audit) in PR body
