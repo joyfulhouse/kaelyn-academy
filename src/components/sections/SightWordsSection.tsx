@@ -6,11 +6,13 @@ import { updateSightWords, addWordLearned, addStars } from '@/store/sessionSlice
 import { Card, Button, Feedback } from '@/components/common';
 import { useAudio } from '@/hooks/useAudio';
 import {
-  SIGHT_WORD_LEVELS,
+  type SightWordCurriculum,
+  CURRICULA,
+  getSightWordLevels,
   getWordsForLevel,
   getRandomWords,
   getLevelInfo,
-  TOTAL_LEVELS,
+  getTotalLevels,
 } from '@/lib/sightWordLists';
 
 type Mode = 'explore' | 'quiz';
@@ -26,6 +28,7 @@ export function SightWordsSection() {
   const { speak, clickSound, playSound } = useAudio();
   const sightWordsProgress = useAppSelector((state) => state.session.sightWords);
 
+  const [curriculum, setCurriculum] = useState<SightWordCurriculum>('dolch');
   const [mode, setMode] = useState<Mode>('explore');
   const [currentLevel, setCurrentLevel] = useState(sightWordsProgress.currentLevel || 1);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -34,8 +37,10 @@ export function SightWordsSection() {
   const [streak, setStreak] = useState(0);
   const [quizScore, setQuizScore] = useState({ correct: 0, total: 0 });
 
-  const _levelInfo = getLevelInfo(currentLevel); // Available for future use
-  const levelWords = getWordsForLevel(currentLevel);
+  const levels = getSightWordLevels(curriculum);
+  const totalLevels = getTotalLevels(curriculum);
+  const _levelInfo = getLevelInfo(currentLevel, curriculum);
+  const levelWords = getWordsForLevel(currentLevel, curriculum);
   const currentWord = levelWords[currentWordIndex] || '';
 
   // Speak word when it changes in explore mode
@@ -48,12 +53,23 @@ export function SightWordsSection() {
     }
   }, [currentWord, mode, speak]);
 
+  const handleCurriculumChange = (newCurriculum: SightWordCurriculum) => {
+    if (newCurriculum === curriculum) return;
+    clickSound();
+    setCurriculum(newCurriculum);
+    setCurrentLevel(1);
+    setCurrentWordIndex(0);
+    const config = CURRICULA.find((c) => c.id === newCurriculum);
+    if (config) {
+      speak(`${config.name}!`);
+    }
+  };
+
   const handleNextWord = () => {
     clickSound();
     if (currentWordIndex < levelWords.length - 1) {
       setCurrentWordIndex(currentWordIndex + 1);
     } else {
-      // Loop back to start
       setCurrentWordIndex(0);
     }
   };
@@ -80,30 +96,26 @@ export function SightWordsSection() {
   };
 
   const generateQuiz = useCallback(() => {
-    // Get the current word and 3 distractors
-    const correctWord = getRandomWords(1, 1, currentLevel)[0];
-    const distractors = getRandomWords(3, 1, currentLevel).filter((w) => w !== correctWord);
+    const correctWord = getRandomWords(1, 1, currentLevel, curriculum)[0];
+    const distractors = getRandomWords(3, 1, currentLevel, curriculum).filter((w) => w !== correctWord);
 
-    // If we don't have enough distractors, fill with level 1 words
     while (distractors.length < 3) {
-      const fallback = getRandomWords(1, 1, 1)[0];
+      const fallback = getRandomWords(1, 1, 1, curriculum)[0];
       if (fallback !== correctWord && !distractors.includes(fallback)) {
         distractors.push(fallback);
       }
     }
 
-    // Shuffle options
     const options = [correctWord, ...distractors.slice(0, 3)].sort(() => Math.random() - 0.5);
     const correctIndex = options.indexOf(correctWord);
 
     setQuiz({ word: correctWord, options, correctIndex });
     setFeedback(null);
 
-    // Speak the word after a short delay
     setTimeout(() => {
       speak(`Find the word: ${correctWord}`);
     }, 500);
-  }, [currentLevel, speak]);
+  }, [currentLevel, curriculum, speak]);
 
   const handleStartQuiz = () => {
     clickSound();
@@ -125,7 +137,6 @@ export function SightWordsSection() {
       setStreak((s) => s + 1);
       setQuizScore((s) => ({ correct: s.correct + 1, total: s.total + 1 }));
 
-      // Mark word as learned
       dispatch(addWordLearned(quiz.word));
       dispatch(updateSightWords({
         questionsCorrect: sightWordsProgress.questionsCorrect + 1,
@@ -133,7 +144,6 @@ export function SightWordsSection() {
         bestStreak: Math.max(sightWordsProgress.bestStreak, streak + 1),
       }));
 
-      // Award stars
       if ((streak + 1) % 5 === 0) {
         dispatch(addStars(1));
         playSound('celebrate');
@@ -148,7 +158,6 @@ export function SightWordsSection() {
       }));
     }
 
-    // Move to next question after delay
     setTimeout(() => {
       generateQuiz();
     }, 2000);
@@ -165,7 +174,7 @@ export function SightWordsSection() {
     <div className="space-y-8 animate-fade-slide-in">
       {/* Header */}
       <Card variant="elevated">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h2 className="font-display text-2xl font-bold text-chocolate">Sight Words</h2>
             <p className="text-chocolate-muted">Learn words you see every day!</p>
@@ -188,9 +197,30 @@ export function SightWordsSection() {
         </div>
       </Card>
 
+      {/* Curriculum Selector */}
+      <div className="flex flex-col items-center gap-2">
+        <span className="text-sm font-medium text-chocolate-muted">Word List</span>
+        <div className="flex gap-2">
+          {CURRICULA.map((config) => (
+            <button
+              key={config.id}
+              onClick={() => handleCurriculumChange(config.id)}
+              className={`rounded-full px-5 py-2 font-body text-sm font-medium transition-all ${
+                curriculum === config.id
+                  ? 'bg-coral text-cream shadow-soft'
+                  : 'bg-paper text-chocolate hover:bg-coral/10'
+              }`}
+              title={config.description}
+            >
+              {config.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Level Selector */}
       <div className="flex flex-wrap justify-center gap-2">
-        {SIGHT_WORD_LEVELS.map((level) => (
+        {levels.map((level) => (
           <button
             key={level.level}
             onClick={() => handleLevelChange(level.level)}
@@ -335,7 +365,7 @@ export function SightWordsSection() {
       {/* Progress Indicator */}
       <div className="flex justify-center">
         <div className="flex items-center gap-2">
-          {Array.from({ length: TOTAL_LEVELS }).map((_, idx) => (
+          {Array.from({ length: totalLevels }).map((_, idx) => (
             <div
               key={idx}
               className={`h-2 w-8 rounded-full transition-all ${
