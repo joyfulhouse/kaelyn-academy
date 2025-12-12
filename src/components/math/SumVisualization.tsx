@@ -51,7 +51,7 @@ export function SumVisualization({
               h-4 w-4 rounded-full transition-all duration-300
               ${showSplit && willCarry
                 ? i < 10
-                  ? 'bg-yellow scale-90' // Carry dots
+                  ? 'bg-yellow scale-90 animate-pulse-scale' // Carry dots
                   : 'bg-sage' // Stays dots
                 : 'bg-coral' // Default color
               }
@@ -141,8 +141,8 @@ export function BorrowVisualization({
             {Array.from({ length: 10 }).map((_, i) => (
               <div
                 key={`borrow-${i}`}
-                className="h-4 w-4 rounded-full bg-yellow animate-bounceIn"
-                style={{ animationDelay: `${(topDigit + i) * 50}ms` }}
+                className="h-4 w-4 rounded-full bg-yellow animate-slide-in-left"
+                style={{ animationDelay: `${i * 30}ms` }}
               />
             ))}
           </>

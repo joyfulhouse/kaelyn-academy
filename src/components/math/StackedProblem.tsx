@@ -132,10 +132,10 @@ export function StackedProblem({
           // Demo mode: show answer digits as they're revealed, or placeholder if not yet revealed
           Array.from({ length: totalLength }).map((_, i) => (
             <div
-              key={`placeholder-${i}`}
+              key={`placeholder-${i}-${answer[i] || 'empty'}`}
               className={`mx-0.5 flex h-14 w-12 items-center justify-center rounded-xl border-2 font-display text-2xl transition-all duration-300 ${
                 answer[i]
-                  ? 'border-sage bg-sage/10 text-sage'
+                  ? 'border-sage bg-sage/10 text-sage animate-pop-in'
                   : 'border-dashed border-chocolate/20 text-chocolate/30'
               }`}
             >

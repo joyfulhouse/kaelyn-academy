@@ -26,7 +26,7 @@ export function CarryRow({
               flex h-8 w-12 items-center justify-center
               font-display text-lg font-bold
               ${showCarry ? 'text-coral' : 'text-transparent'}
-              ${animated && showCarry ? 'animate-carryDropIn' : ''}
+              ${animated && showCarry ? 'animate-carryUp' : ''}
               ${isClickable ? 'cursor-pointer hover:bg-coral/10 rounded-lg transition-colors' : ''}
             `}
             onClick={() => isClickable && onCarryClick(i)}
