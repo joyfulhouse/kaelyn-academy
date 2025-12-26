@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  GraduationCap,
   LayoutDashboard,
   BookOpen,
   Trophy,
@@ -13,6 +12,7 @@ import {
   ChevronUp,
   LogOut,
 } from "lucide-react";
+import Image from "next/image";
 import {
   Sidebar,
   SidebarContent,
@@ -95,9 +95,13 @@ export function LearnerSidebar({ user }: LearnerSidebarProps) {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <GraduationCap className="h-5 w-5" />
-          </div>
+          <Image
+            src="/icons/icon.svg"
+            alt="Kaelyn's Academy"
+            width={40}
+            height={40}
+            className="rounded-xl shadow-sm"
+          />
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-base font-semibold text-foreground">
               Kaelyn&apos;s Academy

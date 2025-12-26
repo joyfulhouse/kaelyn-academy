@@ -5,6 +5,7 @@ import Google from "next-auth/providers/google";
 import Facebook from "next-auth/providers/facebook";
 import Apple from "next-auth/providers/apple";
 import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { accounts, sessions, users, verificationTokens } from "@/lib/db/schema";
 import type { Role } from "./rbac";
@@ -61,17 +62,22 @@ if (isDev) {
       url: `${baseUrl}/api/dev-oauth/authorize`,
       params: { scope: "openid profile email" },
     },
-    token: `${baseUrl}/api/dev-oauth/token`,
-    userinfo: `${baseUrl}/api/dev-oauth/userinfo`,
+    token: {
+      url: `${baseUrl}/api/dev-oauth/token`,
+    },
+    userinfo: {
+      url: `${baseUrl}/api/dev-oauth/userinfo`,
+    },
     clientId: "dev-oauth-client",
     clientSecret: "dev-oauth-secret",
+    checks: ["state"], // Only use state check, not PKCE (our mock doesn't support PKCE)
     profile(profile) {
       return {
         id: profile.sub,
         email: profile.email,
         name: profile.name,
         image: profile.picture,
-        role: "admin" as Role, // Dev user gets admin role
+        role: (profile.role || "learner") as Role,
       };
     },
   });
@@ -102,7 +108,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session;
     },
-    async signIn() {
+    async signIn({ user, account, profile }) {
+      // For dev-oauth provider, update user's role from the profile
+      if (isDev && account?.provider === "dev-oauth" && profile?.role && user?.id) {
+        const role = profile.role as Role;
+        await db
+          .update(users)
+          .set({ role, updatedAt: new Date() })
+          .where(eq(users.id, user.id));
+      }
       // Allow sign in
       // Additional checks can be added here for COPPA compliance
       return true;

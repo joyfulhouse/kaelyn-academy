@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default async function TeacherLayout({
@@ -11,7 +12,7 @@ export default async function TeacherLayout({
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/login?callbackUrl=/teacher");
+    redirect("/login?callbackUrl=/auth/redirect");
   }
 
   const role = session.user.role;
@@ -33,8 +34,14 @@ export default async function TeacherLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-6">
-              <Link href="/teacher" className="flex items-center gap-2">
-                <span className="text-2xl">👩‍🏫</span>
+              <Link href="/teacher" className="flex items-center gap-3">
+                <Image
+                  src="/icons/icon.svg"
+                  alt="Kaelyn's Academy"
+                  width={36}
+                  height={36}
+                  className="rounded-lg"
+                />
                 <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
                   Teacher Dashboard
                 </span>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 
 interface ConsentForm {
   parentName: string;
@@ -24,7 +25,7 @@ interface ConsentForm {
   signatureDate: string;
 }
 
-export default function COPPAConsentPage() {
+function ConsentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -340,5 +341,17 @@ export default function COPPAConsentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function COPPAConsentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    }>
+      <ConsentContent />
+    </Suspense>
   );
 }

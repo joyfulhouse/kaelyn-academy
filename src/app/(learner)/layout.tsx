@@ -13,7 +13,7 @@ export default async function LearnerLayout({
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/login?callbackUrl=/dashboard");
+    redirect("/login?callbackUrl=/auth/redirect");
   }
 
   const role = session.user.role;

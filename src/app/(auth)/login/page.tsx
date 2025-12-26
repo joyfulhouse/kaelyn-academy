@@ -1,9 +1,10 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { getCsrfToken } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import { GraduationCap, AlertCircle, Loader2, Code2 } from "lucide-react";
+import { Suspense, useEffect, useState, useRef } from "react";
+import { AlertCircle, Loader2, BookOpen, Users, School, Shield } from "lucide-react";
+import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,14 +15,42 @@ interface Provider {
   isDev?: boolean;
 }
 
+// Dev role configurations
+const DEV_ROLES = [
+  {
+    role: "learner",
+    label: "Learner",
+    description: "Student dashboard & lessons",
+    icon: BookOpen,
+    color: "bg-blue-500 hover:bg-blue-600",
+  },
+  {
+    role: "parent",
+    label: "Parent",
+    description: "Monitor child's progress",
+    icon: Users,
+    color: "bg-green-500 hover:bg-green-600",
+  },
+  {
+    role: "teacher",
+    label: "Teacher",
+    description: "Classroom management",
+    icon: School,
+    color: "bg-purple-500 hover:bg-purple-600",
+  },
+  {
+    role: "admin",
+    label: "Admin",
+    description: "Full system access",
+    icon: Shield,
+    color: "bg-red-500 hover:bg-red-600",
+  },
+] as const;
+
 const providerConfig: Record<string, {
   icon: React.ReactNode;
   bgColor: string;
 }> = {
-  "dev-oauth": {
-    icon: <Code2 className="w-5 h-5" />,
-    bgColor: "bg-amber-500 hover:bg-amber-600 text-white border-0",
-  },
   google: {
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -76,34 +105,76 @@ const providerConfig: Record<string, {
 
 function LoginContent() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/auth/redirect";
   const error = searchParams.get("error");
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
+  const [csrfToken, setCsrfToken] = useState<string>("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const roleInputRef = useRef<HTMLInputElement>(null);
+
+  const isDev = providers.some(p => p.isDev);
 
   useEffect(() => {
-    async function fetchProviders() {
+    async function init() {
       try {
-        const response = await fetch("/api/auth/providers");
-        if (response.ok) {
-          const data = await response.json();
+        const [providersRes, token] = await Promise.all([
+          fetch("/api/auth/providers"),
+          getCsrfToken(),
+        ]);
+
+        if (providersRes.ok) {
+          const data = await providersRes.json();
           setProviders(data.providers);
         }
+
+        if (token) {
+          setCsrfToken(token);
+        }
       } catch (err) {
-        console.error("Failed to fetch providers:", err);
+        console.error("Failed to initialize login:", err);
       } finally {
         setLoading(false);
       }
     }
-    fetchProviders();
+    init();
   }, []);
+
+  const handleSignIn = (providerId: string) => {
+    if (formRef.current) {
+      formRef.current.action = `/api/auth/signin/${providerId}`;
+      formRef.current.submit();
+    }
+  };
+
+  const handleDevSignIn = (role: string) => {
+    // Set cookie with the role before OAuth flow
+    document.cookie = `dev-oauth-role=${role}; path=/; max-age=300; samesite=lax`;
+    handleSignIn("dev-oauth");
+  };
+
+  // Filter out dev-oauth from regular providers (we'll show it separately)
+  const regularProviders = providers.filter(p => !p.isDev);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      {/* Hidden form for OAuth submission */}
+      <form ref={formRef} method="POST" className="hidden">
+        <input type="hidden" name="csrfToken" value={csrfToken} />
+        <input type="hidden" name="callbackUrl" value={callbackUrl} />
+        <input ref={roleInputRef} type="hidden" name="role" value="" />
+      </form>
+
       <Card className="w-full max-w-md border shadow-lg">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground mb-4">
-            <GraduationCap className="h-8 w-8" />
+          <div className="mx-auto mb-4">
+            <Image
+              src="/icons/icon.svg"
+              alt="Kaelyn's Academy"
+              width={64}
+              height={64}
+              className="rounded-2xl"
+            />
           </div>
           <CardTitle className="text-2xl font-bold text-foreground">
             Welcome to Kaelyn&apos;s Academy
@@ -144,33 +215,69 @@ function LoginContent() {
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {providers.map((provider) => {
-                const config = providerConfig[provider.id];
-                if (!config) return null;
-
-                return (
-                  <div key={provider.id} className="relative">
-                    {provider.isDev && (
-                      <Badge
-                        variant="outline"
-                        className="absolute -top-2 -right-2 z-10 bg-background text-amber-600 border-amber-300 text-xs"
-                      >
-                        DEV ONLY
-                      </Badge>
-                    )}
-                    <Button
-                      variant="outline"
-                      className={`w-full h-12 text-base font-medium gap-3 ${config.bgColor}`}
-                      onClick={() => signIn(provider.id, { callbackUrl })}
-                    >
-                      {config.icon}
-                      {provider.isDev ? "Continue as Dev User" : `Continue with ${provider.name}`}
-                    </Button>
+            <>
+              {/* Dev Login Section */}
+              {isDev && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Development Login</span>
+                    <Badge variant="outline" className="text-amber-600 border-amber-300 text-xs">
+                      DEV ONLY
+                    </Badge>
                   </div>
-                );
-              })}
-            </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {DEV_ROLES.map(({ role, label, description, icon: Icon, color }) => (
+                      <Button
+                        key={role}
+                        variant="outline"
+                        className={`h-auto py-3 flex flex-col items-center gap-1 text-white border-0 ${color}`}
+                        onClick={() => handleDevSignIn(role)}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span className="font-medium">{label}</span>
+                        <span className="text-xs opacity-80">{description}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Regular OAuth Providers */}
+              {regularProviders.length > 0 && (
+                <>
+                  {isDev && (
+                    <div className="relative my-4">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-border" />
+                      </div>
+                      <div className="relative flex justify-center text-xs">
+                        <span className="px-2 bg-card text-muted-foreground">
+                          Or continue with
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                    {regularProviders.map((provider) => {
+                      const config = providerConfig[provider.id];
+                      if (!config) return null;
+
+                      return (
+                        <Button
+                          key={provider.id}
+                          variant="outline"
+                          className={`w-full h-12 text-base font-medium gap-3 ${config.bgColor}`}
+                          onClick={() => handleSignIn(provider.id)}
+                        >
+                          {config.icon}
+                          Continue with {provider.name}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </>
           )}
 
           <div className="relative my-6">

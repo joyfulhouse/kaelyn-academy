@@ -22,6 +22,7 @@ const PROTECTED_METHODS = ["POST", "PUT", "DELETE", "PATCH"];
 const CSRF_EXEMPT_PATHS = [
   "/api/auth", // NextAuth has its own CSRF protection
   "/api/webhooks", // Webhooks use signatures for verification
+  "/api/dev-oauth", // Dev OAuth provider (has state verification, dev only)
 ];
 
 function isExemptPath(pathname: string): boolean {

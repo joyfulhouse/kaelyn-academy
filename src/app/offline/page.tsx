@@ -1,10 +1,7 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
-export const metadata = {
-  title: "You're Offline - Kaelyn's Academy",
-  description: "It looks like you're offline. Some features may be limited.",
-};
 
 export default function OfflinePage() {
   return (

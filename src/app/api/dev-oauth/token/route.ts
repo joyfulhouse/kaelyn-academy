@@ -1,50 +1,31 @@
 import { NextResponse } from "next/server";
-import { SignJWT } from "jose";
 
 /**
  * Dev OAuth Token Endpoint
  * Exchanges authorization code for tokens - only available in development
+ * Uses simple opaque tokens (not JWTs) for OAuth2 compatibility
  */
-export async function POST() {
+export async function POST(request: Request) {
   if (process.env.NODE_ENV !== "development") {
     return NextResponse.json({ error: "Not available" }, { status: 404 });
   }
 
-  // Generate a proper JWT access token
-  const secret = new TextEncoder().encode(
-    process.env.AUTH_SECRET || "dev-secret-key-min-32-chars-long!!"
-  );
+  // Parse the authorization code to extract the role
+  const body = await request.text();
+  const params = new URLSearchParams(body);
+  const code = params.get("code") || "";
 
-  const accessToken = await new SignJWT({
-    sub: "dev-user-id",
-    email: "dev@kaelyns.academy",
-    name: "Dev User",
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("1h")
-    .sign(secret);
+  // Extract role from code format: dev_auth_code_{role}_{timestamp}
+  const roleMatch = code.match(/^dev_auth_code_(\w+)_\d+$/);
+  const role = roleMatch ? roleMatch[1] : "learner";
 
-  // Generate ID token (for OIDC)
-  const idToken = await new SignJWT({
-    sub: "dev-user-id",
-    email: "dev@kaelyns.academy",
-    name: "Dev User",
-    picture: null,
-    email_verified: true,
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("1h")
-    .setIssuer("http://localhost:3000")
-    .setAudience("dev-oauth-client")
-    .sign(secret);
+  // Generate access token that includes the role
+  const accessToken = `dev_access_token_${role}_${Date.now()}`;
 
   return NextResponse.json({
     access_token: accessToken,
     token_type: "Bearer",
     expires_in: 3600,
-    id_token: idToken,
     scope: "openid profile email",
   });
 }

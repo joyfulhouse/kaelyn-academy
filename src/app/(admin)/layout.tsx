@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default async function AdminLayout({
   children,
@@ -11,7 +12,7 @@ export default async function AdminLayout({
 
   // Check if user is authenticated and has admin role
   if (!session?.user) {
-    redirect("/login?callbackUrl=/admin");
+    redirect("/login?callbackUrl=/auth/redirect");
   }
 
   if (session.user.role !== "admin") {
@@ -25,7 +26,14 @@ export default async function AdminLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-8">
-              <Link href="/admin" className="text-xl font-bold text-gray-900">
+              <Link href="/admin" className="flex items-center gap-3 text-xl font-bold text-gray-900">
+                <Image
+                  src="/icons/icon.svg"
+                  alt="Kaelyn's Academy"
+                  width={36}
+                  height={36}
+                  className="rounded-lg"
+                />
                 Admin Dashboard
               </Link>
               <nav className="hidden md:flex gap-6">
