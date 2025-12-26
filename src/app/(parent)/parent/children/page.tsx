@@ -38,8 +38,28 @@ export const metadata: Metadata = {
   description: "Manage your children's accounts and progress",
 };
 
+// Helper to generate unique slug from child name
+// Uses first name, or first name + middle initial if duplicates exist
+function generateChildSlug(name: string, allNames: string[]): string {
+  const parts = name.toLowerCase().split(" ");
+  const firstName = parts[0];
+  const middleInitial = parts.length > 2 ? parts[1][0] : null;
+  const lastName = parts[parts.length - 1];
+
+  // Check if there are other children with the same first name
+  const sameFirstName = allNames.filter(n =>
+    n.toLowerCase().startsWith(firstName + " ") && n !== name
+  );
+
+  if (sameFirstName.length > 0 && middleInitial) {
+    return `${firstName}-${middleInitial}`;
+  }
+
+  return firstName;
+}
+
 // Mock data - in production, this would come from the database
-const children = [
+const childrenData = [
   {
     id: "1",
     name: "Emma Johnson",
@@ -98,6 +118,13 @@ const children = [
   },
 ];
 
+// Generate slugs for all children
+const allNames = childrenData.map(c => c.name);
+const children = childrenData.map(child => ({
+  ...child,
+  slug: generateChildSlug(child.name, allNames),
+}));
+
 function formatTimeAgo(date: Date): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -134,9 +161,11 @@ export default async function ChildrenPage() {
             Manage your children's accounts and monitor their progress
           </p>
         </div>
-        <Button className="gap-2">
-          <UserPlus className="h-4 w-4" />
-          Add Child
+        <Button className="gap-2" asChild>
+          <Link href="/parent/children/add">
+            <UserPlus className="h-4 w-4" />
+            Add Child
+          </Link>
         </Button>
       </div>
 
@@ -172,12 +201,12 @@ export default async function ChildrenPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/parent/children/${child.id}`}>
+                      <Link href={`/parent/children/${child.slug}`}>
                         View Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`/parent/children/${child.id}/controls`}>
+                      <Link href={`/parent/children/${child.slug}/controls`}>
                         <Shield className="h-4 w-4 mr-2" />
                         Parental Controls
                       </Link>
@@ -255,13 +284,13 @@ export default async function ChildrenPage() {
               {/* Actions */}
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" asChild>
-                  <Link href={`/parent/children/${child.id}`}>
+                  <Link href={`/parent/children/${child.slug}`}>
                     <TrendingUp className="h-4 w-4 mr-2" />
                     View Progress
                   </Link>
                 </Button>
                 <Button variant="outline" className="flex-1" asChild>
-                  <Link href={`/parent/children/${child.id}/controls`}>
+                  <Link href={`/parent/children/${child.slug}/controls`}>
                     <Shield className="h-4 w-4 mr-2" />
                     Controls
                   </Link>
@@ -280,7 +309,9 @@ export default async function ChildrenPage() {
           <p className="text-sm text-muted-foreground mb-4">
             Create a learner account for another child
           </p>
-          <Button>Add Child</Button>
+          <Button asChild>
+            <Link href="/parent/children/add">Add Child</Link>
+          </Button>
         </CardContent>
       </Card>
     </div>

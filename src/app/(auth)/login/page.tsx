@@ -230,7 +230,7 @@ function LoginContent() {
                       <Button
                         key={role}
                         variant="outline"
-                        className={`h-auto py-3 flex flex-col items-center gap-1 text-white border-0 ${color}`}
+                        className={`h-auto py-3 flex flex-col items-center gap-1 text-white hover:text-white border-0 ${color}`}
                         onClick={() => handleDevSignIn(role)}
                       >
                         <Icon className="h-5 w-5" />
