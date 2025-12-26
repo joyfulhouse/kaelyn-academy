@@ -15,3 +15,12 @@ export * from "./ai";
 
 // AI Agents (Ax integration)
 export * from "./agents";
+
+// Blog CMS
+export * from "./blog";
+
+// Classroom Management
+export * from "./classroom";
+
+// Marketing & Notifications
+export * from "./marketing";

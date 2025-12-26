@@ -9,12 +9,22 @@ export { readingCurriculum } from "./reading";
 export { scienceCurriculum } from "./science";
 export { historyCurriculum } from "./history";
 export { technologyCurriculum } from "./technology";
+export {
+  spanishCurriculum,
+  frenchCurriculum,
+  germanCurriculum,
+  mandarinCurriculum,
+  japaneseCurriculum,
+  aslCurriculum,
+  languageCurricula,
+} from "./languages";
 
 import { mathCurriculum } from "./math";
 import { readingCurriculum } from "./reading";
 import { scienceCurriculum } from "./science";
 import { historyCurriculum } from "./history";
 import { technologyCurriculum } from "./technology";
+import { languageCurricula } from "./languages";
 import type { Subject, Curriculum, GradeLevel, Unit, Lesson } from "./types";
 
 /**
@@ -23,7 +33,14 @@ import type { Subject, Curriculum, GradeLevel, Unit, Lesson } from "./types";
 export const curriculum: Curriculum = {
   version: "1.0.0",
   lastUpdated: new Date().toISOString(),
-  subjects: [mathCurriculum, readingCurriculum, scienceCurriculum, historyCurriculum, technologyCurriculum],
+  subjects: [
+    mathCurriculum,
+    readingCurriculum,
+    scienceCurriculum,
+    historyCurriculum,
+    technologyCurriculum,
+    ...languageCurricula,
+  ],
 };
 
 /**

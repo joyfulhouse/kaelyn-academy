@@ -1,7 +1,6 @@
 "use client";
 
-import { Bell, Search, Flame, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, Flame, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -11,8 +10,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/components/providers/theme-provider";
+import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 
 interface LearnerHeaderProps {
   user: {
@@ -77,25 +76,10 @@ export function LearnerHeader({ user }: LearnerHeaderProps) {
             </Tooltip>
           </div>
 
-          {/* Notifications */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                <Bell className="h-4 w-4" />
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
-                >
-                  3
-                </Badge>
-                <span className="sr-only">Notifications</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>3 new notifications</p>
-            </TooltipContent>
-          </Tooltip>
         </TooltipProvider>
+
+        {/* Notifications */}
+        <NotificationsDropdown />
 
         {/* Welcome message on larger screens */}
         <div className="hidden lg:flex flex-col items-end ml-2">
