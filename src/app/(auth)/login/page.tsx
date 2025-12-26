@@ -18,7 +18,7 @@ const providerConfig: Record<string, {
   icon: React.ReactNode;
   bgColor: string;
 }> = {
-  "dev-credentials": {
+  "dev-oauth": {
     icon: <Code2 className="w-5 h-5" />,
     bgColor: "bg-amber-500 hover:bg-amber-600 text-white border-0",
   },
