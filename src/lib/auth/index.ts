@@ -53,7 +53,8 @@ if (process.env.AUTH_MICROSOFT_ENTRA_ID && process.env.AUTH_MICROSOFT_ENTRA_SECR
 
 // Development-only OAuth provider (local mock)
 if (isDev) {
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const port = process.env.PORT || "3000";
+  const baseUrl = process.env.NEXTAUTH_URL || `http://localhost:${port}`;
   providers.push({
     id: "dev-oauth",
     name: "Development",
