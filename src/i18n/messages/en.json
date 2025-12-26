@@ -1,0 +1,247 @@
+{
+  "common": {
+    "appName": "Kaelyn's Academy",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "noResults": "No results found",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Log Out",
+    "login": "Log In",
+    "signup": "Sign Up",
+    "features": "Features",
+    "subjects": "Subjects",
+    "pricing": "Pricing",
+    "skipToMain": "Skip to main content"
+  },
+  "landing": {
+    "hero": {
+      "badge": "Now with AI-powered learning",
+      "title": "Learning Made",
+      "titleHighlight": "Personal & Fun",
+      "description": "K-12 education platform with AI tutors, interactive lessons, and progress tracking that adapts to every student's unique learning journey.",
+      "cta": "Start Learning Free",
+      "watchDemo": "Watch Demo",
+      "freeForFamilies": "Free for families",
+      "noCreditCard": "No credit card required",
+      "coppaCompliant": "COPPA compliant"
+    },
+    "features": {
+      "title": "Everything You Need for Success",
+      "description": "Powerful tools designed specifically for K-12 education, from kindergarten through high school.",
+      "aiTutoring": {
+        "title": "AI-Powered Tutoring",
+        "description": "Personalized learning assistance with intelligent AI tutors that adapt to each student's pace and style."
+      },
+      "progressTracking": {
+        "title": "Progress Tracking",
+        "description": "Real-time dashboards for learners, parents, and teachers to monitor growth and celebrate achievements."
+      },
+      "interactiveLearning": {
+        "title": "Interactive Learning",
+        "description": "Engaging 3D visualizations and gamified activities that make learning fun and memorable."
+      },
+      "familyConnected": {
+        "title": "Family Connected",
+        "description": "Parents stay informed with detailed progress reports and recommendations for at-home support."
+      },
+      "adaptiveDifficulty": {
+        "title": "Adaptive Difficulty",
+        "description": "Smart algorithms adjust content difficulty to keep students challenged but never overwhelmed."
+      },
+      "safeSecure": {
+        "title": "Safe & Secure",
+        "description": "COPPA-compliant platform with robust privacy protections designed for K-12 education."
+      }
+    },
+    "subjects": {
+      "title": "Complete K-12 Curriculum",
+      "description": "Comprehensive coverage of core subjects with grade-appropriate content from kindergarten through 12th grade.",
+      "math": "Mathematics",
+      "reading": "Reading & ELA",
+      "science": "Science",
+      "history": "History",
+      "technology": "Technology",
+      "art": "Art & Music"
+    },
+    "stats": {
+      "learners": "Active Learners",
+      "modules": "Lesson Modules",
+      "satisfaction": "Parent Satisfaction",
+      "rating": "App Store Rating"
+    },
+    "cta": {
+      "title": "Ready to Transform Learning?",
+      "description": "Join thousands of families who have made learning engaging and effective with Kaelyn's Academy.",
+      "button": "Get Started for Free"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "description": "Enter your credentials to access your account",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up"
+    },
+    "signup": {
+      "title": "Create Your Account",
+      "description": "Start your learning journey today",
+      "name": "Full Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "role": "I am a...",
+      "roleLearner": "Student",
+      "roleParent": "Parent",
+      "roleTeacher": "Teacher",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in"
+    },
+    "consent": {
+      "title": "Parental Consent Required",
+      "description": "For users under 13, we need parent/guardian consent to comply with COPPA regulations.",
+      "step1": "Information",
+      "step2": "Agreements",
+      "step3": "Signature",
+      "parentName": "Parent/Guardian Name",
+      "parentEmail": "Parent/Guardian Email",
+      "childName": "Child's Name",
+      "agreeTerms": "I agree to the Terms of Service",
+      "agreePrivacy": "I agree to the Privacy Policy",
+      "agreeCOPPA": "I consent to my child's use of this platform",
+      "signature": "Electronic Signature",
+      "submit": "Submit Consent"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "todaysProgress": "Today's Progress",
+    "weeklyGoal": "Weekly Goal",
+    "streak": "Day Streak",
+    "achievements": "Achievements",
+    "continueLesson": "Continue Learning",
+    "recommendedLessons": "Recommended for You",
+    "recentActivity": "Recent Activity"
+  },
+  "subjects": {
+    "math": "Mathematics",
+    "reading": "Reading & ELA",
+    "science": "Science",
+    "history": "History",
+    "technology": "Technology",
+    "art": "Art & Music"
+  },
+  "grades": {
+    "k": "Kindergarten",
+    "1": "1st Grade",
+    "2": "2nd Grade",
+    "3": "3rd Grade",
+    "4": "4th Grade",
+    "5": "5th Grade",
+    "6": "6th Grade",
+    "7": "7th Grade",
+    "8": "8th Grade",
+    "9": "9th Grade",
+    "10": "10th Grade",
+    "11": "11th Grade",
+    "12": "12th Grade"
+  },
+  "tutor": {
+    "title": "AI Tutor",
+    "selectSubject": "Select a subject to get help",
+    "placeholder": "Ask me anything about {subject}...",
+    "thinking": "Thinking...",
+    "quickQuestions": "Quick Questions",
+    "clearChat": "Clear Chat"
+  },
+  "profile": {
+    "title": "My Profile",
+    "stats": "Stats",
+    "achievements": "Achievements",
+    "settings": "Settings",
+    "lessonsCompleted": "Lessons Completed",
+    "hoursLearning": "Hours Learning",
+    "currentStreak": "Current Streak",
+    "editProfile": "Edit Profile"
+  },
+  "parent": {
+    "title": "Parent Dashboard",
+    "children": "My Children",
+    "selectChild": "Select a child",
+    "progressOverview": "Progress Overview",
+    "weeklyReport": "Weekly Report",
+    "recommendations": "Recommendations"
+  },
+  "teacher": {
+    "title": "Teacher Dashboard",
+    "classes": "My Classes",
+    "students": "Students",
+    "assignments": "Assignments",
+    "analytics": "Analytics",
+    "createAssignment": "Create Assignment"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "users": "Users",
+    "organizations": "Organizations",
+    "curriculum": "Curriculum",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "manageUsers": "Manage Users",
+    "manageCurriculum": "Manage Curriculum"
+  },
+  "footer": {
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "about": "About",
+    "blog": "Blog",
+    "careers": "Careers",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "coppa": "COPPA Compliance",
+    "forSchools": "For Schools",
+    "copyright": "© {year} Kaelyn's Academy. All rights reserved."
+  },
+  "errors": {
+    "notFound": "Page not found",
+    "notFoundDescription": "Sorry, we couldn't find the page you're looking for.",
+    "goHome": "Go to Homepage",
+    "unauthorized": "Access Denied",
+    "unauthorizedDescription": "You don't have permission to access this page.",
+    "serverError": "Something went wrong",
+    "serverErrorDescription": "We're working on fixing the problem. Please try again later."
+  },
+  "a11y": {
+    "skipToMain": "Skip to main content",
+    "skipToNav": "Skip to navigation",
+    "mainNavigation": "Main navigation",
+    "footerNavigation": "Footer navigation",
+    "loading": "Loading content",
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  }
+}

@@ -12,3 +12,6 @@ export * from "./progress";
 
 // AI Features
 export * from "./ai";
+
+// AI Agents (Ax integration)
+export * from "./agents";

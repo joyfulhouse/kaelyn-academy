@@ -1,0 +1,247 @@
+{
+  "common": {
+    "appName": "Academia de Kaelyn",
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "retry": "Intentar de nuevo",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "noResults": "No se encontraron resultados",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Inicio",
+    "dashboard": "Panel",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "logout": "Cerrar Sesión",
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "features": "Características",
+    "subjects": "Materias",
+    "pricing": "Precios",
+    "skipToMain": "Saltar al contenido principal"
+  },
+  "landing": {
+    "hero": {
+      "badge": "Ahora con aprendizaje impulsado por IA",
+      "title": "Aprendizaje",
+      "titleHighlight": "Personal y Divertido",
+      "description": "Plataforma educativa K-12 con tutores de IA, lecciones interactivas y seguimiento del progreso que se adapta al viaje de aprendizaje único de cada estudiante.",
+      "cta": "Comienza a Aprender Gratis",
+      "watchDemo": "Ver Demo",
+      "freeForFamilies": "Gratis para familias",
+      "noCreditCard": "Sin tarjeta de crédito",
+      "coppaCompliant": "Compatible con COPPA"
+    },
+    "features": {
+      "title": "Todo lo que Necesitas para el Éxito",
+      "description": "Herramientas poderosas diseñadas específicamente para la educación K-12, desde kinder hasta preparatoria.",
+      "aiTutoring": {
+        "title": "Tutoría con IA",
+        "description": "Asistencia de aprendizaje personalizada con tutores inteligentes de IA que se adaptan al ritmo y estilo de cada estudiante."
+      },
+      "progressTracking": {
+        "title": "Seguimiento del Progreso",
+        "description": "Paneles en tiempo real para estudiantes, padres y maestros para monitorear el crecimiento y celebrar logros."
+      },
+      "interactiveLearning": {
+        "title": "Aprendizaje Interactivo",
+        "description": "Visualizaciones 3D atractivas y actividades gamificadas que hacen el aprendizaje divertido y memorable."
+      },
+      "familyConnected": {
+        "title": "Familia Conectada",
+        "description": "Los padres se mantienen informados con informes detallados de progreso y recomendaciones para apoyo en casa."
+      },
+      "adaptiveDifficulty": {
+        "title": "Dificultad Adaptativa",
+        "description": "Algoritmos inteligentes ajustan la dificultad del contenido para mantener a los estudiantes desafiados pero nunca abrumados."
+      },
+      "safeSecure": {
+        "title": "Seguro y Protegido",
+        "description": "Plataforma compatible con COPPA con protecciones de privacidad robustas diseñadas para educación K-12."
+      }
+    },
+    "subjects": {
+      "title": "Currículo Completo K-12",
+      "description": "Cobertura completa de materias principales con contenido apropiado para cada grado desde kinder hasta 12vo grado.",
+      "math": "Matemáticas",
+      "reading": "Lectura y ELA",
+      "science": "Ciencias",
+      "history": "Historia",
+      "technology": "Tecnología",
+      "art": "Arte y Música"
+    },
+    "stats": {
+      "learners": "Estudiantes Activos",
+      "modules": "Módulos de Lecciones",
+      "satisfaction": "Satisfacción de Padres",
+      "rating": "Calificación en App Store"
+    },
+    "cta": {
+      "title": "¿Listo para Transformar el Aprendizaje?",
+      "description": "Únete a miles de familias que han hecho el aprendizaje atractivo y efectivo con la Academia de Kaelyn.",
+      "button": "Comienza Gratis"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenido de Nuevo",
+      "description": "Ingresa tus credenciales para acceder a tu cuenta",
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes una cuenta?",
+      "signupLink": "Regístrate"
+    },
+    "signup": {
+      "title": "Crea tu Cuenta",
+      "description": "Comienza tu viaje de aprendizaje hoy",
+      "name": "Nombre Completo",
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "role": "Soy un/una...",
+      "roleLearner": "Estudiante",
+      "roleParent": "Padre/Madre",
+      "roleTeacher": "Maestro/a",
+      "hasAccount": "¿Ya tienes una cuenta?",
+      "loginLink": "Inicia sesión"
+    },
+    "consent": {
+      "title": "Se Requiere Consentimiento Parental",
+      "description": "Para usuarios menores de 13 años, necesitamos el consentimiento del padre/tutor para cumplir con las regulaciones de COPPA.",
+      "step1": "Información",
+      "step2": "Acuerdos",
+      "step3": "Firma",
+      "parentName": "Nombre del Padre/Tutor",
+      "parentEmail": "Correo del Padre/Tutor",
+      "childName": "Nombre del Niño",
+      "agreeTerms": "Acepto los Términos de Servicio",
+      "agreePrivacy": "Acepto la Política de Privacidad",
+      "agreeCOPPA": "Consiento el uso de esta plataforma por mi hijo/a",
+      "signature": "Firma Electrónica",
+      "submit": "Enviar Consentimiento"
+    }
+  },
+  "dashboard": {
+    "welcome": "Bienvenido de nuevo",
+    "todaysProgress": "Progreso de Hoy",
+    "weeklyGoal": "Meta Semanal",
+    "streak": "Racha de Días",
+    "achievements": "Logros",
+    "continueLesson": "Continuar Aprendiendo",
+    "recommendedLessons": "Recomendado para Ti",
+    "recentActivity": "Actividad Reciente"
+  },
+  "subjects": {
+    "math": "Matemáticas",
+    "reading": "Lectura y ELA",
+    "science": "Ciencias",
+    "history": "Historia",
+    "technology": "Tecnología",
+    "art": "Arte y Música"
+  },
+  "grades": {
+    "k": "Kinder",
+    "1": "1er Grado",
+    "2": "2do Grado",
+    "3": "3er Grado",
+    "4": "4to Grado",
+    "5": "5to Grado",
+    "6": "6to Grado",
+    "7": "7mo Grado",
+    "8": "8vo Grado",
+    "9": "9no Grado",
+    "10": "10mo Grado",
+    "11": "11vo Grado",
+    "12": "12vo Grado"
+  },
+  "tutor": {
+    "title": "Tutor de IA",
+    "selectSubject": "Selecciona una materia para obtener ayuda",
+    "placeholder": "Pregúntame cualquier cosa sobre {subject}...",
+    "thinking": "Pensando...",
+    "quickQuestions": "Preguntas Rápidas",
+    "clearChat": "Limpiar Chat"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "stats": "Estadísticas",
+    "achievements": "Logros",
+    "settings": "Configuración",
+    "lessonsCompleted": "Lecciones Completadas",
+    "hoursLearning": "Horas Aprendiendo",
+    "currentStreak": "Racha Actual",
+    "editProfile": "Editar Perfil"
+  },
+  "parent": {
+    "title": "Panel de Padres",
+    "children": "Mis Hijos",
+    "selectChild": "Selecciona un hijo",
+    "progressOverview": "Resumen de Progreso",
+    "weeklyReport": "Informe Semanal",
+    "recommendations": "Recomendaciones"
+  },
+  "teacher": {
+    "title": "Panel del Maestro",
+    "classes": "Mis Clases",
+    "students": "Estudiantes",
+    "assignments": "Tareas",
+    "analytics": "Análisis",
+    "createAssignment": "Crear Tarea"
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "users": "Usuarios",
+    "organizations": "Organizaciones",
+    "curriculum": "Currículo",
+    "analytics": "Análisis",
+    "settings": "Configuración",
+    "manageUsers": "Gestionar Usuarios",
+    "manageCurriculum": "Gestionar Currículo"
+  },
+  "footer": {
+    "product": "Producto",
+    "company": "Empresa",
+    "legal": "Legal",
+    "about": "Acerca de",
+    "blog": "Blog",
+    "careers": "Empleos",
+    "contact": "Contacto",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "coppa": "Cumplimiento COPPA",
+    "forSchools": "Para Escuelas",
+    "copyright": "© {year} Academia de Kaelyn. Todos los derechos reservados."
+  },
+  "errors": {
+    "notFound": "Página no encontrada",
+    "notFoundDescription": "Lo sentimos, no pudimos encontrar la página que buscas.",
+    "goHome": "Ir al Inicio",
+    "unauthorized": "Acceso Denegado",
+    "unauthorizedDescription": "No tienes permiso para acceder a esta página.",
+    "serverError": "Algo salió mal",
+    "serverErrorDescription": "Estamos trabajando en solucionar el problema. Por favor intenta de nuevo más tarde."
+  },
+  "a11y": {
+    "skipToMain": "Saltar al contenido principal",
+    "skipToNav": "Saltar a la navegación",
+    "mainNavigation": "Navegación principal",
+    "footerNavigation": "Navegación del pie de página",
+    "loading": "Cargando contenido",
+    "menu": "Menú",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  }
+}

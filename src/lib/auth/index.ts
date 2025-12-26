@@ -66,9 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Add user ID and role to session
       if (session.user) {
         session.user.id = user.id;
-        // @ts-expect-error - role is added to user in schema
         session.user.role = user.role;
-        // @ts-expect-error - organizationId is added to user in schema
         session.user.organizationId = user.organizationId;
       }
       return session;

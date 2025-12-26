@@ -1,0 +1,247 @@
+{
+  "common": {
+    "appName": "凯琳学院",
+    "loading": "加载中...",
+    "error": "发生错误",
+    "retry": "重试",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "submit": "提交",
+    "search": "搜索",
+    "filter": "筛选",
+    "noResults": "未找到结果",
+    "yes": "是",
+    "no": "否"
+  },
+  "nav": {
+    "home": "首页",
+    "dashboard": "仪表板",
+    "profile": "个人资料",
+    "settings": "设置",
+    "logout": "退出登录",
+    "login": "登录",
+    "signup": "注册",
+    "features": "功能",
+    "subjects": "科目",
+    "pricing": "价格",
+    "skipToMain": "跳转到主要内容"
+  },
+  "landing": {
+    "hero": {
+      "badge": "现已支持AI驱动学习",
+      "title": "学习变得",
+      "titleHighlight": "个性化又有趣",
+      "description": "K-12教育平台，配备AI导师、互动课程和进度追踪，适应每个学生独特的学习之旅。",
+      "cta": "免费开始学习",
+      "watchDemo": "观看演示",
+      "freeForFamilies": "家庭免费",
+      "noCreditCard": "无需信用卡",
+      "coppaCompliant": "符合COPPA标准"
+    },
+    "features": {
+      "title": "成功所需的一切",
+      "description": "专为K-12教育设计的强大工具，从幼儿园到高中全覆盖。",
+      "aiTutoring": {
+        "title": "AI智能辅导",
+        "description": "个性化学习辅助，智能AI导师根据每个学生的节奏和风格进行调整。"
+      },
+      "progressTracking": {
+        "title": "进度追踪",
+        "description": "实时仪表板供学生、家长和教师监控成长并庆祝成就。"
+      },
+      "interactiveLearning": {
+        "title": "互动学习",
+        "description": "引人入胜的3D可视化和游戏化活动，让学习变得有趣且难忘。"
+      },
+      "familyConnected": {
+        "title": "家庭互联",
+        "description": "家长通过详细的进度报告和家庭支持建议保持信息畅通。"
+      },
+      "adaptiveDifficulty": {
+        "title": "自适应难度",
+        "description": "智能算法调整内容难度，让学生保持挑战但不会感到压力过大。"
+      },
+      "safeSecure": {
+        "title": "安全可靠",
+        "description": "符合COPPA标准的平台，具有专为K-12教育设计的强大隐私保护。"
+      }
+    },
+    "subjects": {
+      "title": "完整的K-12课程",
+      "description": "从幼儿园到12年级，提供适合各年级的核心科目全面覆盖。",
+      "math": "数学",
+      "reading": "阅读与语言艺术",
+      "science": "科学",
+      "history": "历史",
+      "technology": "技术",
+      "art": "艺术与音乐"
+    },
+    "stats": {
+      "learners": "活跃学习者",
+      "modules": "课程模块",
+      "satisfaction": "家长满意度",
+      "rating": "应用商店评分"
+    },
+    "cta": {
+      "title": "准备好改变学习了吗？",
+      "description": "加入数以千计的家庭，与凯琳学院一起让学习变得引人入胜且有效。",
+      "button": "免费开始"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "欢迎回来",
+      "description": "输入您的凭据以访问您的账户",
+      "email": "电子邮件",
+      "password": "密码",
+      "forgotPassword": "忘记密码？",
+      "noAccount": "没有账户？",
+      "signupLink": "注册"
+    },
+    "signup": {
+      "title": "创建您的账户",
+      "description": "今天开始您的学习之旅",
+      "name": "全名",
+      "email": "电子邮件",
+      "password": "密码",
+      "confirmPassword": "确认密码",
+      "role": "我是...",
+      "roleLearner": "学生",
+      "roleParent": "家长",
+      "roleTeacher": "教师",
+      "hasAccount": "已有账户？",
+      "loginLink": "登录"
+    },
+    "consent": {
+      "title": "需要家长同意",
+      "description": "对于13岁以下的用户，我们需要家长/监护人的同意以符合COPPA法规。",
+      "step1": "信息",
+      "step2": "协议",
+      "step3": "签名",
+      "parentName": "家长/监护人姓名",
+      "parentEmail": "家长/监护人邮箱",
+      "childName": "孩子姓名",
+      "agreeTerms": "我同意服务条款",
+      "agreePrivacy": "我同意隐私政策",
+      "agreeCOPPA": "我同意我的孩子使用此平台",
+      "signature": "电子签名",
+      "submit": "提交同意"
+    }
+  },
+  "dashboard": {
+    "welcome": "欢迎回来",
+    "todaysProgress": "今日进度",
+    "weeklyGoal": "每周目标",
+    "streak": "连续天数",
+    "achievements": "成就",
+    "continueLesson": "继续学习",
+    "recommendedLessons": "为您推荐",
+    "recentActivity": "最近活动"
+  },
+  "subjects": {
+    "math": "数学",
+    "reading": "阅读与语言艺术",
+    "science": "科学",
+    "history": "历史",
+    "technology": "技术",
+    "art": "艺术与音乐"
+  },
+  "grades": {
+    "k": "幼儿园",
+    "1": "一年级",
+    "2": "二年级",
+    "3": "三年级",
+    "4": "四年级",
+    "5": "五年级",
+    "6": "六年级",
+    "7": "七年级",
+    "8": "八年级",
+    "9": "九年级",
+    "10": "十年级",
+    "11": "十一年级",
+    "12": "十二年级"
+  },
+  "tutor": {
+    "title": "AI导师",
+    "selectSubject": "选择一个科目获取帮助",
+    "placeholder": "问我任何关于{subject}的问题...",
+    "thinking": "思考中...",
+    "quickQuestions": "快速问题",
+    "clearChat": "清除聊天"
+  },
+  "profile": {
+    "title": "我的资料",
+    "stats": "统计",
+    "achievements": "成就",
+    "settings": "设置",
+    "lessonsCompleted": "已完成课程",
+    "hoursLearning": "学习时长",
+    "currentStreak": "当前连续",
+    "editProfile": "编辑资料"
+  },
+  "parent": {
+    "title": "家长仪表板",
+    "children": "我的孩子",
+    "selectChild": "选择一个孩子",
+    "progressOverview": "进度概览",
+    "weeklyReport": "周报",
+    "recommendations": "建议"
+  },
+  "teacher": {
+    "title": "教师仪表板",
+    "classes": "我的班级",
+    "students": "学生",
+    "assignments": "作业",
+    "analytics": "分析",
+    "createAssignment": "创建作业"
+  },
+  "admin": {
+    "title": "管理员仪表板",
+    "users": "用户",
+    "organizations": "组织",
+    "curriculum": "课程",
+    "analytics": "分析",
+    "settings": "设置",
+    "manageUsers": "管理用户",
+    "manageCurriculum": "管理课程"
+  },
+  "footer": {
+    "product": "产品",
+    "company": "公司",
+    "legal": "法律",
+    "about": "关于",
+    "blog": "博客",
+    "careers": "招聘",
+    "contact": "联系我们",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "coppa": "COPPA合规",
+    "forSchools": "学校版",
+    "copyright": "© {year} 凯琳学院。保留所有权利。"
+  },
+  "errors": {
+    "notFound": "页面未找到",
+    "notFoundDescription": "抱歉，我们找不到您要找的页面。",
+    "goHome": "返回首页",
+    "unauthorized": "访问被拒绝",
+    "unauthorizedDescription": "您没有权限访问此页面。",
+    "serverError": "出了点问题",
+    "serverErrorDescription": "我们正在修复问题。请稍后重试。"
+  },
+  "a11y": {
+    "skipToMain": "跳转到主要内容",
+    "skipToNav": "跳转到导航",
+    "mainNavigation": "主导航",
+    "footerNavigation": "页脚导航",
+    "loading": "正在加载内容",
+    "menu": "菜单",
+    "openMenu": "打开菜单",
+    "closeMenu": "关闭菜单"
+  }
+}
