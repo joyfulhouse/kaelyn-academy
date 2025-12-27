@@ -4,6 +4,18 @@
 // Canvas wrappers
 export { Scene3D, SimpleScene3D } from "./canvas-wrapper";
 
+// Lesson visualization (main entry point)
+export { LessonVisualization } from "./lesson-visualization";
+
+// Visualization configuration
+export {
+  getVisualizationConfig,
+  hasVisualizationSupport,
+  gradeToAgeGroup,
+  type VisualizationType,
+  type VisualizationConfig,
+} from "./visualization-config";
+
 // Primitives and utilities
 export {
   InteractiveBox,
