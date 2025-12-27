@@ -4,12 +4,13 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   SubjectProgressChart,
   WeeklyActivityChart,
   CircularProgress,
 } from "@/components/dashboard/progress-charts";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Lightbulb, Target, Trophy, Heart, Clock, RefreshCw } from "lucide-react";
 import { generateProgressReportPDF } from "@/lib/reports/pdf-generator";
 
 interface SubjectProgress {
@@ -36,12 +37,23 @@ interface Child {
   weeklyActivity: WeeklyDay[];
 }
 
+interface Recommendation {
+  type: "focus" | "celebrate" | "encourage" | "challenge" | "routine";
+  priority: "high" | "medium" | "low";
+  title: string;
+  description: string;
+  actionItems?: string[];
+}
+
 export default function ParentDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedChild, setSelectedChild] = useState<string | null>(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [children, setChildren] = useState<Child[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false);
+  const [recommendationsSummary, setRecommendationsSummary] = useState<string>("");
 
   const fetchData = useCallback(async () => {
     try {
@@ -99,6 +111,36 @@ export default function ParentDashboard() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Fetch AI recommendations when child changes
+  const fetchRecommendations = useCallback(async (childId: string) => {
+    setRecommendationsLoading(true);
+    try {
+      const response = await fetch(`/api/parent/recommendations?childId=${childId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setRecommendations(data.recommendations || []);
+        setRecommendationsSummary(data.summary || "");
+      } else {
+        // Use empty recommendations on error
+        setRecommendations([]);
+        setRecommendationsSummary("");
+      }
+    } catch (err) {
+      console.error("Error fetching recommendations:", err);
+      setRecommendations([]);
+      setRecommendationsSummary("");
+    } finally {
+      setRecommendationsLoading(false);
+    }
+  }, []);
+
+  // Fetch recommendations when selected child changes
+  useEffect(() => {
+    if (selectedChild) {
+      fetchRecommendations(selectedChild);
+    }
+  }, [selectedChild, fetchRecommendations]);
 
   const currentChild = children.find((c) => c.id === selectedChild) || children[0];
 
@@ -311,43 +353,83 @@ export default function ParentDashboard() {
             </CardContent>
           </Card>
 
-          {/* Recommendations */}
+          {/* AI-Powered Recommendations */}
           <Card className="border-0 shadow-md border-l-4 border-l-amber-400">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                💡 Recommendations
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-amber-500" />
+                  Personalized Recommendations
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => fetchRecommendations(currentChild.id)}
+                  disabled={recommendationsLoading}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <RefreshCw className={`h-4 w-4 ${recommendationsLoading ? "animate-spin" : ""}`} />
+                </Button>
               </CardTitle>
+              {recommendationsSummary && (
+                <CardDescription>{recommendationsSummary}</CardDescription>
+              )}
             </CardHeader>
             <CardContent>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <span className="text-amber-500 mt-1">•</span>
-                  <div>
-                    <div className="font-medium">Focus on History</div>
-                    <div className="text-sm text-gray-600">
-                      {currentChild.name}&apos;s History mastery is below average. Consider adding 15 minutes of History practice daily.
+              {recommendationsLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <Skeleton className="h-5 w-5 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-full" />
+                      </div>
                     </div>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-emerald-500 mt-1">•</span>
-                  <div>
-                    <div className="font-medium">Great Progress in Reading!</div>
-                    <div className="text-sm text-gray-600">
-                      {currentChild.name} is excelling in Reading. Consider challenging with advanced materials.
-                    </div>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 mt-1">•</span>
-                  <div>
-                    <div className="font-medium">Maintain Consistency</div>
-                    <div className="text-sm text-gray-600">
-                      Weekend study time dropped to 15 minutes. Encourage at least 30 minutes on weekends.
-                    </div>
-                  </div>
-                </li>
-              </ul>
+                  ))}
+                </div>
+              ) : recommendations.length === 0 ? (
+                <p className="text-gray-600 text-center py-4">
+                  No recommendations available yet. Complete more activities to receive personalized guidance!
+                </p>
+              ) : (
+                <ul className="space-y-4">
+                  {recommendations.map((rec, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <span className="mt-0.5">
+                        {rec.type === "focus" && <Target className="h-5 w-5 text-amber-500" />}
+                        {rec.type === "celebrate" && <Trophy className="h-5 w-5 text-emerald-500" />}
+                        {rec.type === "encourage" && <Heart className="h-5 w-5 text-rose-500" />}
+                        {rec.type === "challenge" && <Lightbulb className="h-5 w-5 text-blue-500" />}
+                        {rec.type === "routine" && <Clock className="h-5 w-5 text-purple-500" />}
+                      </span>
+                      <div className="flex-1">
+                        <div className="font-medium flex items-center gap-2">
+                          {rec.title}
+                          {rec.priority === "high" && (
+                            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                              Priority
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-600 mt-0.5">
+                          {rec.description}
+                        </div>
+                        {rec.actionItems && rec.actionItems.length > 0 && (
+                          <ul className="mt-2 text-sm text-gray-500 space-y-1">
+                            {rec.actionItems.map((item, itemIdx) => (
+                              <li key={itemIdx} className="flex items-center gap-1.5">
+                                <span className="h-1 w-1 bg-gray-400 rounded-full" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </>

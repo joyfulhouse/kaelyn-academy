@@ -57,7 +57,7 @@ export interface ProgressReportData {
   lessonsCompleted: number;
   lessonsTotal: number;
   streak: number;
-  lastActivity: Date;
+  lastActivity?: Date;
 }
 
 export interface SubjectProgress {
@@ -72,7 +72,7 @@ export interface SubjectProgress {
   lessonsTotal: number;
   timeSpent: number;
   averageScore: number;
-  lastActivity: Date;
+  lastActivity?: Date;
 }
 
 // Grades Report Data

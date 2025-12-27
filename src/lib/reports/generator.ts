@@ -2,18 +2,13 @@
  * Report Generator
  * Generates various report types in different formats
  *
- * NOTE: These report generators currently use placeholder data structures.
- * When called from UI components (like the parent dashboard), the actual
- * data is passed in from API calls that fetch real database data.
+ * Report generators now fetch real data from the database for:
+ * - Progress reports (learnerSubjectProgress, lessonProgress)
+ * - Activity reports (activityAttempts)
+ * - Grade reports (activityAttempts, learnerSubjectProgress)
  *
- * For direct report generation (e.g., scheduled reports, bulk exports),
- * these functions would need to be updated to fetch data from:
- * - learnerSubjectProgress (for progress metrics)
- * - lessonProgress (for completed lessons)
- * - activityAttempts (for quiz/activity scores)
- * - learners (for student info)
- *
- * TODO: Wire to database for server-side report generation
+ * When called from UI components (like the parent dashboard), data
+ * is fetched from these database tables and formatted for export.
  */
 
 import type {
@@ -28,6 +23,11 @@ import type {
   PerformanceReportData,
   CurriculumReportData,
 } from "./types";
+import {
+  fetchProgressReportData,
+  fetchActivityReportData,
+  fetchGradesReportData,
+} from "./data-fetcher";
 
 /**
  * Generate a unique report ID
@@ -111,73 +111,27 @@ function calculateFileSize(content: string): number {
 /**
  * Generate progress report
  *
- * For UI-triggered reports (like PDF downloads), data is passed directly
- * from components that have already fetched from real APIs.
- * This function is a template for server-side/scheduled report generation.
+ * Fetches real data from the database for progress reports.
+ * Falls back to placeholder data if learner is not found.
  */
 export async function generateProgressReport(
   studentId: string,
   config: ReportConfig
 ): Promise<ReportResult> {
-  // Placeholder data structure - would be replaced with database queries:
-  // const learnerData = await db.query.learners.findFirst(...)
-  // const progressData = await db.select().from(learnerSubjectProgress)...
-  const mockData: ProgressReportData = {
+  // Fetch real data from database with fallback to placeholder
+  const fetchedData = await fetchProgressReportData(studentId);
+  const reportData: ProgressReportData = fetchedData ?? {
     student: {
       id: studentId,
-      name: "Sample Student",
+      name: "Student",
       gradeLevel: 5,
     },
-    subjects: [
-      {
-        subjectId: "math",
-        subjectName: "Mathematics",
-        progress: 75,
-        grade: "B+",
-        gradePoints: 3.3,
-        unitsCompleted: 3,
-        unitsTotal: 4,
-        lessonsCompleted: 24,
-        lessonsTotal: 32,
-        timeSpent: 1800,
-        averageScore: 85,
-        lastActivity: new Date(),
-      },
-      {
-        subjectId: "reading",
-        subjectName: "Reading & Language Arts",
-        progress: 82,
-        grade: "A-",
-        gradePoints: 3.7,
-        unitsCompleted: 4,
-        unitsTotal: 5,
-        lessonsCompleted: 28,
-        lessonsTotal: 35,
-        timeSpent: 2100,
-        averageScore: 88,
-        lastActivity: new Date(),
-      },
-      {
-        subjectId: "science",
-        subjectName: "Science",
-        progress: 68,
-        grade: "B",
-        gradePoints: 3.0,
-        unitsCompleted: 2,
-        unitsTotal: 4,
-        lessonsCompleted: 18,
-        lessonsTotal: 28,
-        timeSpent: 1500,
-        averageScore: 82,
-        lastActivity: new Date(),
-      },
-    ],
-    overallProgress: 75,
-    totalTimeSpent: 5400,
-    lessonsCompleted: 70,
-    lessonsTotal: 95,
-    streak: 12,
-    lastActivity: new Date(),
+    subjects: [],
+    overallProgress: 0,
+    totalTimeSpent: 0,
+    lessonsCompleted: 0,
+    lessonsTotal: 0,
+    streak: 0,
   };
 
   const metadata: ReportMetadata = {
@@ -188,14 +142,14 @@ export async function generateProgressReport(
     generatedBy: "system",
     type: "progress",
     format: config.format,
-    recordCount: mockData.subjects.length,
+    recordCount: reportData.subjects.length,
   };
 
   let content: string;
 
   switch (config.format) {
     case "csv":
-      content = generateCSV(mockData.subjects, [
+      content = generateCSV(reportData.subjects, [
         { key: "subjectName", label: "Subject" },
         { key: "progress", label: "Progress %" },
         { key: "grade", label: "Grade" },
@@ -205,72 +159,50 @@ export async function generateProgressReport(
       ]);
       break;
     case "json":
-      content = generateJSON(mockData);
+      content = generateJSON(reportData);
       break;
     default:
-      content = generateJSON(mockData);
+      content = generateJSON(reportData);
   }
 
   metadata.fileSize = calculateFileSize(content);
 
   return {
     metadata,
-    data: mockData,
+    data: reportData,
   };
 }
 
 /**
  * Generate grades report
+ *
+ * Fetches real data from the database for grade reports.
+ * Falls back to placeholder data if learner is not found.
  */
 export async function generateGradesReport(
   studentId: string,
   config: ReportConfig
 ): Promise<ReportResult> {
-  const mockData: GradesReportData = {
+  // Fetch real data from database with fallback to placeholder
+  const fetchedData = await fetchGradesReportData(
+    studentId,
+    config.dateRange?.start,
+    config.dateRange?.end
+  );
+  const reportData: GradesReportData = fetchedData ?? {
     student: {
       id: studentId,
-      name: "Sample Student",
+      name: "Student",
       gradeLevel: 5,
     },
     reportingPeriod: {
-      start: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-      end: new Date(),
-      name: "Fall Semester 2024",
+      start: config.dateRange?.start ?? new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+      end: config.dateRange?.end ?? new Date(),
+      name: "Current Term",
     },
-    subjects: [
-      {
-        subjectId: "math",
-        subjectName: "Mathematics",
-        letterGrade: "B+",
-        percentageGrade: 87,
-        gradePoints: 3.3,
-        assessments: [
-          {
-            id: "quiz-1",
-            name: "Unit 1 Quiz",
-            type: "quiz",
-            score: 18,
-            maxScore: 20,
-            percentage: 90,
-            weight: 0.1,
-            date: new Date(),
-          },
-          {
-            id: "test-1",
-            name: "Mid-term Test",
-            type: "test",
-            score: 85,
-            maxScore: 100,
-            percentage: 85,
-            weight: 0.3,
-            date: new Date(),
-          },
-        ],
-        trend: "improving",
-      },
-    ],
-    gpa: 3.45,
-    comments: "Excellent progress in mathematics. Continue practicing problem-solving skills.",
+    subjects: [],
+    gpa: 0,
+    comments: "No grade data available yet.",
   };
 
   const metadata: ReportMetadata = {
@@ -281,74 +213,71 @@ export async function generateGradesReport(
     generatedBy: "system",
     type: "grades",
     format: config.format,
-    recordCount: mockData.subjects.length,
+    recordCount: reportData.subjects.length,
   };
 
-  const content = generateJSON(mockData);
+  let content: string;
+
+  switch (config.format) {
+    case "csv":
+      content = generateCSV(reportData.subjects, [
+        { key: "subjectName", label: "Subject" },
+        { key: "letterGrade", label: "Letter Grade" },
+        { key: "percentageGrade", label: "Percentage" },
+        { key: "gradePoints", label: "Grade Points" },
+        { key: "trend", label: "Trend" },
+      ]);
+      break;
+    case "json":
+      content = generateJSON(reportData);
+      break;
+    default:
+      content = generateJSON(reportData);
+  }
+
   metadata.fileSize = calculateFileSize(content);
 
   return {
     metadata,
-    data: mockData,
+    data: reportData,
   };
 }
 
 /**
  * Generate activity report
+ *
+ * Fetches real data from the database for activity reports.
+ * Falls back to placeholder data if learner is not found.
  */
 export async function generateActivityReport(
   studentId: string,
   config: ReportConfig
 ): Promise<ReportResult> {
-  const mockData: ActivityReportData = {
+  // Fetch real data from database with fallback to placeholder
+  const fetchedData = await fetchActivityReportData(
+    studentId,
+    config.dateRange?.start,
+    config.dateRange?.end
+  );
+  const reportData: ActivityReportData = fetchedData ?? {
     student: {
       id: studentId,
-      name: "Sample Student",
+      name: "Student",
       gradeLevel: 5,
     },
     dateRange: {
       start: config.dateRange?.start ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
       end: config.dateRange?.end ?? new Date(),
     },
-    activities: [
-      {
-        id: "act-1",
-        timestamp: new Date(),
-        type: "lesson",
-        subjectId: "math",
-        subjectName: "Mathematics",
-        title: "Introduction to Fractions",
-        duration: 1800,
-        completed: true,
-      },
-      {
-        id: "act-2",
-        timestamp: new Date(),
-        type: "quiz",
-        subjectId: "math",
-        subjectName: "Mathematics",
-        title: "Fractions Quiz",
-        duration: 600,
-        score: 85,
-        completed: true,
-      },
-    ],
+    activities: [],
     summary: {
-      totalActivities: 45,
-      totalDuration: 27000,
-      averageDuration: 600,
-      activeDays: 22,
-      bySubject: {
-        math: 15,
-        reading: 18,
-        science: 12,
-      },
-      byType: {
-        lesson: 30,
-        quiz: 10,
-        practice: 5,
-      },
-      peakHours: [14, 15, 16],
+      totalActivities: 0,
+      totalDuration: 0,
+      averageDuration: 0,
+      activeDays: 0,
+      bySubject: {},
+      byType: {},
+      peakHours: [],
     },
   };
 
@@ -360,13 +289,13 @@ export async function generateActivityReport(
     generatedBy: "system",
     type: "activity",
     format: config.format,
-    recordCount: mockData.activities.length,
+    recordCount: reportData.activities.length,
   };
 
   let content: string;
 
   if (config.format === "csv") {
-    content = generateCSV(mockData.activities, [
+    content = generateCSV(reportData.activities, [
       { key: "timestamp", label: "Date/Time" },
       { key: "type", label: "Type" },
       { key: "subjectName", label: "Subject" },
@@ -376,14 +305,14 @@ export async function generateActivityReport(
       { key: "completed", label: "Completed" },
     ]);
   } else {
-    content = generateJSON(mockData);
+    content = generateJSON(reportData);
   }
 
   metadata.fileSize = calculateFileSize(content);
 
   return {
     metadata,
-    data: mockData,
+    data: reportData,
   };
 }
 

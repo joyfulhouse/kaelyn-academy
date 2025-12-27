@@ -92,6 +92,26 @@ export const assignmentSubmissions = pgTable("assignment_submissions", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Teacher notes on students
+export const teacherStudentNotes = pgTable("teacher_student_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  teacherId: uuid("teacher_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  learnerId: uuid("learner_id").notNull().references(() => learners.id, { onDelete: "cascade" }),
+
+  // Content
+  title: varchar("title", { length: 255 }),
+  content: text("content").notNull(),
+  category: varchar("category", { length: 50 }).default("general"), // general, academic, behavioral, communication, goals
+
+  // Flags
+  isPinned: boolean("is_pinned").default(false),
+  isPrivate: boolean("is_private").default(true), // If false, shared with other teachers
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  deletedAt: timestamp("deleted_at"),
+});
+
 // Relations
 export const classesRelations = relations(classes, ({ one, many }) => ({
   organization: one(organizations, {
@@ -141,5 +161,16 @@ export const assignmentSubmissionsRelations = relations(assignmentSubmissions, (
   grader: one(users, {
     fields: [assignmentSubmissions.gradedBy],
     references: [users.id],
+  }),
+}));
+
+export const teacherStudentNotesRelations = relations(teacherStudentNotes, ({ one }) => ({
+  teacher: one(users, {
+    fields: [teacherStudentNotes.teacherId],
+    references: [users.id],
+  }),
+  learner: one(learners, {
+    fields: [teacherStudentNotes.learnerId],
+    references: [learners.id],
   }),
 }));

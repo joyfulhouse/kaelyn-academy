@@ -1,25 +1,100 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Check, Clock, Loader2, Trophy } from "lucide-react";
+import {
+  Play,
+  Check,
+  Clock,
+  Loader2,
+  Trophy,
+  FileQuestion,
+  Video,
+  PenTool,
+  BookOpen,
+  Gamepad2,
+  MessageSquare,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useActivityTracker, formatDuration } from "@/hooks/use-activity-tracker";
 import { cn } from "@/lib/utils";
+import type { Activity } from "@/data/curriculum/activities";
+import { activityFromString } from "@/data/curriculum/activities";
+import { ActivityRenderer } from "./activity-renderers";
+
+// Type for activities - can be string[] (legacy) or Activity[] (new)
+type ActivityInput = string[] | Activity[];
 
 interface ActivityListProps {
   lessonId: string;
-  activities: string[];
+  activities: ActivityInput;
   onProgressUpdate?: (progress: { progressPercent: number; isComplete: boolean }) => void;
+}
+
+// Helper to normalize activities to Activity[]
+function normalizeActivities(activities: ActivityInput): Activity[] {
+  if (activities.length === 0) return [];
+
+  // Check if first item is a string
+  if (typeof activities[0] === "string") {
+    return (activities as string[]).map((title, index) =>
+      activityFromString(title, index)
+    );
+  }
+
+  return activities as Activity[];
+}
+
+// Get icon for activity type
+function getActivityIcon(type: Activity["type"]) {
+  switch (type) {
+    case "quiz":
+      return FileQuestion;
+    case "video":
+      return Video;
+    case "practice":
+      return PenTool;
+    case "reading":
+      return BookOpen;
+    case "interactive":
+      return Gamepad2;
+    case "discussion":
+      return MessageSquare;
+    default:
+      return Play;
+  }
+}
+
+// Get display label for activity type
+function getActivityTypeLabel(type: Activity["type"]) {
+  switch (type) {
+    case "quiz":
+      return "Quiz";
+    case "video":
+      return "Video";
+    case "practice":
+      return "Practice";
+    case "reading":
+      return "Reading";
+    case "interactive":
+      return "Interactive";
+    case "discussion":
+      return "Discussion";
+    default:
+      return "Activity";
+  }
 }
 
 export function ActivityList({
   lessonId,
-  activities,
+  activities: rawActivities,
   onProgressUpdate,
 }: ActivityListProps) {
+  // Normalize activities to Activity[] format
+  const activities = normalizeActivities(rawActivities);
+
   const {
     isLoading,
     currentActivity,
@@ -82,10 +157,11 @@ export function ActivityList({
         const isCompleted = isActivityCompleted(index);
         const isActive = currentActivity === index;
         const timeSpent = getActivityTime(index);
+        const ActivityIcon = getActivityIcon(activity.type);
 
         return (
           <Card
-            key={index}
+            key={activity.id}
             className={cn(
               "transition-all",
               isCompleted && "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20",
@@ -108,20 +184,35 @@ export function ActivityList({
                     {isCompleted ? (
                       <Check className="h-4 w-4" />
                     ) : (
-                      index + 1
+                      <ActivityIcon className="h-4 w-4" />
                     )}
                   </div>
-                  <CardTitle className="text-base">{activity}</CardTitle>
+                  <div>
+                    <CardTitle className="text-base">{activity.title}</CardTitle>
+                    {activity.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {activity.description}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    {getActivityTypeLabel(activity.type)}
+                  </Badge>
                   {timeSpent > 0 && (
                     <Badge variant="outline" className="text-xs">
                       <Clock className="h-3 w-3 mr-1" />
                       {formatDuration(timeSpent)}
                     </Badge>
                   )}
-                  {!isCompleted && !isActive && (
-                    <Badge variant="secondary">~5 min</Badge>
+                  {!isCompleted && !isActive && activity.estimatedMinutes && (
+                    <Badge variant="secondary">~{activity.estimatedMinutes} min</Badge>
+                  )}
+                  {activity.points && (
+                    <Badge variant="secondary" className="text-xs">
+                      {activity.points} pts
+                    </Badge>
                   )}
                   {isCompleted && (
                     <Badge variant="default" className="bg-green-500">
@@ -138,9 +229,9 @@ export function ActivityList({
             </CardHeader>
             <CardContent>
               {isActive ? (
-                <ActivityContent
+                <ActivityRenderer
                   activity={activity}
-                  onComplete={() => completeActivity(index)}
+                  onComplete={(score) => completeActivity(index, score)}
                 />
               ) : isCompleted ? (
                 <div className="flex items-center justify-between">
@@ -171,7 +262,7 @@ export function ActivityList({
 
               {expandedActivity === index && isCompleted && (
                 <div className="mt-4 pt-4 border-t">
-                  <ActivityContent
+                  <ActivityRenderer
                     activity={activity}
                     onComplete={() => {}}
                     readOnly
@@ -182,68 +273,6 @@ export function ActivityList({
           </Card>
         );
       })}
-    </div>
-  );
-}
-
-/**
- * Activity content component (placeholder for actual activity implementation)
- * This would be replaced with actual activity UI (quiz, interactive, etc.)
- */
-function ActivityContent({
-  activity,
-  onComplete,
-  readOnly = false,
-}: {
-  activity: string;
-  onComplete: () => void;
-  readOnly?: boolean;
-}) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleComplete = async () => {
-    setIsSubmitting(true);
-    await onComplete();
-    setIsSubmitting(false);
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="p-4 bg-muted/50 rounded-lg">
-        <p className="text-sm text-muted-foreground mb-2">
-          Activity: <strong>{activity}</strong>
-        </p>
-        <p className="text-sm">
-          This is a placeholder for the interactive activity content.
-          In the full implementation, this would contain:
-        </p>
-        <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-          <li>• Interactive exercises</li>
-          <li>• Practice problems</li>
-          <li>• Video content</li>
-          <li>• Drag-and-drop activities</li>
-        </ul>
-      </div>
-
-      {!readOnly && (
-        <Button
-          className="w-full"
-          onClick={handleComplete}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Completing...
-            </>
-          ) : (
-            <>
-              <Check className="h-4 w-4 mr-2" />
-              Mark as Complete
-            </>
-          )}
-        </Button>
-      )}
     </div>
   );
 }

@@ -89,7 +89,7 @@ export function useActivityTracker({
 
   // Complete an activity
   const completeActivity = useCallback(
-    async (activityIndex: number) => {
+    async (activityIndex: number, score?: number) => {
       // Calculate time spent
       let timeSpent = 0;
       if (activityStartTime.current) {
@@ -107,6 +107,7 @@ export function useActivityTracker({
             activityIndex,
             totalActivities,
             timeSpent,
+            score,
           }),
         });
 

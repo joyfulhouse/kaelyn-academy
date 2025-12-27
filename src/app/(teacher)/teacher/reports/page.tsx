@@ -24,7 +24,13 @@ import {
   Target,
   Calendar,
   Loader2,
+  CheckCircle,
 } from "lucide-react";
+import {
+  generateTeacherReportPDF,
+  exportTeacherReportCSV,
+  type TeacherReportData,
+} from "@/lib/reports/teacher-pdf-generator";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -132,6 +138,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<ReportData | null>(null);
+  const [exportStatus, setExportStatus] = useState<"idle" | "exporting" | "success">("idle");
 
   const fetchReports = useCallback(async () => {
     try {
@@ -169,6 +176,75 @@ export default function ReportsPage() {
   // Handle date range change
   const handleDateRangeChange = (value: string) => {
     setDateRange(value);
+  };
+
+  // Get readable class name
+  const getClassName = () => {
+    if (selectedClass === "all") return "All Classes";
+    const cls = data?.classes.find((c) => c.id === selectedClass);
+    return cls?.name || "Selected Class";
+  };
+
+  // Get readable date range
+  const getDateRangeLabel = () => {
+    const labels: Record<string, string> = {
+      "7days": "Last 7 Days",
+      "30days": "Last 30 Days",
+      "90days": "Last 90 Days",
+      "semester": "This Semester",
+      "year": "This Year",
+    };
+    return labels[dateRange] || "Last 30 Days";
+  };
+
+  // Handle CSV export
+  const handleExportCSV = () => {
+    if (!data) return;
+
+    setExportStatus("exporting");
+
+    const exportData: TeacherReportData = {
+      summary: data.summary,
+      weeklyProgress: data.weeklyProgress,
+      subjectPerformance: data.subjectPerformance,
+      studentPerformance: data.studentPerformance,
+      assignmentCompletion: data.assignmentCompletion,
+      className: getClassName(),
+      dateRange: getDateRangeLabel(),
+    };
+
+    exportTeacherReportCSV(exportData, {
+      className: getClassName(),
+      dateRange: getDateRangeLabel(),
+    });
+
+    setExportStatus("success");
+    setTimeout(() => setExportStatus("idle"), 2000);
+  };
+
+  // Handle PDF generation
+  const handleGeneratePDF = () => {
+    if (!data) return;
+
+    setExportStatus("exporting");
+
+    const exportData: TeacherReportData = {
+      summary: data.summary,
+      weeklyProgress: data.weeklyProgress,
+      subjectPerformance: data.subjectPerformance,
+      studentPerformance: data.studentPerformance,
+      assignmentCompletion: data.assignmentCompletion,
+      className: getClassName(),
+      dateRange: getDateRangeLabel(),
+    };
+
+    generateTeacherReportPDF(exportData, {
+      title: "Class Analytics Report",
+      subtitle: `${getClassName()} - ${getDateRangeLabel()}`,
+    });
+
+    setExportStatus("success");
+    setTimeout(() => setExportStatus("idle"), 2000);
   };
 
   if (loading) {
@@ -218,12 +294,32 @@ export default function ReportsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export Report
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={handleExportCSV}
+            disabled={!data || exportStatus === "exporting"}
+          >
+            {exportStatus === "success" ? (
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            ) : exportStatus === "exporting" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            Export CSV
           </Button>
-          <Button variant="outline" className="gap-2">
-            <FileText className="h-4 w-4" />
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={handleGeneratePDF}
+            disabled={!data || exportStatus === "exporting"}
+          >
+            {exportStatus === "exporting" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileText className="h-4 w-4" />
+            )}
             Generate PDF
           </Button>
         </div>
@@ -481,7 +577,13 @@ export default function ReportsPage() {
               <CardTitle>Student Performance</CardTitle>
               <CardDescription>Individual student progress overview</CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleExportCSV}
+              disabled={!data || exportStatus === "exporting"}
+            >
               <Download className="h-4 w-4" />
               Export
             </Button>

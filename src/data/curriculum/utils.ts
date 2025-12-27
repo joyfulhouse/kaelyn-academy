@@ -3,7 +3,7 @@
  * Shared helpers for creating curriculum data structures
  */
 
-import type { Lesson } from "./types";
+import type { Lesson, LessonActivities } from "./types";
 
 /**
  * Factory function to create a Lesson object with defaults
@@ -13,7 +13,8 @@ export function createLesson(
   title: string,
   description: string,
   duration: number = 30,
-  prerequisites: string[] = []
+  prerequisites: string[] = [],
+  activities?: LessonActivities
 ): Lesson {
   return {
     id,
@@ -23,7 +24,7 @@ export function createLesson(
     duration,
     objectives: [],
     prerequisites,
-    activities: [],
+    activities: activities ?? [],
     assessmentType: "practice",
   };
 }

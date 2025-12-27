@@ -16,11 +16,15 @@ import { Separator } from "@/components/ui/separator";
 import { QuizComponent } from "./quiz-component";
 import { getQuizForLesson, hasQuiz } from "@/lib/assessment";
 import type { QuizConfig, QuizResult } from "@/lib/assessment/types";
+import type { Activity } from "@/data/curriculum/activities";
+
+// Activities can be string[] (legacy) or Activity[] (new)
+type ActivityInput = string[] | Activity[];
 
 interface AssessmentTabProps {
   lessonId: string;
   assessmentType: string;
-  activities: string[]; // Activity IDs
+  activities: ActivityInput;
 }
 
 interface QuizAttemptHistory {

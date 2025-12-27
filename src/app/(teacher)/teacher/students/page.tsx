@@ -17,6 +17,11 @@ import {
   BarChart3,
   Phone,
   X,
+  StickyNote,
+  Plus,
+  Loader2,
+  Pin,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,6 +91,18 @@ interface Summary {
   excelling: number;
   struggling: number;
   avgProgress: number;
+}
+
+interface StudentNote {
+  id: string;
+  title: string | null;
+  content: string;
+  category: string;
+  isPinned: boolean;
+  isPrivate: boolean;
+  createdAt: string;
+  teacherName: string | null;
+  isOwner: boolean;
 }
 
 function StudentsSkeleton() {
@@ -182,6 +199,15 @@ export default function TeacherStudentsPage() {
   const [messageContent, setMessageContent] = useState("");
   const [sending, setSending] = useState(false);
 
+  // Notes dialog
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [notesStudent, setNotesStudent] = useState<Student | null>(null);
+  const [notes, setNotes] = useState<StudentNote[]>([]);
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [newNoteContent, setNewNoteContent] = useState("");
+  const [newNoteCategory, setNewNoteCategory] = useState("general");
+  const [savingNote, setSavingNote] = useState(false);
+
   const fetchData = useCallback(async () => {
     try {
       const response = await fetch("/api/teacher/students");
@@ -263,6 +289,103 @@ export default function TeacherStudentsPage() {
   const openMessageDialog = (student: Student) => {
     setMessageRecipient(student);
     setMessageDialogOpen(true);
+  };
+
+  // Notes functions
+  const fetchNotes = useCallback(async (learnerId: string) => {
+    setNotesLoading(true);
+    try {
+      const response = await fetch(`/api/teacher/notes?learnerId=${learnerId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setNotes(data.notes || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notes:", error);
+    } finally {
+      setNotesLoading(false);
+    }
+  }, []);
+
+  const openNotesDialog = (student: Student) => {
+    setNotesStudent(student);
+    setNotesDialogOpen(true);
+    fetchNotes(student.id);
+  };
+
+  const handleAddNote = async () => {
+    if (!notesStudent || !newNoteContent.trim()) return;
+    setSavingNote(true);
+
+    try {
+      const response = await fetch("/api/teacher/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          learnerId: notesStudent.id,
+          content: newNoteContent,
+          category: newNoteCategory,
+        }),
+      });
+
+      if (response.ok) {
+        setNewNoteContent("");
+        setNewNoteCategory("general");
+        fetchNotes(notesStudent.id);
+      }
+    } catch (error) {
+      console.error("Failed to add note:", error);
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      const response = await fetch(`/api/teacher/notes?id=${noteId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok && notesStudent) {
+        fetchNotes(notesStudent.id);
+      }
+    } catch (error) {
+      console.error("Failed to delete note:", error);
+    }
+  };
+
+  const handleTogglePin = async (noteId: string, currentPinned: boolean) => {
+    try {
+      const response = await fetch("/api/teacher/notes", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: noteId,
+          isPinned: !currentPinned,
+        }),
+      });
+
+      if (response.ok && notesStudent) {
+        fetchNotes(notesStudent.id);
+      }
+    } catch (error) {
+      console.error("Failed to toggle pin:", error);
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "academic":
+        return "bg-blue-500";
+      case "behavioral":
+        return "bg-orange-500";
+      case "communication":
+        return "bg-green-500";
+      case "goals":
+        return "bg-purple-500";
+      default:
+        return "bg-gray-500";
+    }
   };
 
   const clearFilters = () => {
@@ -502,6 +625,11 @@ export default function TeacherStudentsPage() {
                               View Progress
                             </Link>
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openNotesDialog(student)}>
+                            <StickyNote className="h-4 w-4 mr-2" />
+                            View Notes
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => openMessageDialog(student)}>
                             <MessageSquare className="h-4 w-4 mr-2" />
                             Send Message to Parent
@@ -567,6 +695,136 @@ export default function TeacherStudentsPage() {
             </Button>
             <Button onClick={handleSendMessage} disabled={!messageContent.trim() || sending}>
               {sending ? "Sending..." : "Send Message"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notes Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <StickyNote className="h-5 w-5" />
+              Notes for {notesStudent?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Private notes about this student. Only you can see your notes.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Add New Note */}
+          <div className="space-y-3 border-b pb-4">
+            <div className="flex gap-2">
+              <Select value={newNoteCategory} onValueChange={setNewNoteCategory}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="academic">Academic</SelectItem>
+                  <SelectItem value="behavioral">Behavioral</SelectItem>
+                  <SelectItem value="communication">Communication</SelectItem>
+                  <SelectItem value="goals">Goals</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Textarea
+              placeholder="Add a new note..."
+              value={newNoteContent}
+              onChange={(e) => setNewNoteContent(e.target.value)}
+              rows={3}
+            />
+            <Button
+              onClick={handleAddNote}
+              disabled={!newNoteContent.trim() || savingNote}
+              className="gap-2"
+            >
+              {savingNote ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              Add Note
+            </Button>
+          </div>
+
+          {/* Notes List */}
+          <div className="space-y-3 mt-4">
+            {notesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : notes.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <StickyNote className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No notes yet</p>
+                <p className="text-sm">Add your first note above</p>
+              </div>
+            ) : (
+              notes.map((note) => (
+                <div
+                  key={note.id}
+                  className={`p-4 rounded-lg border ${
+                    note.isPinned ? "border-amber-300 bg-amber-50 dark:bg-amber-950/20" : "bg-muted/50"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span
+                        className={`w-2 h-2 rounded-full ${getCategoryColor(note.category)}`}
+                      />
+                      <span className="text-xs text-muted-foreground capitalize">
+                        {note.category}
+                      </span>
+                      {note.isPinned && (
+                        <Pin className="h-3 w-3 text-amber-500" />
+                      )}
+                      {!note.isOwner && (
+                        <Badge variant="outline" className="text-xs">
+                          {note.teacherName}
+                        </Badge>
+                      )}
+                    </div>
+                    {note.isOwner && (
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => handleTogglePin(note.id, note.isPinned)}
+                        >
+                          <Pin className={`h-4 w-4 ${note.isPinned ? "text-amber-500" : ""}`} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-red-500 hover:text-red-600"
+                          onClick={() => handleDeleteNote(note.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {new Date(note.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

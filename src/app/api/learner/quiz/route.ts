@@ -6,6 +6,10 @@ import { eq, and, isNull, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { getQuizForLesson, gradeQuiz } from "@/lib/assessment";
+import {
+  generateQuizFeedback,
+  formatFeedbackAsString,
+} from "@/lib/ai/quiz-feedback";
 
 /**
  * Schema for quiz submission
@@ -43,7 +47,7 @@ export async function POST(request: NextRequest) {
         eq(learners.userId, session.user.id),
         isNull(learners.deletedAt)
       ),
-      columns: { id: true, organizationId: true },
+      columns: { id: true, organizationId: true, name: true, gradeLevel: true },
     });
 
     if (!learner) {
@@ -91,8 +95,16 @@ export async function POST(request: NextRequest) {
       timeSpent: qr.timeSpent,
     }));
 
-    // Generate AI feedback (simple version for now)
-    const aiFeedback = generateFeedback(gradeResult.percentage, gradeResult.passed);
+    // Generate AI feedback
+    const feedbackResult = await generateQuizFeedback({
+      quizConfig,
+      questionResults: gradeResult.questionResults,
+      score: gradeResult.percentage,
+      passed: gradeResult.passed,
+      learnerName: learner.name ?? undefined,
+      gradeLevel: learner.gradeLevel ?? undefined,
+    });
+    const aiFeedback = formatFeedbackAsString(feedbackResult);
 
     // Insert the attempt
     const [attempt] = await db
@@ -257,20 +269,3 @@ async function generateDeterministicUuid(quizId: string): Promise<string> {
     .padStart(2, "0")}${hex.slice(18, 20)}-${hex.slice(20, 32)}`;
 }
 
-/**
- * Generate simple feedback based on score
- * TODO: Replace with AI-generated feedback using Anthropic/OpenAI
- */
-function generateFeedback(percentage: number, passed: boolean): string {
-  if (percentage >= 90) {
-    return "Excellent work! You've demonstrated outstanding understanding of this material. Keep up the amazing effort!";
-  } else if (percentage >= 80) {
-    return "Great job! You have a strong grasp of the concepts. Review any questions you missed to perfect your understanding.";
-  } else if (passed) {
-    return "Good work! You've passed the quiz. Consider reviewing the explanations for questions you missed to strengthen your knowledge.";
-  } else if (percentage >= 50) {
-    return "You're making progress! Review the lesson material and pay special attention to the concepts you found challenging. You can do this!";
-  } else {
-    return "Keep practicing! Learning takes time. Go back through the lesson, focus on one concept at a time, and try again when you're ready.";
-  }
-}

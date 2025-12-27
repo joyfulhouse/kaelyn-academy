@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSubject, getUnitsForGrade, getLesson } from "@/data/curriculum";
 import type { GradeLevel, Lesson, Unit } from "@/data/curriculum";
+import { getActivitiesForLesson } from "@/data/curriculum/sample-activities";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { learners } from "@/lib/db/schema/users";
@@ -164,6 +165,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
     notFound();
   }
 
+  // Get activities - prefer sample activities if available, otherwise use lesson's activities
+  const sampleActivities = getActivitiesForLesson(lessonId);
+  const activities = sampleActivities.length > 0 ? sampleActivities : lesson.activities;
+
   // Fetch lesson progress from database
   let currentLessonProgress = 0;
   let completedObjectives = new Set<string>();
@@ -247,7 +252,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             </div>
             <div className="flex items-center gap-1">
               <BookOpen className="h-4 w-4" />
-              <span>{lesson.activities.length} activities</span>
+              <span>{activities.length} activities</span>
             </div>
           </div>
         </div>
@@ -330,7 +335,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             <TabsContent value="activities" className="mt-6 space-y-4">
               <ActivityList
                 lessonId={lessonId}
-                activities={lesson.activities}
+                activities={activities}
               />
             </TabsContent>
 
@@ -338,7 +343,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
               <AssessmentTab
                 lessonId={lessonId}
                 assessmentType={lesson.assessmentType}
-                activities={lesson.activities}
+                activities={activities}
               />
             </TabsContent>
           </Tabs>

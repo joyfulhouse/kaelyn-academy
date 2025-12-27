@@ -3,11 +3,16 @@
  * Structure for K-12 educational content
  */
 
+import type { Activity } from "./activities";
+
 export interface LearningObjective {
   id: string;
   description: string;
   bloomsLevel: "remember" | "understand" | "apply" | "analyze" | "evaluate" | "create";
 }
+
+// Legacy activities support - string[] or Activity[]
+export type LessonActivities = string[] | Activity[];
 
 export interface Lesson {
   id: string;
@@ -17,7 +22,7 @@ export interface Lesson {
   duration: number; // minutes
   objectives: LearningObjective[];
   prerequisites: string[]; // lesson IDs
-  activities: string[];
+  activities: LessonActivities;
   assessmentType: "quiz" | "project" | "practice" | "discussion";
 }
 

@@ -4,6 +4,8 @@
  */
 
 export * from "./types";
+export * from "./activities";
+export { getActivitiesForLesson, lessonHasActivities } from "./sample-activities";
 export { mathCurriculum } from "./math";
 export { readingCurriculum } from "./reading";
 export { scienceCurriculum } from "./science";

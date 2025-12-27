@@ -18,7 +18,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed:achievements": "bun run src/lib/db/seeds/achievements.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.1",

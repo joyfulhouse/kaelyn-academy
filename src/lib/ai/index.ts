@@ -55,3 +55,17 @@ export {
   type GeneratedLessonContent,
   type TopicSuggestion,
 } from "./content";
+
+export {
+  generateParentRecommendations,
+  type ChildProgressData,
+  type Recommendation,
+  type ParentRecommendations,
+} from "./parent-recommendations";
+
+export {
+  generateQuizFeedback,
+  formatFeedbackAsString,
+  type QuizFeedbackRequest,
+  type QuizFeedback,
+} from "./quiz-feedback";
