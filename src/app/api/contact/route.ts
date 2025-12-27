@@ -3,6 +3,10 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { contactSubmissions } from "@/lib/db/schema";
 import { headers } from "next/headers";
+import { Resend } from "resend";
+
+// Initialize Resend client if API key is available
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const contactSchema = z.object({
   name: z.string().min(2),
@@ -64,8 +68,64 @@ export async function POST(request: NextRequest) {
       })
       .returning({ id: contactSubmissions.id });
 
-    // TODO: Send email notification to support team
-    // TODO: Send confirmation email to submitter
+    // Send email notification to support team if Resend is configured
+    if (resend) {
+      try {
+        // Notification to support team
+        await resend.emails.send({
+          from: "Kaelyn's Academy <noreply@kaelyns.academy>",
+          to: ["contact@kaelyns.academy"],
+          replyTo: data.email,
+          subject: `[${data.inquiryType.toUpperCase()}] ${data.subject}`,
+          html: `
+            <h2>New Contact Form Submission</h2>
+            <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
+              <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.name}</td></tr>
+              <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;"><a href="mailto:${data.email}">${data.email}</a></td></tr>
+              ${data.phone ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Phone:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.phone}</td></tr>` : ""}
+              ${data.organization ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Organization:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.organization}</td></tr>` : ""}
+              ${data.role ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Role:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.role}</td></tr>` : ""}
+              <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Inquiry Type:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.inquiryType}</td></tr>
+              <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Subject:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.subject}</td></tr>
+            </table>
+            <h3 style="margin-top: 24px;">Message:</h3>
+            <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; white-space: pre-wrap;">${data.message}</div>
+            <p style="color: #666; font-size: 12px; margin-top: 24px;">
+              Submission ID: ${submission.id}<br />
+              Submitted at: ${new Date().toISOString()}
+            </p>
+          `,
+        });
+
+        // Confirmation email to submitter
+        await resend.emails.send({
+          from: "Kaelyn's Academy <noreply@kaelyns.academy>",
+          to: [data.email],
+          subject: "We received your message - Kaelyn's Academy",
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #10b981;">Thank you for contacting us!</h1>
+              <p>Hi ${data.name},</p>
+              <p>We've received your message and will get back to you within 24 hours.</p>
+              <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin: 24px 0;">
+                <p style="margin: 0;"><strong>Your inquiry:</strong> ${data.subject}</p>
+              </div>
+              <p>In the meantime, feel free to explore our <a href="https://kaelyns.academy">learning platform</a>.</p>
+              <p>Best regards,<br />The Kaelyn's Academy Team</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+              <p style="color: #666; font-size: 12px;">
+                This is an automated response. Please don't reply to this email directly.
+              </p>
+            </div>
+          `,
+        });
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+        // Don't fail the request if email fails - submission is already saved
+      }
+    } else {
+      console.log("Resend not configured - skipping email notification");
+    }
 
     return NextResponse.json(
       {
