@@ -1,15 +1,28 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Eye } from "lucide-react";
+import {
+  SubjectDialog,
+  UnitDialog,
+  LessonDialog,
+  DeleteDialog,
+} from "@/components/admin/curriculum-dialogs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Subject {
   id: string;
   name: string;
   slug: string;
+  description?: string;
   iconName?: string;
   color?: string;
   unitsCount: number;
@@ -27,6 +40,21 @@ interface Unit {
   lessonsCount: number;
   isPublished: boolean;
   estimatedMinutes?: number;
+}
+
+interface Lesson {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  unitId: string;
+  estimatedMinutes?: number;
+  difficultyLevel?: number;
+  isPublished: boolean;
+  content?: {
+    type: "text" | "video" | "interactive" | "quiz" | "game";
+    body?: string;
+  };
 }
 
 interface CurriculumData {
@@ -47,6 +75,23 @@ export default function AdminCurriculumPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState<CurriculumData | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [lessonsLoading, setLessonsLoading] = useState(false);
+
+  // Dialog states
+  const [subjectDialogOpen, setSubjectDialogOpen] = useState(false);
+  const [editingSubject, setEditingSubject] = useState<Subject | undefined>();
+  const [unitDialogOpen, setUnitDialogOpen] = useState(false);
+  const [editingUnit, setEditingUnit] = useState<Unit | undefined>();
+  const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<Lesson | undefined>();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: "subject" | "unit" | "lesson";
+    id: string;
+    name: string;
+  } | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -76,15 +121,113 @@ export default function AdminCurriculumPage() {
     fetchData();
   }, [fetchData]);
 
-  // Debounced search
+  // Debounced search - use a ref to avoid infinite loops
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoadDoneRef = useRef(false);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (data) {
+    if (!initialLoadDoneRef.current) return;
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchData();
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery, fetchData]);
+
+  useEffect(() => {
+    if (data) {
+      initialLoadDoneRef.current = true;
+    }
+  }, [data]);
+
+  // Fetch lessons when a unit is selected
+  const fetchLessons = useCallback(async (unitId: string) => {
+    setLessonsLoading(true);
+    try {
+      const response = await fetch(`/api/admin/curriculum/lessons?unitId=${unitId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setLessons(data.lessons || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch lessons:", err);
+    } finally {
+      setLessonsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedUnit) {
+      fetchLessons(selectedUnit);
+    }
+  }, [selectedUnit, fetchLessons]);
+
+  // Dialog handlers
+  const handleCreateSubject = () => {
+    setEditingSubject(undefined);
+    setSubjectDialogOpen(true);
+  };
+
+  const handleEditSubject = (subject: Subject) => {
+    setEditingSubject(subject);
+    setSubjectDialogOpen(true);
+  };
+
+  const handleCreateUnit = () => {
+    setEditingUnit(undefined);
+    setUnitDialogOpen(true);
+  };
+
+  const handleEditUnit = (unit: Unit) => {
+    setEditingUnit(unit);
+    setUnitDialogOpen(true);
+  };
+
+  const handleCreateLesson = () => {
+    setEditingLesson(undefined);
+    setLessonDialogOpen(true);
+  };
+
+  const handleEditLesson = (lesson: Lesson) => {
+    setEditingLesson(lesson);
+    setLessonDialogOpen(true);
+  };
+
+  const handleDelete = (type: "subject" | "unit" | "lesson", id: string, name: string) => {
+    setDeleteTarget({ type, id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    const endpoints = {
+      subject: "/api/admin/curriculum/subjects",
+      unit: "/api/admin/curriculum/units",
+      lesson: "/api/admin/curriculum/lessons",
+    };
+
+    const response = await fetch(`${endpoints[deleteTarget.type]}?id=${deleteTarget.id}`, {
+      method: "DELETE",
+    });
+
+    if (response.ok) {
+      if (deleteTarget.type === "lesson" && selectedUnit) {
+        fetchLessons(selectedUnit);
+      } else {
         fetchData();
       }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    }
+  };
 
   if (loading && !data) {
     return (
@@ -133,9 +276,27 @@ export default function AdminCurriculumPage() {
           <h1 className="text-3xl font-bold text-gray-900">Curriculum Management</h1>
           <p className="text-gray-600 mt-1">Manage subjects, units, and lessons</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          + Create Content
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Content
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleCreateSubject}>
+              New Subject
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCreateUnit}>
+              New Unit
+            </DropdownMenuItem>
+            {selectedUnit && (
+              <DropdownMenuItem onClick={handleCreateLesson}>
+                New Lesson
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Stats */}
@@ -236,20 +397,42 @@ export default function AdminCurriculumPage() {
                       {subject.unitsCount} units • {subject.lessonsCount} lessons
                     </p>
                     <div className="flex gap-2 mt-3">
-                      <Button variant="ghost" size="sm" className="flex-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditSubject(subject);
+                        }}
+                      >
+                        <Pencil className="h-3 w-3 mr-1" />
                         Edit
                       </Button>
-                      <Button variant="ghost" size="sm" className="flex-1">
-                        View
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete("subject", subject.id, subject.name);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
                       </Button>
                     </div>
                   </div>
                 ))}
                 {/* Add New Subject Card */}
-                <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-blue-300 transition-colors cursor-pointer flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 min-h-[180px]">
-                  <div className="text-3xl mb-2">+</div>
+                <button
+                  type="button"
+                  onClick={handleCreateSubject}
+                  className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-blue-300 transition-colors cursor-pointer flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 min-h-[180px]"
+                >
+                  <Plus className="h-8 w-8 mb-2" />
                   <div className="font-medium">Add Subject</div>
-                </div>
+                </button>
               </div>
             )}
           </CardContent>
@@ -322,8 +505,33 @@ export default function AdminCurriculumPage() {
                           </td>
                           <td className="py-4">
                             <div className="flex gap-2">
-                              <Button variant="ghost" size="sm">Edit</Button>
-                              <Button variant="ghost" size="sm">View</Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditUnit(unit)}
+                              >
+                                <Pencil className="h-3 w-3 mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedUnit(unit.id);
+                                  setActiveTab("lessons");
+                                }}
+                              >
+                                <Eye className="h-3 w-3 mr-1" />
+                                Lessons
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleDelete("unit", unit.id, unit.title)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -340,20 +548,144 @@ export default function AdminCurriculumPage() {
       {activeTab === "lessons" && (
         <Card className="border-0 shadow-md">
           <CardHeader>
-            <CardTitle>Lessons</CardTitle>
-            <CardDescription>Individual lesson content</CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Lessons</CardTitle>
+                <CardDescription>
+                  {selectedUnit
+                    ? `Lessons in ${units.find((u) => u.id === selectedUnit)?.title}`
+                    : "Select a unit to view lessons"}
+                </CardDescription>
+              </div>
+              {selectedUnit && (
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setSelectedUnit(null)}>
+                    Clear Selection
+                  </Button>
+                  <Button size="sm" onClick={handleCreateLesson}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Lesson
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-12 text-gray-500">
-              <div className="text-4xl mb-4">📚</div>
-              <p>Select a unit to view its lessons</p>
-              <Button variant="outline" className="mt-4" onClick={() => setActiveTab("units")}>
-                Browse Units
-              </Button>
-            </div>
+            {!selectedUnit ? (
+              <div className="text-center py-12 text-gray-500">
+                <div className="text-4xl mb-4">📚</div>
+                <p>Select a unit to view its lessons</p>
+                <Button variant="outline" className="mt-4" onClick={() => setActiveTab("units")}>
+                  Browse Units
+                </Button>
+              </div>
+            ) : lessonsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              </div>
+            ) : lessons.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <div className="text-4xl mb-4">📝</div>
+                <p>No lessons in this unit yet</p>
+                <Button className="mt-4" onClick={handleCreateLesson}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Create First Lesson
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {lessons.map((lesson, index) => (
+                  <div
+                    key={lesson.id}
+                    className="flex items-center justify-between p-4 rounded-lg border hover:border-blue-300 hover:shadow-sm transition-all"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 font-semibold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">{lesson.title}</h4>
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          {lesson.estimatedMinutes && (
+                            <span>{lesson.estimatedMinutes} min</span>
+                          )}
+                          {lesson.difficultyLevel && (
+                            <span>Difficulty: {lesson.difficultyLevel}/5</span>
+                          )}
+                          <span className={`px-2 py-0.5 rounded-full text-xs ${
+                            lesson.isPublished
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-600"
+                          }`}>
+                            {lesson.isPublished ? "Published" : "Draft"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditLesson(lesson)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDelete("lesson", lesson.id, lesson.title)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
+
+      {/* Dialogs */}
+      <SubjectDialog
+        open={subjectDialogOpen}
+        onOpenChange={setSubjectDialogOpen}
+        subject={editingSubject}
+        onSuccess={fetchData}
+      />
+
+      <UnitDialog
+        open={unitDialogOpen}
+        onOpenChange={setUnitDialogOpen}
+        unit={editingUnit}
+        subjects={subjects}
+        onSuccess={fetchData}
+      />
+
+      {selectedUnit && (
+        <LessonDialog
+          open={lessonDialogOpen}
+          onOpenChange={setLessonDialogOpen}
+          lesson={editingLesson}
+          unitId={selectedUnit}
+          subjectName={
+            subjects.find(
+              (s) => s.id === units.find((u) => u.id === selectedUnit)?.subjectId
+            )?.name
+          }
+          gradeLevel={units.find((u) => u.id === selectedUnit)?.gradeLevel}
+          onSuccess={() => fetchLessons(selectedUnit)}
+        />
+      )}
+
+      <DeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title={`Delete ${deleteTarget?.type || "item"}?`}
+        description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

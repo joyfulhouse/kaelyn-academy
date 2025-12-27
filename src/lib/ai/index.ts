@@ -46,3 +46,12 @@ export {
   type TrueFalseQuestion,
   type MatchingQuestion,
 } from "./practice";
+
+export {
+  generateLessonContent,
+  streamLessonContent,
+  suggestLessonTopics,
+  type LessonContentRequest,
+  type GeneratedLessonContent,
+  type TopicSuggestion,
+} from "./content";

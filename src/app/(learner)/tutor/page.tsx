@@ -64,7 +64,31 @@ export default function AITutorPage() {
   const [subject, setSubject] = useState("general");
   const [learner, setLearner] = useState<Learner | null>(null);
   const [conversationId, setConversationId] = useState<string | undefined>();
+  const [quickQuestions, setQuickQuestions] = useState<string[]>([
+    "Help me understand fractions",
+    "What causes rain?",
+    "Explain photosynthesis",
+    "How do I solve word problems?",
+    "What are the parts of speech?",
+  ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch curriculum-based questions
+  const fetchQuestions = useCallback(async (subj: string, grade: number) => {
+    try {
+      const response = await fetch(
+        `/api/curriculum/questions?subject=${subj}&gradeLevel=${grade}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data.questions && data.questions.length > 0) {
+          setQuickQuestions(data.questions);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch questions:", error);
+    }
+  }, []);
 
   // Fetch learner profile
   const fetchLearner = useCallback(async () => {
@@ -87,6 +111,12 @@ export default function AITutorPage() {
       fetchLearner();
     }
   }, [status, fetchLearner]);
+
+  // Fetch questions when subject or learner changes
+  useEffect(() => {
+    const gradeLevel = learner?.gradeLevel ?? 5;
+    fetchQuestions(subject, gradeLevel);
+  }, [subject, learner?.gradeLevel, fetchQuestions]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -352,13 +382,7 @@ export default function AITutorPage() {
         </CardHeader>
         <CardContent className="py-2">
           <div className="flex flex-wrap gap-2">
-            {[
-              "Help me understand fractions",
-              "What causes rain?",
-              "Explain photosynthesis",
-              "How do I solve word problems?",
-              "What are the parts of speech?",
-            ].map((question) => (
+            {quickQuestions.map((question) => (
               <Badge
                 key={question}
                 variant="secondary"

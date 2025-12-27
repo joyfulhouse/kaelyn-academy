@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
     }
 
     // List learners - scoped by role
-    let conditions = [];
+    const conditions = [];
 
     if (userRole === "admin") {
       // Admins can see all learners in their organization

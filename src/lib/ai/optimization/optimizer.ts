@@ -269,7 +269,7 @@ function applyGoalOptimizations(
   signature: SignatureVariant,
   goals: OptimizationGoal[]
 ): SignatureVariant {
-  let optimized = { ...signature };
+  const optimized = { ...signature };
 
   for (const goal of goals) {
     switch (goal) {
