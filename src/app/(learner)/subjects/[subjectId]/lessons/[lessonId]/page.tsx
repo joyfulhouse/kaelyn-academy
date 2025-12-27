@@ -12,6 +12,7 @@ import {
   Play,
 } from "lucide-react";
 import { LessonVisualization } from "@/components/3d/lesson-visualization";
+import { ActivityList } from "@/components/curriculum/activity-list";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -326,36 +327,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
             </TabsContent>
 
             <TabsContent value="activities" className="mt-6 space-y-4">
-              {lesson.activities.length === 0 ? (
-                <Card>
-                  <CardContent className="py-8 text-center">
-                    <p className="text-muted-foreground">
-                      No activities available for this lesson yet.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                lesson.activities.map((activity, index) => (
-                  <Card key={index}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
-                            {index + 1}
-                          </div>
-                          <CardTitle className="text-base">{activity}</CardTitle>
-                        </div>
-                        <Badge variant="outline">~5 min</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <Button variant="secondary" className="w-full">
-                        Start Activity
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+              <ActivityList
+                lessonId={lessonId}
+                activities={lesson.activities}
+              />
             </TabsContent>
 
             <TabsContent value="assessment" className="mt-6">
