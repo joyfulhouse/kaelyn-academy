@@ -26,6 +26,11 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSubject, getUnitsForGrade, getLesson } from "@/data/curriculum";
 import type { GradeLevel, Lesson, Unit } from "@/data/curriculum";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { learners } from "@/lib/db/schema/users";
+import { lessonProgress as lessonProgressTable } from "@/lib/db/schema/progress";
+import { eq, and, isNull } from "drizzle-orm";
 
 interface LessonPageProps {
   params: Promise<{ subjectId: string; lessonId: string }>;
@@ -98,8 +103,10 @@ export async function generateMetadata({
   params,
 }: LessonPageProps): Promise<Metadata> {
   const { subjectId, lessonId } = await params;
-  const gradeLevel: GradeLevel = 5; // TODO: Get from user profile
-  const { lesson, unit } = findLessonAndContext(subjectId, lessonId, gradeLevel);
+  // Note: Metadata generation uses default grade level since session isn't available
+  // The actual page component fetches the correct grade level from the user's profile
+  const gradeLevel: GradeLevel = 5;
+  const { lesson } = findLessonAndContext(subjectId, lessonId, gradeLevel);
   const subject = getSubject(subjectId);
 
   if (!lesson || !subject) {
@@ -116,11 +123,33 @@ export async function generateMetadata({
 
 export default async function LessonPage({ params }: LessonPageProps) {
   const { subjectId, lessonId } = await params;
-  const gradeLevel: GradeLevel = 5; // TODO: Get from user profile
 
   const subject = getSubject(subjectId);
   if (!subject) {
     notFound();
+  }
+
+  // Get session and grade level from database
+  const session = await auth();
+  let gradeLevel: GradeLevel = 5; // Default
+  let learnerId: string | null = null;
+
+  if (session?.user?.id) {
+    const learner = await db.query.learners.findFirst({
+      where: and(
+        eq(learners.userId, session.user.id),
+        isNull(learners.deletedAt)
+      ),
+      columns: {
+        id: true,
+        gradeLevel: true,
+      },
+    });
+
+    if (learner) {
+      gradeLevel = (learner.gradeLevel ?? 5) as GradeLevel;
+      learnerId = learner.id;
+    }
   }
 
   const { lesson, unit, prevLesson, nextLesson, lessonIndex } = findLessonAndContext(
@@ -133,9 +162,44 @@ export default async function LessonPage({ params }: LessonPageProps) {
     notFound();
   }
 
-  // TODO: Get actual completion status from user progress
-  const completedObjectives = new Set<string>();
-  const lessonProgress = 0;
+  // Fetch lesson progress from database
+  let currentLessonProgress = 0;
+  let completedObjectives = new Set<string>();
+
+  if (learnerId) {
+    // Note: lessonId in curriculum data is a string like "math-5-1-1"
+    // We need to find the database lesson by matching the slug or use the progress directly
+    const progressData = await db
+      .select({
+        progressPercent: lessonProgressTable.progressPercent,
+        status: lessonProgressTable.status,
+      })
+      .from(lessonProgressTable)
+      .where(
+        and(
+          eq(lessonProgressTable.learnerId, learnerId),
+          eq(lessonProgressTable.lessonId, lessonId)
+        )
+      )
+      .limit(1);
+
+    if (progressData.length > 0) {
+      currentLessonProgress = Math.round(progressData[0].progressPercent ?? 0);
+
+      // If lesson is completed, mark all objectives as complete
+      if (progressData[0].status === "completed") {
+        completedObjectives = new Set(lesson.objectives.map(o => o.id));
+      } else if (currentLessonProgress > 0) {
+        // Estimate which objectives are complete based on progress percentage
+        const estimatedComplete = Math.floor(
+          (currentLessonProgress / 100) * lesson.objectives.length
+        );
+        lesson.objectives.slice(0, estimatedComplete).forEach(o => {
+          completedObjectives.add(o.id);
+        });
+      }
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -191,14 +255,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <CardContent className="pt-6">
             <div className="text-center mb-4">
               <div className="text-4xl font-bold text-primary">
-                {lessonProgress}%
+                {currentLessonProgress}%
               </div>
               <div className="text-sm text-muted-foreground">Complete</div>
             </div>
-            <Progress value={lessonProgress} className="h-2 mb-4" />
+            <Progress value={currentLessonProgress} className="h-2 mb-4" />
             <Button className="w-full" size="lg">
               <Play className="h-4 w-4 mr-2" />
-              {lessonProgress === 0 ? "Start Lesson" : "Continue"}
+              {currentLessonProgress === 0 ? "Start Lesson" : "Continue"}
             </Button>
           </CardContent>
         </Card>

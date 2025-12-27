@@ -19,14 +19,12 @@ interface LearnerHeaderProps {
     email?: string | null;
     image?: string | null;
   };
+  currentStreak: number;
+  totalStars: number;
 }
 
-export function LearnerHeader({ user }: LearnerHeaderProps) {
+export function LearnerHeader({ user, currentStreak, totalStars }: LearnerHeaderProps) {
   const { theme } = useTheme();
-
-  // Mock streak data - would come from API
-  const currentStreak = 5;
-  const totalStars = 1250;
 
   return (
     <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">

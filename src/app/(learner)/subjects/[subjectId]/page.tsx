@@ -34,6 +34,11 @@ import {
 } from "@/components/ui/accordion";
 import { getSubject, getUnitsForGrade } from "@/data/curriculum";
 import type { GradeLevel, Lesson } from "@/data/curriculum";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { learners } from "@/lib/db/schema/users";
+import { lessonProgress } from "@/lib/db/schema/progress";
+import { eq, and, isNull, inArray } from "drizzle-orm";
 
 interface SubjectPageProps {
   params: Promise<{ subjectId: string }>;
@@ -85,11 +90,15 @@ export async function generateMetadata({
   };
 }
 
-function LessonStatusIcon({ lesson }: { lesson: Lesson }) {
-  // TODO: Get actual completion status from user progress
-  const isCompleted = false;
-  const isLocked = false;
-
+function LessonStatusIcon({
+  lesson,
+  isCompleted,
+  isLocked
+}: {
+  lesson: Lesson;
+  isCompleted: boolean;
+  isLocked: boolean;
+}) {
   if (isCompleted) {
     return <CheckCircle className="h-4 w-4 text-green-500" />;
   }
@@ -107,13 +116,60 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
     notFound();
   }
 
-  // TODO: Get grade level from user profile/session
-  const gradeLevel: GradeLevel = 5;
+  // Get session and grade level from database
+  const session = await auth();
+  let gradeLevel: GradeLevel = 5; // Default
+  let learnerId: string | null = null;
+  let completedLessonIds: Set<string> = new Set();
+
+  if (session?.user?.id) {
+    // Fetch learner profile for grade level
+    const learner = await db.query.learners.findFirst({
+      where: and(
+        eq(learners.userId, session.user.id),
+        isNull(learners.deletedAt)
+      ),
+      columns: {
+        id: true,
+        gradeLevel: true,
+      },
+    });
+
+    if (learner) {
+      gradeLevel = (learner.gradeLevel ?? 5) as GradeLevel;
+      learnerId = learner.id;
+    }
+  }
+
   const units = getUnitsForGrade(subjectId, gradeLevel);
   const totalLessons = units.reduce((acc, unit) => acc + unit.lessons.length, 0);
 
-  // TODO: Calculate from user progress
-  const completedLessons = 0;
+  // Fetch lesson progress for this learner
+  if (learnerId) {
+    const allLessonIds = units.flatMap(unit => unit.lessons.map(l => l.id));
+    if (allLessonIds.length > 0) {
+      const progressData = await db
+        .select({
+          lessonId: lessonProgress.lessonId,
+          status: lessonProgress.status,
+        })
+        .from(lessonProgress)
+        .where(
+          and(
+            eq(lessonProgress.learnerId, learnerId),
+            inArray(lessonProgress.lessonId, allLessonIds)
+          )
+        );
+
+      completedLessonIds = new Set(
+        progressData
+          .filter(p => p.status === "completed")
+          .map(p => p.lessonId)
+      );
+    }
+  }
+
+  const completedLessons = completedLessonIds.size;
   const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
 
   const IconComponent = subjectIcons[subject.icon] || BookOpen;
@@ -193,8 +249,8 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
         ) : (
           <Accordion type="single" collapsible className="space-y-4">
             {units.map((unit, unitIndex) => {
-              // TODO: Calculate unit progress from user data
-              const unitCompleted = 0;
+              // Calculate unit progress from completed lessons
+              const unitCompleted = unit.lessons.filter(l => completedLessonIds.has(l.id)).length;
               const unitProgress = unit.lessons.length > 0
                 ? (unitCompleted / unit.lessons.length) * 100
                 : 0;
@@ -257,7 +313,11 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
                             <span className="text-xs text-muted-foreground hidden sm:block">
                               ~{lesson.duration} min
                             </span>
-                            <LessonStatusIcon lesson={lesson} />
+                            <LessonStatusIcon
+                              lesson={lesson}
+                              isCompleted={completedLessonIds.has(lesson.id)}
+                              isLocked={false}
+                            />
                           </div>
                         </Link>
                       ))}

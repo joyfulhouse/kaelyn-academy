@@ -19,6 +19,12 @@ interface SubjectProgress {
   totalLessons: number;
 }
 
+interface WeeklyDay {
+  day: string;
+  minutes: number;
+  lessons: number;
+}
+
 interface Child {
   id: string;
   name: string;
@@ -27,6 +33,7 @@ interface Child {
   lastActive: string;
   overallProgress: number;
   subjects: SubjectProgress[];
+  weeklyActivity: WeeklyDay[];
 }
 
 export default function ParentDashboard() {
@@ -56,6 +63,7 @@ export default function ParentDashboard() {
           subjects: SubjectProgress[];
         };
         lastActive?: string;
+        weeklyActivity?: WeeklyDay[];
       }) => ({
         id: child.id,
         name: child.name,
@@ -63,11 +71,15 @@ export default function ParentDashboard() {
         avatarUrl: child.avatarUrl,
         lastActive: child.lastActive || new Date().toISOString(),
         overallProgress: child.progress?.overallProgress || 0,
-        subjects: child.progress?.subjects || [
-          { subjectName: "Math", masteryLevel: 0, completedLessons: 0, totalLessons: 0 },
-          { subjectName: "Reading", masteryLevel: 0, completedLessons: 0, totalLessons: 0 },
-          { subjectName: "Science", masteryLevel: 0, completedLessons: 0, totalLessons: 0 },
-          { subjectName: "History", masteryLevel: 0, completedLessons: 0, totalLessons: 0 },
+        subjects: child.progress?.subjects || [],
+        weeklyActivity: child.weeklyActivity || [
+          { day: "Mon", minutes: 0, lessons: 0 },
+          { day: "Tue", minutes: 0, lessons: 0 },
+          { day: "Wed", minutes: 0, lessons: 0 },
+          { day: "Thu", minutes: 0, lessons: 0 },
+          { day: "Fri", minutes: 0, lessons: 0 },
+          { day: "Sat", minutes: 0, lessons: 0 },
+          { day: "Sun", minutes: 0, lessons: 0 },
         ],
       }));
 
@@ -90,16 +102,6 @@ export default function ParentDashboard() {
 
   const currentChild = children.find((c) => c.id === selectedChild) || children[0];
 
-  const mockWeeklyActivity = [
-    { day: "Mon", minutes: 45, lessons: 2 },
-    { day: "Tue", minutes: 30, lessons: 1 },
-    { day: "Wed", minutes: 60, lessons: 3 },
-    { day: "Thu", minutes: 25, lessons: 1 },
-    { day: "Fri", minutes: 50, lessons: 2 },
-    { day: "Sat", minutes: 15, lessons: 1 },
-    { day: "Sun", minutes: 0, lessons: 0 },
-  ];
-
   const handleDownloadReport = async () => {
     if (!currentChild) return;
 
@@ -113,7 +115,7 @@ export default function ParentDashboard() {
         gradeLevel: currentChild.gradeLevel,
         overallProgress: currentChild.overallProgress,
         subjects: currentChild.subjects,
-        weeklyActivity: mockWeeklyActivity,
+        weeklyActivity: currentChild.weeklyActivity,
       });
     } catch (error) {
       console.error("Failed to generate report:", error);
@@ -159,8 +161,10 @@ export default function ParentDashboard() {
     );
   }
 
-  const totalTimeThisWeek = mockWeeklyActivity.reduce((acc, d) => acc + d.minutes, 0);
-  const totalLessonsThisWeek = mockWeeklyActivity.reduce((acc, d) => acc + d.lessons, 0);
+  // Calculate weekly totals from current child's data
+  const weeklyActivity = currentChild?.weeklyActivity || [];
+  const totalTimeThisWeek = weeklyActivity.reduce((acc, d) => acc + d.minutes, 0);
+  const totalLessonsThisWeek = weeklyActivity.reduce((acc, d) => acc + d.lessons, 0);
 
   return (
     <div className="space-y-6">
@@ -303,7 +307,7 @@ export default function ParentDashboard() {
               <CardDescription>Study time and lessons completed this week</CardDescription>
             </CardHeader>
             <CardContent>
-              <WeeklyActivityChart data={mockWeeklyActivity} />
+              <WeeklyActivityChart data={weeklyActivity} />
             </CardContent>
           </Card>
 

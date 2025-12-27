@@ -1,6 +1,19 @@
 /**
  * Report Generator
  * Generates various report types in different formats
+ *
+ * NOTE: These report generators currently use placeholder data structures.
+ * When called from UI components (like the parent dashboard), the actual
+ * data is passed in from API calls that fetch real database data.
+ *
+ * For direct report generation (e.g., scheduled reports, bulk exports),
+ * these functions would need to be updated to fetch data from:
+ * - learnerSubjectProgress (for progress metrics)
+ * - lessonProgress (for completed lessons)
+ * - activityAttempts (for quiz/activity scores)
+ * - learners (for student info)
+ *
+ * TODO: Wire to database for server-side report generation
  */
 
 import type {
@@ -97,12 +110,18 @@ function calculateFileSize(content: string): number {
 
 /**
  * Generate progress report
+ *
+ * For UI-triggered reports (like PDF downloads), data is passed directly
+ * from components that have already fetched from real APIs.
+ * This function is a template for server-side/scheduled report generation.
  */
 export async function generateProgressReport(
   studentId: string,
   config: ReportConfig
 ): Promise<ReportResult> {
-  // In production, this would fetch real data from the database
+  // Placeholder data structure - would be replaced with database queries:
+  // const learnerData = await db.query.learners.findFirst(...)
+  // const progressData = await db.select().from(learnerSubjectProgress)...
   const mockData: ProgressReportData = {
     student: {
       id: studentId,

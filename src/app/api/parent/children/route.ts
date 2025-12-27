@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { learners, users } from "@/lib/db/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { learnerSubjectProgress, lessonProgress } from "@/lib/db/schema/progress";
+import { subjects } from "@/lib/db/schema/curriculum";
+import { eq, and, isNull, gte, sql } from "drizzle-orm";
 import { z } from "zod";
 
 // Schema for creating a child
@@ -41,9 +43,14 @@ export async function GET() {
       orderBy: (learners, { asc }) => [asc(learners.name)],
     });
 
-    // Generate slugs for each child
+    // Generate slugs and fetch progress for each child
     const allNames = children.map(c => c.name);
-    const childrenWithSlugs = children.map(child => {
+
+    // Get weekly activity for all children at once
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const childrenWithData = await Promise.all(children.map(async (child) => {
       const parts = child.name.toLowerCase().split(" ");
       const firstName = parts[0];
       const middleInitial = parts.length > 2 ? parts[1][0] : null;
@@ -57,16 +64,91 @@ export async function GET() {
         ? `${firstName}-${middleInitial}`
         : firstName;
 
+      // Fetch subject progress
+      const subjectProgressData = await db
+        .select({
+          subjectName: subjects.name,
+          masteryLevel: learnerSubjectProgress.masteryLevel,
+          completedLessons: learnerSubjectProgress.completedLessons,
+          totalLessons: learnerSubjectProgress.totalLessons,
+        })
+        .from(learnerSubjectProgress)
+        .innerJoin(subjects, eq(subjects.id, learnerSubjectProgress.subjectId))
+        .where(eq(learnerSubjectProgress.learnerId, child.id));
+
+      // Calculate overall progress
+      const overallProgress = subjectProgressData.length > 0
+        ? Math.round(subjectProgressData.reduce((sum, sp) => sum + (sp.masteryLevel ?? 0), 0) / subjectProgressData.length)
+        : 0;
+
+      // Fetch weekly lessons for this child
+      const weeklyLessons = await db
+        .select({
+          completedAt: lessonProgress.completedAt,
+          timeSpent: lessonProgress.timeSpent,
+        })
+        .from(lessonProgress)
+        .where(
+          and(
+            eq(lessonProgress.learnerId, child.id),
+            eq(lessonProgress.status, "completed"),
+            gte(lessonProgress.completedAt, sevenDaysAgo)
+          )
+        );
+
+      // Group weekly lessons by day
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const weeklyProgressMap = new Map<string, { minutes: number; lessons: number }>();
+
+      // Initialize all days starting from 6 days ago
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        weeklyProgressMap.set(dayNames[d.getDay()], { minutes: 0, lessons: 0 });
+      }
+
+      // Aggregate lesson data
+      for (const lesson of weeklyLessons) {
+        if (lesson.completedAt) {
+          const dayName = dayNames[lesson.completedAt.getDay()];
+          const existing = weeklyProgressMap.get(dayName) || { minutes: 0, lessons: 0 };
+          existing.lessons += 1;
+          existing.minutes += Math.round((lesson.timeSpent ?? 0) / 60);
+          weeklyProgressMap.set(dayName, existing);
+        }
+      }
+
+      // Convert to ordered array
+      const weeklyActivity = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dayName = dayNames[d.getDay()];
+        const data = weeklyProgressMap.get(dayName) || { minutes: 0, lessons: 0 };
+        weeklyActivity.push({ day: dayName, ...data });
+      }
+
       return {
         ...child,
         slug,
         age: child.dateOfBirth
           ? Math.floor((Date.now() - new Date(child.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
           : null,
+        progress: {
+          overallProgress,
+          subjects: subjectProgressData.map(sp => ({
+            subjectName: sp.subjectName,
+            masteryLevel: Math.round(sp.masteryLevel ?? 0),
+            completedLessons: sp.completedLessons ?? 0,
+            totalLessons: sp.totalLessons ?? 0,
+          })),
+        },
+        weeklyActivity,
+        lastActive: child.lastActiveAt?.toISOString() || null,
       };
-    });
+    }));
 
-    return NextResponse.json({ children: childrenWithSlugs });
+    return NextResponse.json({ children: childrenWithData });
   } catch (error) {
     console.error("Error fetching children:", error);
     return NextResponse.json(
