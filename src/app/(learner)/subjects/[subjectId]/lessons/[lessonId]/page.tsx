@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { LessonVisualization } from "@/components/3d/lesson-visualization";
 import { ActivityList } from "@/components/curriculum/activity-list";
+import { AssessmentTab } from "@/components/curriculum/assessment-tab";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -334,33 +335,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
             </TabsContent>
 
             <TabsContent value="assessment" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Badge variant="secondary" className="capitalize">
-                      {lesson.assessmentType}
-                    </Badge>
-                    Lesson Assessment
-                  </CardTitle>
-                  <CardDescription>
-                    Complete this assessment to demonstrate your understanding
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <Target className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="font-semibold text-foreground mb-2">
-                      Assessment Locked
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Complete all lesson activities to unlock the assessment
-                    </p>
-                    <Button disabled>Start Assessment</Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <AssessmentTab
+                lessonId={lessonId}
+                assessmentType={lesson.assessmentType}
+                activities={lesson.activities}
+              />
             </TabsContent>
           </Tabs>
         </div>
