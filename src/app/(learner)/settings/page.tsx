@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useTheme } from "next-themes";
 import {
   User,
   Bell,
   Palette,
-  Shield,
   Volume2,
   Moon,
   Sun,
   Monitor,
   Save,
   Camera,
+  Check,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,16 +36,125 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Slider } from "@/components/ui/slider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AvatarPicker, getAvatarById } from "@/components/ui/avatar-picker";
+
+interface SettingsData {
+  theme: "light" | "dark" | "system";
+  fontSize: "small" | "medium" | "large" | "extra-large";
+  soundEnabled: boolean;
+  soundVolume: number;
+  notifications: {
+    achievements: boolean;
+    reminders: boolean;
+    messages: boolean;
+  };
+  accessibility: {
+    readAloud: boolean;
+  };
+  displayName: string;
+  avatarUrl: string | null;
+  avatarId: string | null;
+}
 
 export default function SettingsPage() {
-  const [theme, setTheme] = useState("system");
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Settings state
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [soundVolume, setSoundVolume] = useState([70]);
   const [notifyAchievements, setNotifyAchievements] = useState(true);
   const [notifyReminders, setNotifyReminders] = useState(true);
   const [notifyMessages, setNotifyMessages] = useState(true);
-  const [displayName, setDisplayName] = useState("Emma");
+  const [displayName, setDisplayName] = useState("");
   const [fontSize, setFontSize] = useState("medium");
+  const [readAloud, setReadAloud] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarId, setAvatarId] = useState<string | null>(null);
+
+  // Fetch settings on mount
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const response = await fetch("/api/learner/settings");
+        if (response.ok) {
+          const data = await response.json();
+          const settings: SettingsData = data.settings;
+
+          // Apply fetched settings
+          if (settings.theme) setTheme(settings.theme);
+          setFontSize(settings.fontSize);
+          setSoundEnabled(settings.soundEnabled);
+          setSoundVolume([settings.soundVolume]);
+          setNotifyAchievements(settings.notifications.achievements);
+          setNotifyReminders(settings.notifications.reminders);
+          setNotifyMessages(settings.notifications.messages);
+          setReadAloud(settings.accessibility.readAloud);
+          setDisplayName(settings.displayName);
+          setAvatarUrl(settings.avatarUrl);
+          setAvatarId(settings.avatarId);
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+      } finally {
+        setIsLoading(false);
+        setMounted(true);
+      }
+    }
+    fetchSettings();
+  }, [setTheme]);
+
+  // Track changes
+  const markChanged = useCallback(() => {
+    setHasChanges(true);
+    setSaveStatus("idle");
+  }, []);
+
+  // Save settings
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveStatus("idle");
+
+    try {
+      const response = await fetch("/api/learner/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          theme,
+          fontSize,
+          soundEnabled,
+          soundVolume: soundVolume[0],
+          notifications: {
+            achievements: notifyAchievements,
+            reminders: notifyReminders,
+            messages: notifyMessages,
+          },
+          accessibility: {
+            readAloud,
+          },
+          displayName,
+          avatarId,
+        }),
+      });
+
+      if (response.ok) {
+        setSaveStatus("success");
+        setHasChanges(false);
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      } else {
+        setSaveStatus("error");
+      }
+    } catch {
+      setSaveStatus("error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -55,10 +166,28 @@ export default function SettingsPage() {
             Customize your learning experience
           </p>
         </div>
-        <Button className="gap-2">
-          <Save className="h-4 w-4" />
-          Save Changes
-        </Button>
+        <div className="flex items-center gap-3">
+          {saveStatus === "success" && (
+            <span className="text-sm text-green-600 flex items-center gap-1">
+              <Check className="h-4 w-4" /> Saved
+            </span>
+          )}
+          {saveStatus === "error" && (
+            <span className="text-sm text-red-600">Failed to save</span>
+          )}
+          <Button
+            className="gap-2"
+            onClick={handleSave}
+            disabled={isSaving || !hasChanges}
+          >
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {isSaving ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
@@ -92,16 +221,29 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="flex items-center gap-6">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={undefined} />
-                <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-                  E
-                </AvatarFallback>
+                {avatarId ? (
+                  <AvatarFallback
+                    className={`text-4xl ${getAvatarById(avatarId)?.color || "bg-primary/10"}`}
+                  >
+                    {getAvatarById(avatarId)?.emoji}
+                  </AvatarFallback>
+                ) : avatarUrl ? (
+                  <AvatarImage src={avatarUrl} />
+                ) : (
+                  <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                    {displayName?.[0]?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                )}
               </Avatar>
               <div className="space-y-2">
-                <Button variant="outline" className="gap-2">
-                  <Camera className="h-4 w-4" />
-                  Change Avatar
-                </Button>
+                <AvatarPicker
+                  currentAvatar={avatarId}
+                  displayName={displayName}
+                  onSelect={(id) => {
+                    setAvatarId(id);
+                    markChanged();
+                  }}
+                />
                 <p className="text-sm text-muted-foreground">
                   Choose from our fun avatar collection
                 </p>
@@ -122,7 +264,10 @@ export default function SettingsPage() {
                 <Input
                   id="displayName"
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  onChange={(e) => {
+                    setDisplayName(e.target.value);
+                    markChanged();
+                  }}
                   className="mt-1.5"
                 />
               </div>
@@ -141,33 +286,62 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
-                <button
-                  onClick={() => setTheme("light")}
-                  className={`p-4 rounded-lg border-2 transition-colors ${
-                    theme === "light" ? "border-primary bg-primary/5" : "border-border"
-                  }`}
-                >
-                  <Sun className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
-                  <p className="text-sm font-medium">Light</p>
-                </button>
-                <button
-                  onClick={() => setTheme("dark")}
-                  className={`p-4 rounded-lg border-2 transition-colors ${
-                    theme === "dark" ? "border-primary bg-primary/5" : "border-border"
-                  }`}
-                >
-                  <Moon className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-                  <p className="text-sm font-medium">Dark</p>
-                </button>
-                <button
-                  onClick={() => setTheme("system")}
-                  className={`p-4 rounded-lg border-2 transition-colors ${
-                    theme === "system" ? "border-primary bg-primary/5" : "border-border"
-                  }`}
-                >
-                  <Monitor className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm font-medium">System</p>
-                </button>
+                {mounted ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setTheme("light");
+                        markChanged();
+                      }}
+                      className={`p-4 rounded-lg border-2 transition-colors relative ${
+                        theme === "light" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {theme === "light" && (
+                        <Check className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                      )}
+                      <Sun className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                      <p className="text-sm font-medium">Light</p>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTheme("dark");
+                        markChanged();
+                      }}
+                      className={`p-4 rounded-lg border-2 transition-colors relative ${
+                        theme === "dark" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {theme === "dark" && (
+                        <Check className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                      )}
+                      <Moon className="h-8 w-8 mx-auto mb-2 text-blue-500" />
+                      <p className="text-sm font-medium">Dark</p>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTheme("system");
+                        markChanged();
+                      }}
+                      className={`p-4 rounded-lg border-2 transition-colors relative ${
+                        theme === "system" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {theme === "system" && (
+                        <Check className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                      )}
+                      <Monitor className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm font-medium">System</p>
+                      {theme === "system" && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ({resolvedTheme})
+                        </p>
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  <div className="col-span-3 h-24 bg-muted animate-pulse rounded-lg" />
+                )}
               </div>
             </CardContent>
           </Card>
@@ -180,7 +354,10 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Select value={fontSize} onValueChange={setFontSize}>
+              <Select value={fontSize} onValueChange={(val) => {
+                setFontSize(val);
+                markChanged();
+              }}>
                 <SelectTrigger className="w-[200px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -214,7 +391,10 @@ export default function SettingsPage() {
                 </div>
                 <Switch
                   checked={notifyAchievements}
-                  onCheckedChange={setNotifyAchievements}
+                  onCheckedChange={(val) => {
+                    setNotifyAchievements(val);
+                    markChanged();
+                  }}
                 />
               </div>
 
@@ -227,7 +407,10 @@ export default function SettingsPage() {
                 </div>
                 <Switch
                   checked={notifyReminders}
-                  onCheckedChange={setNotifyReminders}
+                  onCheckedChange={(val) => {
+                    setNotifyReminders(val);
+                    markChanged();
+                  }}
                 />
               </div>
 
@@ -240,7 +423,10 @@ export default function SettingsPage() {
                 </div>
                 <Switch
                   checked={notifyMessages}
-                  onCheckedChange={setNotifyMessages}
+                  onCheckedChange={(val) => {
+                    setNotifyMessages(val);
+                    markChanged();
+                  }}
                 />
               </div>
             </CardContent>
@@ -266,7 +452,10 @@ export default function SettingsPage() {
                 </div>
                 <Switch
                   checked={soundEnabled}
-                  onCheckedChange={setSoundEnabled}
+                  onCheckedChange={(val) => {
+                    setSoundEnabled(val);
+                    markChanged();
+                  }}
                 />
               </div>
 
@@ -278,7 +467,10 @@ export default function SettingsPage() {
                   </div>
                   <Slider
                     value={soundVolume}
-                    onValueChange={setSoundVolume}
+                    onValueChange={(val) => {
+                      setSoundVolume(val);
+                      markChanged();
+                    }}
                     max={100}
                     step={5}
                   />
@@ -302,12 +494,28 @@ export default function SettingsPage() {
                     Have lesson text read out loud to you
                   </p>
                 </div>
-                <Switch />
+                <Switch
+                  checked={readAloud}
+                  onCheckedChange={(val) => {
+                    setReadAloud(val);
+                    markChanged();
+                  }}
+                />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading settings...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

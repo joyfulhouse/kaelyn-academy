@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -8,6 +8,7 @@ import {
   UserPlus,
   AlertCircle,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,20 +29,10 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Mock existing children names for uniqueness check
-const existingChildren = ["Emma Johnson", "Liam Johnson"];
-
-function generateSlug(firstName: string, middleName: string, existingFirstNames: string[]): string {
-  const slug = firstName.toLowerCase();
-  const hasDuplicate = existingFirstNames.some(name =>
-    name.toLowerCase() === firstName.toLowerCase()
-  );
-
-  if (hasDuplicate && middleName) {
-    return `${slug}-${middleName[0].toLowerCase()}`;
-  }
-
-  return slug;
+interface ExistingChild {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export default function AddChildPage() {
@@ -53,9 +44,29 @@ export default function AddChildPage() {
   const [birthYear, setBirthYear] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [existingChildren, setExistingChildren] = useState<ExistingChild[]>([]);
 
-  const existingFirstNames = existingChildren.map(name => name.split(" ")[0]);
-  const hasDuplicateFirstName = existingFirstNames.some(
+  // Fetch existing children to check for duplicates
+  useEffect(() => {
+    async function fetchChildren() {
+      try {
+        const response = await fetch("/api/parent/children");
+        if (response.ok) {
+          const data = await response.json();
+          setExistingChildren(data.children || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch existing children:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchChildren();
+  }, []);
+
+  const existingFirstNames = existingChildren.map(child => child.name.split(" ")[0]);
+  const hasDuplicateFirstName = firstName.trim() !== "" && existingFirstNames.some(
     name => name.toLowerCase() === firstName.toLowerCase()
   );
 
@@ -69,16 +80,6 @@ export default function AddChildPage() {
       return;
     }
 
-    // Check for name uniqueness
-    const fullName = middleName
-      ? `${firstName} ${middleName} ${lastName}`
-      : `${firstName} ${lastName}`;
-
-    if (existingChildren.some(name => name.toLowerCase() === fullName.toLowerCase())) {
-      setError("A child with this name already exists. Please use a different name or add a middle name.");
-      return;
-    }
-
     // Check if duplicate first name requires middle name
     if (hasDuplicateFirstName && !middleName.trim()) {
       setError("Another child has the same first name. Please add a middle name to distinguish them.");
@@ -88,15 +89,29 @@ export default function AddChildPage() {
     setIsSubmitting(true);
 
     try {
-      // In production, this would create the child in the database
-      const slug = generateSlug(firstName, middleName, existingFirstNames);
-      console.log("Creating child:", { firstName, middleName, lastName, gradeLevel, birthYear, slug });
+      const response = await fetch("/api/parent/children", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          middleName: middleName.trim() || undefined,
+          lastName: lastName.trim(),
+          gradeLevel,
+          birthYear,
+        }),
+      });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const data = await response.json();
 
-      // Redirect to the new child's profile
-      router.push(`/parent/children/${slug}`);
+      if (!response.ok) {
+        setError(data.error || "Failed to add child. Please try again.");
+        return;
+      }
+
+      // Redirect to the new child's profile using the slug from the API
+      router.push(`/parent/children/${data.child.slug}`);
     } catch {
       setError("Failed to add child. Please try again.");
     } finally {

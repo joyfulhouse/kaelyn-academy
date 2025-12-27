@@ -30,7 +30,7 @@ interface ActivityData {
   lessons: number;
 }
 
-interface MasteryBreakdown {
+export interface MasteryBreakdown {
   name: string;
   value: number;
   color: string;

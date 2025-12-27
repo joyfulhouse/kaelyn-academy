@@ -1,0 +1,259 @@
+/**
+ * PDF Report Generator
+ * Generates formatted PDF reports using jspdf
+ */
+
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+
+interface ChildProgressData {
+  name: string;
+  gradeLevel: number;
+  overallProgress: number;
+  subjects: {
+    subjectName: string;
+    masteryLevel: number;
+    completedLessons: number;
+    totalLessons: number;
+  }[];
+  weeklyActivity?: {
+    day: string;
+    minutes: number;
+    lessons: number;
+  }[];
+}
+
+interface ReportOptions {
+  title?: string;
+  subtitle?: string;
+  generatedBy?: string;
+}
+
+export function generateProgressReportPDF(
+  child: ChildProgressData,
+  options: ReportOptions = {}
+): void {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let yPosition = 20;
+
+  // Title
+  doc.setFontSize(22);
+  doc.setTextColor(16, 185, 129); // emerald-500
+  doc.text(options.title || "Progress Report", pageWidth / 2, yPosition, { align: "center" });
+
+  yPosition += 10;
+  doc.setFontSize(12);
+  doc.setTextColor(100, 100, 100);
+  doc.text(
+    options.subtitle || `${child.name} - Grade ${child.gradeLevel}`,
+    pageWidth / 2,
+    yPosition,
+    { align: "center" }
+  );
+
+  yPosition += 8;
+  doc.setFontSize(10);
+  doc.text(
+    `Generated on ${new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })}`,
+    pageWidth / 2,
+    yPosition,
+    { align: "center" }
+  );
+
+  // Overall Progress Section
+  yPosition += 15;
+  doc.setFontSize(14);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Overall Progress", 14, yPosition);
+
+  yPosition += 8;
+  doc.setFontSize(24);
+  doc.setTextColor(16, 185, 129);
+  doc.text(`${child.overallProgress}%`, 14, yPosition);
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.text("completion rate", 45, yPosition);
+
+  // Subject Progress Table
+  yPosition += 15;
+  doc.setFontSize(14);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Subject Progress", 14, yPosition);
+
+  yPosition += 5;
+  const subjectData = child.subjects.map((subject) => [
+    subject.subjectName,
+    `${subject.masteryLevel}%`,
+    `${subject.completedLessons}/${subject.totalLessons}`,
+    getMasteryLabel(subject.masteryLevel),
+  ]);
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [["Subject", "Mastery", "Lessons", "Status"]],
+    body: subjectData,
+    theme: "striped",
+    headStyles: {
+      fillColor: [16, 185, 129],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+    },
+    alternateRowStyles: {
+      fillColor: [240, 253, 244],
+    },
+    columnStyles: {
+      0: { fontStyle: "bold" },
+      1: { halign: "center" },
+      2: { halign: "center" },
+      3: { halign: "center" },
+    },
+  });
+
+  // Weekly Activity (if available)
+  if (child.weeklyActivity && child.weeklyActivity.length > 0) {
+    // Get the final Y position from the last table
+    const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || yPosition + 50;
+
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Weekly Study Activity", 14, finalY + 15);
+
+    const activityData = child.weeklyActivity.map((day) => [
+      day.day,
+      `${day.minutes} min`,
+      day.lessons.toString(),
+    ]);
+
+    const totalMinutes = child.weeklyActivity.reduce((sum, d) => sum + d.minutes, 0);
+    const totalLessons = child.weeklyActivity.reduce((sum, d) => sum + d.lessons, 0);
+
+    activityData.push(["Total", `${totalMinutes} min`, totalLessons.toString()]);
+
+    autoTable(doc, {
+      startY: finalY + 20,
+      head: [["Day", "Time Spent", "Lessons"]],
+      body: activityData,
+      theme: "striped",
+      headStyles: {
+        fillColor: [20, 184, 166],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      alternateRowStyles: {
+        fillColor: [240, 253, 250],
+      },
+      columnStyles: {
+        0: { fontStyle: "bold" },
+        1: { halign: "center" },
+        2: { halign: "center" },
+      },
+      didParseCell: function (data) {
+        // Bold the total row
+        if (data.row.index === activityData.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fillColor = [209, 250, 229];
+        }
+      },
+    });
+  }
+
+  // Recommendations
+  const recY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || yPosition + 100;
+
+  doc.setFontSize(14);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Recommendations", 14, recY + 15);
+
+  doc.setFontSize(10);
+  doc.setTextColor(60, 60, 60);
+
+  const recommendations = generateRecommendations(child);
+  let recTextY = recY + 25;
+
+  recommendations.forEach((rec, index) => {
+    doc.text(`${index + 1}. ${rec}`, 20, recTextY);
+    recTextY += 6;
+  });
+
+  // Footer
+  const pageHeight = doc.internal.pageSize.getHeight();
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text(
+    "Generated by Kaelyn's Academy | www.kaelyns.academy",
+    pageWidth / 2,
+    pageHeight - 10,
+    { align: "center" }
+  );
+
+  // Download
+  const fileName = `${child.name.toLowerCase().replace(/\s+/g, "-")}-progress-report-${Date.now()}.pdf`;
+  doc.save(fileName);
+}
+
+function getMasteryLabel(mastery: number): string {
+  if (mastery >= 90) return "Excellent";
+  if (mastery >= 75) return "Proficient";
+  if (mastery >= 60) return "Developing";
+  return "Needs Practice";
+}
+
+function generateRecommendations(child: ChildProgressData): string[] {
+  const recommendations: string[] = [];
+
+  // Find lowest subject
+  const lowestSubject = child.subjects.reduce((lowest, current) =>
+    current.masteryLevel < lowest.masteryLevel ? current : lowest
+  );
+
+  // Find highest subject
+  const highestSubject = child.subjects.reduce((highest, current) =>
+    current.masteryLevel > highest.masteryLevel ? current : highest
+  );
+
+  if (lowestSubject.masteryLevel < 70) {
+    recommendations.push(
+      `Focus on ${lowestSubject.subjectName} - consider adding 15-20 minutes of daily practice.`
+    );
+  }
+
+  if (highestSubject.masteryLevel >= 85) {
+    recommendations.push(
+      `Great progress in ${highestSubject.subjectName}! Consider challenging with advanced materials.`
+    );
+  }
+
+  if (child.overallProgress < 50) {
+    recommendations.push("Encourage consistent daily study to build momentum.");
+  } else if (child.overallProgress >= 75) {
+    recommendations.push("Excellent dedication! Keep up the great work.");
+  }
+
+  // Check weekly activity if available
+  if (child.weeklyActivity) {
+    const weekendMinutes =
+      (child.weeklyActivity.find((d) => d.day === "Sat")?.minutes || 0) +
+      (child.weeklyActivity.find((d) => d.day === "Sun")?.minutes || 0);
+
+    if (weekendMinutes < 30) {
+      recommendations.push(
+        "Weekend study time is low. Encourage at least 30 minutes on weekends to maintain progress."
+      );
+    }
+  }
+
+  // Always add at least one recommendation
+  if (recommendations.length === 0) {
+    recommendations.push("Continue with the current study routine - progress is on track!");
+  }
+
+  return recommendations;
+}
+
+export default generateProgressReportPDF;

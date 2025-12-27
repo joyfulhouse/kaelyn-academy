@@ -5,6 +5,7 @@ import {
   lessonProgress,
   conceptMastery,
   activityAttempts,
+  learnerAchievements,
 } from "@/lib/db/schema/progress";
 import { subjects, lessons, concepts, activities } from "@/lib/db/schema/curriculum";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -129,10 +130,16 @@ export async function GET(request: NextRequest) {
         // Return summary of all progress
         const subjectProgress = await db
           .select({
+            id: learnerSubjectProgress.id,
+            subjectId: learnerSubjectProgress.subjectId,
             subjectName: subjects.name,
             masteryLevel: learnerSubjectProgress.masteryLevel,
             completedLessons: learnerSubjectProgress.completedLessons,
             totalLessons: learnerSubjectProgress.totalLessons,
+            currentStreak: learnerSubjectProgress.currentStreak,
+            longestStreak: learnerSubjectProgress.longestStreak,
+            totalTimeSpent: learnerSubjectProgress.totalTimeSpent,
+            lastActivityAt: learnerSubjectProgress.lastActivityAt,
           })
           .from(learnerSubjectProgress)
           .innerJoin(subjects, eq(learnerSubjectProgress.subjectId, subjects.id))
@@ -151,10 +158,89 @@ export async function GET(request: NextRequest) {
           .orderBy(desc(activityAttempts.completedAt))
           .limit(10);
 
+        // Get achievement count
+        const achievementCount = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(learnerAchievements)
+          .where(eq(learnerAchievements.learnerId, learnerId));
+
+        // Get weekly activity (last 7 days)
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+
+        const weeklyAttempts = await db
+          .select({
+            day: sql<string>`to_char(${activityAttempts.completedAt}, 'Dy')`,
+            date: sql<string>`date(${activityAttempts.completedAt})`,
+            timeSpent: sql<number>`sum(coalesce(${activityAttempts.timeSpent}, 0))::int`,
+            lessonCount: sql<number>`count(distinct ${activities.lessonId})::int`,
+          })
+          .from(activityAttempts)
+          .innerJoin(activities, eq(activityAttempts.activityId, activities.id))
+          .where(
+            and(
+              eq(activityAttempts.learnerId, learnerId),
+              sql`${activityAttempts.completedAt} >= ${weekAgo}`
+            )
+          )
+          .groupBy(sql`date(${activityAttempts.completedAt})`, sql`to_char(${activityAttempts.completedAt}, 'Dy')`)
+          .orderBy(sql`date(${activityAttempts.completedAt})`);
+
+        // Build weekly activity array with all 7 days
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const today = new Date();
+        const weeklyActivity = dayNames.map((day, index) => {
+          const targetDate = new Date();
+          targetDate.setDate(today.getDate() - (today.getDay() - index));
+          const dateStr = targetDate.toISOString().split("T")[0];
+          const data = weeklyAttempts.find(a => a.date === dateStr);
+          return {
+            day,
+            minutes: data ? Math.round(data.timeSpent / 60) : 0,
+            lessons: data?.lessonCount || 0,
+          };
+        });
+
+        // Get mastery breakdown from concept mastery
+        const masteryData = await db
+          .select({
+            masteryLevel: conceptMastery.masteryLevel,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(conceptMastery)
+          .where(eq(conceptMastery.learnerId, learnerId))
+          .groupBy(conceptMastery.masteryLevel);
+
+        // Categorize mastery levels
+        let mastered = 0, learning = 0, needsReview = 0;
+        for (const m of masteryData) {
+          const level = m.masteryLevel || 0;
+          if (level >= 80) mastered += m.count;
+          else if (level >= 50) learning += m.count;
+          else if (level > 0) needsReview += m.count;
+        }
+
+        // Calculate "not started" from total concepts vs tracked concepts
+        const totalTracked = mastered + learning + needsReview;
+        const masteryBreakdown = [
+          { name: "Mastered", value: mastered, color: "var(--success)" },
+          { name: "Learning", value: learning, color: "var(--primary)" },
+          { name: "Needs Review", value: needsReview, color: "var(--warning)" },
+        ];
+
+        // Calculate overall streak and longest streak
+        const currentStreak = Math.max(...subjectProgress.map(s => s.currentStreak || 0), 0);
+        const longestStreak = Math.max(...subjectProgress.map(s => s.longestStreak || 0), 0);
+
         return NextResponse.json({
           summary: {
             subjects: subjectProgress,
             recentActivity: recentAttempts,
+            achievementCount: achievementCount[0]?.count || 0,
+            weeklyActivity,
+            masteryBreakdown,
+            currentStreak,
+            longestStreak,
           },
         });
       }

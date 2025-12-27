@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import { SkipLink } from "@/components/a11y/skip-link";
 import { LiveRegionProvider } from "@/components/a11y/live-region";
 import { SessionProvider } from "@/components/providers/session-provider";
@@ -53,16 +54,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>
-          <LiveRegionProvider>
-            <SkipLink href="#main-content">Skip to main content</SkipLink>
-            {children}
-          </LiveRegionProvider>
-        </SessionProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SessionProvider>
+            <LiveRegionProvider>
+              <SkipLink href="#main-content">Skip to main content</SkipLink>
+              {children}
+            </LiveRegionProvider>
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,4 +1,6 @@
-import { Metadata } from "next";
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Calculator,
@@ -8,6 +10,7 @@ import {
   Monitor,
   Languages,
   Hand,
+  Loader2,
 } from "lucide-react";
 import {
   Card,
@@ -17,13 +20,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getAllSubjects, getTotalLessonCount, getUnitsForGrade } from "@/data/curriculum";
 import type { GradeLevel } from "@/data/curriculum";
-
-export const metadata: Metadata = {
-  title: "Subjects | Kaelyn's Academy",
-  description: "Explore all subjects and start learning",
-};
 
 // Icon mapping for subjects
 const subjectIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -42,14 +41,93 @@ const subjectCategories = {
   languages: ["spanish", "french", "german", "mandarin", "japanese", "asl"],
 };
 
-export default function SubjectsPage() {
-  // TODO: Get grade level from user profile/session
-  const gradeLevel: GradeLevel = 5;
+interface Learner {
+  id: string;
+  name: string;
+  gradeLevel: number;
+}
 
+interface SubjectProgress {
+  subjectId: string;
+  subjectName: string;
+  masteryLevel: number;
+  completedLessons: number;
+  totalLessons: number;
+}
+
+function SubjectsSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <Skeleton className="h-9 w-32" />
+        <Skeleton className="h-5 w-72 mt-2" />
+      </div>
+      <section>
+        <Skeleton className="h-7 w-32 mb-4" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-52 rounded-xl" />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export default function SubjectsPage() {
+  const [loading, setLoading] = useState(true);
+  const [learner, setLearner] = useState<Learner | null>(null);
+  const [progress, setProgress] = useState<SubjectProgress[]>([]);
+
+  const fetchData = useCallback(async () => {
+    try {
+      // Fetch learner data
+      const learnersRes = await fetch("/api/learners");
+      if (learnersRes.ok) {
+        const data = await learnersRes.json();
+        if (data.learners?.length > 0) {
+          const firstLearner = data.learners[0];
+          setLearner(firstLearner);
+
+          // Fetch progress for this learner
+          const progressRes = await fetch(`/api/progress?learnerId=${firstLearner.id}&type=subject`);
+          if (progressRes.ok) {
+            const progressData = await progressRes.json();
+            setProgress(progressData.progress || []);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const gradeLevel: GradeLevel = (learner?.gradeLevel as GradeLevel) ?? 5;
   const subjects = getAllSubjects();
 
   const coreSubjects = subjects.filter((s) => subjectCategories.core.includes(s.id));
   const languageSubjects = subjects.filter((s) => subjectCategories.languages.includes(s.id));
+
+  // Get progress for a subject
+  const getSubjectProgress = (subjectId: string) => {
+    const found = progress.find(
+      (p) => p.subjectId === subjectId || p.subjectName?.toLowerCase() === subjectId
+    );
+    if (found && found.totalLessons > 0) {
+      return Math.round((found.completedLessons / found.totalLessons) * 100);
+    }
+    return 0;
+  };
+
+  if (loading) {
+    return <SubjectsSkeleton />;
+  }
 
   return (
     <div className="space-y-8">
@@ -59,6 +137,11 @@ export default function SubjectsPage() {
         <p className="text-muted-foreground mt-2">
           Choose a subject to start learning. Your progress is saved automatically.
         </p>
+        {learner && (
+          <p className="text-sm text-muted-foreground mt-1">
+            Showing content for Grade {gradeLevel === 0 ? "K" : gradeLevel}
+          </p>
+        )}
       </div>
 
       {/* Core Subjects */}
@@ -75,6 +158,7 @@ export default function SubjectsPage() {
               (acc, unit) => acc + unit.lessons.length,
               0
             );
+            const progressPercent = getSubjectProgress(subject.id);
 
             return (
               <Link key={subject.id} href={`/subjects/${subject.id}`}>
@@ -105,18 +189,18 @@ export default function SubjectsPage() {
                       <span>{lessonsInGrade} lessons for your grade</span>
                       <span className="text-xs">{totalLessons} total</span>
                     </div>
-                    {/* Progress bar placeholder */}
+                    {/* Progress bar */}
                     <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all"
                         style={{
                           backgroundColor: subject.color,
-                          width: "0%", // TODO: Calculate from user progress
+                          width: `${progressPercent}%`,
                         }}
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      0% complete
+                      {progressPercent}% complete
                     </p>
                   </CardContent>
                 </Card>
@@ -143,6 +227,7 @@ export default function SubjectsPage() {
               (acc, unit) => acc + unit.lessons.length,
               0
             );
+            const progressPercent = getSubjectProgress(subject.id);
 
             return (
               <Link key={subject.id} href={`/subjects/${subject.id}`}>
@@ -173,18 +258,18 @@ export default function SubjectsPage() {
                       <span>{lessonsInGrade} lessons for your grade</span>
                       <span className="text-xs">{totalLessons} total</span>
                     </div>
-                    {/* Progress bar placeholder */}
+                    {/* Progress bar */}
                     <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all"
                         style={{
                           backgroundColor: subject.color,
-                          width: "0%", // TODO: Calculate from user progress
+                          width: `${progressPercent}%`,
                         }}
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      0% complete
+                      {progressPercent}% complete
                     </p>
                   </CardContent>
                 </Card>

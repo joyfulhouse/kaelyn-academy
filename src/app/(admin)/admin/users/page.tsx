@@ -4,74 +4,235 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, UserPlus, Mail, Shield, Trash2, UserX, UserCheck, Pencil } from "lucide-react";
 
 interface User {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
-  role: "learner" | "parent" | "teacher" | "admin";
-  organizationId?: string;
+  image: string | null;
+  role: string;
+  organizationId: string | null;
+  organizationName: string | null;
   createdAt: string;
-  lastActiveAt?: string;
+  lastActiveAt: string | null;
   isActive: boolean;
+}
+
+interface UserStats {
+  total: number;
+  learners: number;
+  parents: number;
+  teachers: number;
+  admins: number;
 }
 
 export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("");
   const [users, setUsers] = useState<User[]>([]);
+  const [stats, setStats] = useState<UserStats>({ total: 0, learners: 0, parents: 0, teachers: 0, admins: 0 });
+
+  // Dialog states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    role: "parent" as string,
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      // TODO: Fetch from API
-      // For now, use mock data
-      setUsers([
-        { id: "1", name: "Emma Johnson", email: "emma@example.com", role: "learner", createdAt: "2024-11-15", lastActiveAt: "2024-12-25", isActive: true },
-        { id: "2", name: "Liam Smith", email: "liam@example.com", role: "learner", createdAt: "2024-10-20", lastActiveAt: "2024-12-24", isActive: true },
-        { id: "3", name: "Sarah Johnson", email: "sarah@example.com", role: "parent", createdAt: "2024-11-15", lastActiveAt: "2024-12-25", isActive: true },
-        { id: "4", name: "Michael Chen", email: "michael@example.com", role: "teacher", createdAt: "2024-09-01", lastActiveAt: "2024-12-25", isActive: true },
-        { id: "5", name: "Admin User", email: "admin@kaelyns.academy", role: "admin", createdAt: "2024-01-01", lastActiveAt: "2024-12-25", isActive: true },
-      ]);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
+      const params = new URLSearchParams();
+      if (searchQuery) params.set("search", searchQuery);
+      if (roleFilter) params.set("role", roleFilter);
+
+      const response = await fetch(`/api/admin/users?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      setUsers(data.users);
+      setStats(data.stats);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load users");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [searchQuery, roleFilter]);
 
   useEffect(() => {
-    fetchUsers();
+    const timer = setTimeout(() => {
+      fetchUsers();
+    }, 300); // Debounce search
+    return () => clearTimeout(timer);
   }, [fetchUsers]);
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = !roleFilter || user.role === roleFilter;
-    return matchesSearch && matchesRole;
-  });
+  const handleCreateUser = async () => {
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create user");
+      }
+
+      setCreateDialogOpen(false);
+      setFormData({ name: "", email: "", role: "parent" });
+      fetchUsers();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to create user");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEditUser = async () => {
+    if (!selectedUser) return;
+    setSubmitting(true);
+    try {
+      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update user");
+      }
+
+      setEditDialogOpen(false);
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update user");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleToggleActive = async (user: User) => {
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !user.isActive }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update user");
+      }
+
+      fetchUsers();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update user");
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+    setSubmitting(true);
+    try {
+      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete user");
+      }
+
+      setDeleteDialogOpen(false);
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete user");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const openEditDialog = (user: User) => {
+    setSelectedUser(user);
+    setFormData({
+      name: user.name || "",
+      email: user.email,
+      role: user.role,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (user: User) => {
+    setSelectedUser(user);
+    setDeleteDialogOpen(true);
+  };
 
   const roleColors: Record<string, string> = {
-    learner: "bg-blue-100 text-blue-700",
     parent: "bg-green-100 text-green-700",
     teacher: "bg-purple-100 text-purple-700",
-    admin: "bg-red-100 text-red-700",
+    school_admin: "bg-orange-100 text-orange-700",
+    platform_admin: "bg-red-100 text-red-700",
   };
 
-  const roleStats = {
-    total: users.length,
-    learners: users.filter((u) => u.role === "learner").length,
-    parents: users.filter((u) => u.role === "parent").length,
-    teachers: users.filter((u) => u.role === "teacher").length,
-    admins: users.filter((u) => u.role === "admin").length,
+  const roleLabels: Record<string, string> = {
+    parent: "Parent",
+    teacher: "Teacher",
+    school_admin: "School Admin",
+    platform_admin: "Platform Admin",
   };
 
-  if (loading) {
+  if (loading && users.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+
+  if (error && users.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <p className="text-red-600">{error}</p>
+        <Button onClick={fetchUsers}>Retry</Button>
       </div>
     );
   }
@@ -84,8 +245,15 @@ export default function AdminUsersPage() {
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
           <p className="text-gray-600 mt-1">Manage users across your organization</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          + Add User
+        <Button
+          className="bg-blue-600 hover:bg-blue-700"
+          onClick={() => {
+            setFormData({ name: "", email: "", role: "parent" });
+            setCreateDialogOpen(true);
+          }}
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          Add User
         </Button>
       </div>
 
@@ -93,31 +261,31 @@ export default function AdminUsersPage() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">{roleStats.total}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
             <div className="text-sm text-gray-500">Total Users</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{roleStats.learners}</div>
+            <div className="text-2xl font-bold text-blue-600">{stats.learners}</div>
             <div className="text-sm text-gray-500">Learners</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{roleStats.parents}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.parents}</div>
             <div className="text-sm text-gray-500">Parents</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{roleStats.teachers}</div>
+            <div className="text-2xl font-bold text-purple-600">{stats.teachers}</div>
             <div className="text-sm text-gray-500">Teachers</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{roleStats.admins}</div>
+            <div className="text-2xl font-bold text-red-600">{stats.admins}</div>
             <div className="text-sm text-gray-500">Admins</div>
           </CardContent>
         </Card>
@@ -135,7 +303,7 @@ export default function AdminUsersPage() {
                 className="w-full"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant={roleFilter === "" ? "default" : "outline"}
                 size="sm"
@@ -143,14 +311,14 @@ export default function AdminUsersPage() {
               >
                 All
               </Button>
-              {["learner", "parent", "teacher", "admin"].map((role) => (
+              {["parent", "teacher", "school_admin", "platform_admin"].map((role) => (
                 <Button
                   key={role}
                   variant={roleFilter === role ? "default" : "outline"}
                   size="sm"
                   onClick={() => setRoleFilter(role)}
                 >
-                  {role.charAt(0).toUpperCase() + role.slice(1)}s
+                  {roleLabels[role]}s
                 </Button>
               ))}
             </div>
@@ -163,7 +331,7 @@ export default function AdminUsersPage() {
         <CardHeader>
           <CardTitle>Users</CardTitle>
           <CardDescription>
-            {filteredUsers.length} user{filteredUsers.length !== 1 ? "s" : ""} found
+            {users.length} user{users.length !== 1 ? "s" : ""} found
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -173,6 +341,7 @@ export default function AdminUsersPage() {
                 <tr className="border-b text-left">
                   <th className="pb-3 font-medium text-gray-500 text-sm">User</th>
                   <th className="pb-3 font-medium text-gray-500 text-sm">Role</th>
+                  <th className="pb-3 font-medium text-gray-500 text-sm">Organization</th>
                   <th className="pb-3 font-medium text-gray-500 text-sm">Joined</th>
                   <th className="pb-3 font-medium text-gray-500 text-sm">Last Active</th>
                   <th className="pb-3 font-medium text-gray-500 text-sm">Status</th>
@@ -180,26 +349,29 @@ export default function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
+                {users.map((user) => (
                   <tr key={user.id} className="border-b last:border-0 hover:bg-gray-50">
                     <td className="py-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={undefined} />
+                          <AvatarImage src={user.image || undefined} />
                           <AvatarFallback className="bg-gray-200">
-                            {user.name.split(" ").map((n) => n[0]).join("")}
+                            {(user.name || user.email).split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium text-gray-900">{user.name}</div>
+                          <div className="font-medium text-gray-900">{user.name || "No Name"}</div>
                           <div className="text-sm text-gray-500">{user.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[user.role]}`}>
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[user.role] || "bg-gray-100 text-gray-700"}`}>
+                        {roleLabels[user.role] || user.role}
                       </span>
+                    </td>
+                    <td className="py-4 text-sm text-gray-600">
+                      {user.organizationName || "—"}
                     </td>
                     <td className="py-4 text-sm text-gray-600">
                       {new Date(user.createdAt).toLocaleDateString()}
@@ -217,14 +389,44 @@ export default function AdminUsersPage() {
                       </span>
                     </td>
                     <td className="py-4">
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="sm">
-                          Edit
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                          {user.isActive ? "Deactivate" : "Activate"}
-                        </Button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEditDialog(user)}>
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => window.open(`mailto:${user.email}`)}>
+                            <Mail className="w-4 h-4 mr-2" />
+                            Send Email
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleToggleActive(user)}>
+                            {user.isActive ? (
+                              <>
+                                <UserX className="w-4 h-4 mr-2" />
+                                Deactivate
+                              </>
+                            ) : (
+                              <>
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Activate
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => openDeleteDialog(user)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
@@ -232,13 +434,158 @@ export default function AdminUsersPage() {
             </table>
           </div>
 
-          {filteredUsers.length === 0 && (
+          {users.length === 0 && !loading && (
             <div className="text-center py-12 text-gray-500">
               No users found matching your filters
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Create User Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>
+              Create a new user account. They will receive an email to set up their password.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="John Doe"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="john@example.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value) => setFormData({ ...formData, role: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="parent">Parent</SelectItem>
+                  <SelectItem value="teacher">Teacher</SelectItem>
+                  <SelectItem value="school_admin">School Admin</SelectItem>
+                  <SelectItem value="platform_admin">Platform Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateUser}
+              disabled={!formData.name || !formData.email || submitting}
+            >
+              {submitting ? "Creating..." : "Create User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user information and permissions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Name</Label>
+              <Input
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">Email</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-role">Role</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value) => setFormData({ ...formData, role: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="parent">Parent</SelectItem>
+                  <SelectItem value="teacher">Teacher</SelectItem>
+                  <SelectItem value="school_admin">School Admin</SelectItem>
+                  <SelectItem value="platform_admin">Platform Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditUser}
+              disabled={!formData.name || !formData.email || submitting}
+            >
+              {submitting ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {selectedUser?.name || selectedUser?.email}?
+              This action cannot be undone. All associated data including their learner profiles will be removed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={submitting}
+            >
+              {submitting ? "Deleting..." : "Delete User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

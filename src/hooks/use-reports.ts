@@ -86,8 +86,8 @@ export function useReports(): UseReportsResult {
         extension = "json";
         break;
       case "pdf":
-        // For PDF, we'd need a library like jspdf or react-pdf
-        // For now, fall back to JSON
+        // PDF generation is handled separately via downloadPDF
+        // Fall back to JSON for generic download
         content = generateJSON(data);
         mimeType = "application/json";
         extension = "json";

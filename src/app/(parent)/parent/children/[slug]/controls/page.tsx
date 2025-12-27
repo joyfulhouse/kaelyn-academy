@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Shield,
@@ -11,6 +10,8 @@ import {
   Bell,
   Lock,
   Save,
+  Loader2,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,95 +34,116 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
-// Mock data - in production, this would come from the database
-const childrenData: Record<string, {
-  name: string;
-  controls: {
-    dailyLimit: number;
-    weekendLimit: number;
-    contentFiltering: string;
-    breakReminders: boolean;
-    breakInterval: number;
-    allowedSubjects: string[];
-    notifyOnAchievement: boolean;
-    notifyOnStruggling: boolean;
-    notifyWeeklyReport: boolean;
-    shareProgressWithTeacher: boolean;
-    allowAnonymousComparison: boolean;
-  };
-}> = {
-  emma: {
-    name: "Emma Johnson",
-    controls: {
-      dailyLimit: 60,
-      weekendLimit: 90,
-      contentFiltering: "strict",
-      breakReminders: true,
-      breakInterval: 30,
-      allowedSubjects: ["math", "reading", "science", "history"],
-      notifyOnAchievement: true,
-      notifyOnStruggling: true,
-      notifyWeeklyReport: true,
-      shareProgressWithTeacher: true,
-      allowAnonymousComparison: false,
-    },
-  },
-  liam: {
-    name: "Liam Johnson",
-    controls: {
-      dailyLimit: 90,
-      weekendLimit: 120,
-      contentFiltering: "moderate",
-      breakReminders: true,
-      breakInterval: 45,
-      allowedSubjects: ["math", "reading", "science", "history"],
-      notifyOnAchievement: true,
-      notifyOnStruggling: false,
-      notifyWeeklyReport: true,
-      shareProgressWithTeacher: true,
-      allowAnonymousComparison: true,
-    },
-  },
-};
-
 export default function ChildControlsPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const childData = childrenData[slug];
 
-  if (!childData) {
-    notFound();
-  }
+  // Loading states
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
+  const [hasChanges, setHasChanges] = useState(false);
+  const [childName, setChildName] = useState("");
 
-  const [dailyLimit, setDailyLimit] = useState(childData.controls.dailyLimit);
-  const [weekendLimit, setWeekendLimit] = useState(childData.controls.weekendLimit);
-  const [contentFiltering, setContentFiltering] = useState(childData.controls.contentFiltering);
-  const [breakReminders, setBreakReminders] = useState(childData.controls.breakReminders);
-  const [breakInterval, setBreakInterval] = useState(childData.controls.breakInterval);
-  const [notifyOnAchievement, setNotifyOnAchievement] = useState(childData.controls.notifyOnAchievement);
-  const [notifyOnStruggling, setNotifyOnStruggling] = useState(childData.controls.notifyOnStruggling);
-  const [notifyWeeklyReport, setNotifyWeeklyReport] = useState(childData.controls.notifyWeeklyReport);
-  const [shareProgressWithTeacher, setShareProgressWithTeacher] = useState(childData.controls.shareProgressWithTeacher);
-  const [allowAnonymousComparison, setAllowAnonymousComparison] = useState(childData.controls.allowAnonymousComparison);
+  // Form state
+  const [dailyLimit, setDailyLimit] = useState(60);
+  const [weekendLimit, setWeekendLimit] = useState(90);
+  const [contentFiltering, setContentFiltering] = useState("moderate");
+  const [breakReminders, setBreakReminders] = useState(true);
+  const [breakInterval, setBreakInterval] = useState(30);
+  const [notifyOnAchievement, setNotifyOnAchievement] = useState(true);
+  const [notifyOnStruggling, setNotifyOnStruggling] = useState(true);
+  const [notifyWeeklyReport, setNotifyWeeklyReport] = useState(true);
+  const [shareProgressWithTeacher, setShareProgressWithTeacher] = useState(true);
+  const [allowAnonymousComparison, setAllowAnonymousComparison] = useState(false);
 
-  const handleSave = () => {
-    // In production, this would save to the database
-    console.log("Saving controls...", {
-      dailyLimit,
-      weekendLimit,
-      contentFiltering,
-      breakReminders,
-      breakInterval,
-      notifyOnAchievement,
-      notifyOnStruggling,
-      notifyWeeklyReport,
-      shareProgressWithTeacher,
-      allowAnonymousComparison,
-    });
+  // Fetch controls on mount
+  useEffect(() => {
+    async function fetchControls() {
+      try {
+        const response = await fetch(`/api/parent/children/${slug}/controls`);
+        if (response.ok) {
+          const data = await response.json();
+          setChildName(data.childName);
+          const controls = data.controls;
+          setDailyLimit(controls.dailyLimit);
+          setWeekendLimit(controls.weekendLimit);
+          setContentFiltering(controls.contentFiltering);
+          setBreakReminders(controls.breakReminders);
+          setBreakInterval(controls.breakInterval);
+          setNotifyOnAchievement(controls.notifyOnAchievement);
+          setNotifyOnStruggling(controls.notifyOnStruggling);
+          setNotifyWeeklyReport(controls.notifyWeeklyReport);
+          setShareProgressWithTeacher(controls.shareProgressWithTeacher);
+          setAllowAnonymousComparison(controls.allowAnonymousComparison);
+        }
+      } catch (error) {
+        console.error("Failed to fetch controls:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchControls();
+  }, [slug]);
+
+  const markChanged = useCallback(() => {
+    setHasChanges(true);
+    setSaveStatus("idle");
+  }, []);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveStatus("idle");
+
+    try {
+      const response = await fetch(`/api/parent/children/${slug}/controls`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          screenTimeLimit: dailyLimit,
+          weekendTimeLimit: weekendLimit,
+          contentFiltering,
+          breakReminders,
+          breakInterval,
+          notifications: {
+            onAchievement: notifyOnAchievement,
+            onStruggling: notifyOnStruggling,
+            weeklyReport: notifyWeeklyReport,
+          },
+          privacy: {
+            shareWithTeacher: shareProgressWithTeacher,
+            allowAnonymousComparison,
+          },
+        }),
+      });
+
+      if (response.ok) {
+        setSaveStatus("success");
+        setHasChanges(false);
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      } else {
+        setSaveStatus("error");
+      }
+    } catch {
+      setSaveStatus("error");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading controls...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -136,14 +158,32 @@ export default function ChildControlsPage({
           <div>
             <h1 className="text-2xl font-bold text-foreground">Parental Controls</h1>
             <p className="text-muted-foreground">
-              Manage settings for {childData.name}
+              Manage settings for {childName || "your child"}
             </p>
           </div>
         </div>
-        <Button onClick={handleSave} className="gap-2">
-          <Save className="h-4 w-4" />
-          Save Changes
-        </Button>
+        <div className="flex items-center gap-3">
+          {saveStatus === "success" && (
+            <span className="text-sm text-green-600 flex items-center gap-1">
+              <Check className="h-4 w-4" /> Saved
+            </span>
+          )}
+          {saveStatus === "error" && (
+            <span className="text-sm text-red-600">Failed to save</span>
+          )}
+          <Button
+            onClick={handleSave}
+            className="gap-2"
+            disabled={isSaving || !hasChanges}
+          >
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {isSaving ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -187,7 +227,10 @@ export default function ChildControlsPage({
                 </div>
                 <Slider
                   value={[dailyLimit]}
-                  onValueChange={(v) => setDailyLimit(v[0])}
+                  onValueChange={(v) => {
+                    setDailyLimit(v[0]);
+                    markChanged();
+                  }}
                   max={180}
                   min={15}
                   step={15}
@@ -204,7 +247,10 @@ export default function ChildControlsPage({
                 </div>
                 <Slider
                   value={[weekendLimit]}
-                  onValueChange={(v) => setWeekendLimit(v[0])}
+                  onValueChange={(v) => {
+                    setWeekendLimit(v[0]);
+                    markChanged();
+                  }}
                   max={240}
                   min={15}
                   step={15}
@@ -233,7 +279,10 @@ export default function ChildControlsPage({
                 </div>
                 <Switch
                   checked={breakReminders}
-                  onCheckedChange={setBreakReminders}
+                  onCheckedChange={(val) => {
+                    setBreakReminders(val);
+                    markChanged();
+                  }}
                 />
               </div>
 
@@ -245,7 +294,10 @@ export default function ChildControlsPage({
                   </div>
                   <Slider
                     value={[breakInterval]}
-                    onValueChange={(v) => setBreakInterval(v[0])}
+                    onValueChange={(v) => {
+                      setBreakInterval(v[0]);
+                      markChanged();
+                    }}
                     max={60}
                     min={15}
                     step={5}
@@ -271,7 +323,10 @@ export default function ChildControlsPage({
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <Label>Filtering Level</Label>
-                <Select value={contentFiltering} onValueChange={setContentFiltering}>
+                <Select value={contentFiltering} onValueChange={(val) => {
+                  setContentFiltering(val);
+                  markChanged();
+                }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -335,7 +390,10 @@ export default function ChildControlsPage({
                 </div>
                 <Switch
                   checked={notifyOnAchievement}
-                  onCheckedChange={setNotifyOnAchievement}
+                  onCheckedChange={(val) => {
+                    setNotifyOnAchievement(val);
+                    markChanged();
+                  }}
                 />
               </div>
 
@@ -348,7 +406,10 @@ export default function ChildControlsPage({
                 </div>
                 <Switch
                   checked={notifyOnStruggling}
-                  onCheckedChange={setNotifyOnStruggling}
+                  onCheckedChange={(val) => {
+                    setNotifyOnStruggling(val);
+                    markChanged();
+                  }}
                 />
               </div>
 
@@ -361,7 +422,10 @@ export default function ChildControlsPage({
                 </div>
                 <Switch
                   checked={notifyWeeklyReport}
-                  onCheckedChange={setNotifyWeeklyReport}
+                  onCheckedChange={(val) => {
+                    setNotifyWeeklyReport(val);
+                    markChanged();
+                  }}
                 />
               </div>
             </CardContent>
@@ -390,7 +454,10 @@ export default function ChildControlsPage({
                 </div>
                 <Switch
                   checked={shareProgressWithTeacher}
-                  onCheckedChange={setShareProgressWithTeacher}
+                  onCheckedChange={(val) => {
+                    setShareProgressWithTeacher(val);
+                    markChanged();
+                  }}
                 />
               </div>
 
@@ -403,7 +470,10 @@ export default function ChildControlsPage({
                 </div>
                 <Switch
                   checked={allowAnonymousComparison}
-                  onCheckedChange={setAllowAnonymousComparison}
+                  onCheckedChange={(val) => {
+                    setAllowAnonymousComparison(val);
+                    markChanged();
+                  }}
                 />
               </div>
 

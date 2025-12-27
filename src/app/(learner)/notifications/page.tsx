@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Bell,
   Trophy,
@@ -12,6 +12,8 @@ import {
   Trash2,
   Settings,
   Filter,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,78 +25,26 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
-type NotificationType = "achievement" | "lesson" | "message" | "streak" | "reminder";
+type NotificationType = "achievement" | "lesson" | "message" | "streak" | "reminder" | "assignment_due" | "progress_report" | "system" | "announcement";
 
 interface Notification {
   id: string;
   type: NotificationType;
   title: string;
   message: string;
-  time: Date;
+  time: string;
   read: boolean;
-  actionUrl?: string;
+  link?: string | null;
+  metadata?: {
+    achievementId?: string;
+    assignmentId?: string;
+    learnerId?: string;
+    icon?: string;
+  };
 }
-
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "achievement",
-    title: "New Badge Earned!",
-    message: "You earned the 'Math Whiz' badge for completing 10 math lessons!",
-    time: new Date(Date.now() - 1000 * 60 * 30),
-    read: false,
-    actionUrl: "/achievements",
-  },
-  {
-    id: "2",
-    type: "streak",
-    title: "12 Day Streak!",
-    message: "Amazing! You've been learning for 12 days in a row. Keep it up!",
-    time: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    read: false,
-  },
-  {
-    id: "3",
-    type: "lesson",
-    title: "New Lesson Available",
-    message: "Check out the new lesson on Multiplication Tables in Math!",
-    time: new Date(Date.now() - 1000 * 60 * 60 * 5),
-    read: true,
-    actionUrl: "/subjects/math",
-  },
-  {
-    id: "4",
-    type: "message",
-    title: "Message from Mrs. Smith",
-    message: "Great job on your reading assignment! Keep up the excellent work.",
-    time: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    read: true,
-  },
-  {
-    id: "5",
-    type: "reminder",
-    title: "Time for Your Daily Learning!",
-    message: "You haven't completed a lesson today. Let's keep that streak going!",
-    time: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-    read: true,
-  },
-  {
-    id: "6",
-    type: "achievement",
-    title: "Level Up!",
-    message: "You've reached Level 5 in Reading! New content is now unlocked.",
-    time: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-    read: true,
-    actionUrl: "/subjects/reading",
-  },
-];
 
 function getNotificationIcon(type: NotificationType) {
   switch (type) {
@@ -107,52 +57,170 @@ function getNotificationIcon(type: NotificationType) {
     case "streak":
       return <Flame className="h-5 w-5 text-orange-500" />;
     case "reminder":
+    case "assignment_due":
       return <Clock className="h-5 w-5 text-purple-500" />;
+    case "progress_report":
+      return <AlertCircle className="h-5 w-5 text-blue-500" />;
+    case "system":
+    case "announcement":
+      return <Bell className="h-5 w-5 text-primary" />;
     default:
       return <Bell className="h-5 w-5 text-muted-foreground" />;
   }
 }
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
+  if (diffMins < 1) return "Just now";
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays === 1) return "Yesterday";
   return `${diffDays}d ago`;
 }
 
-export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState(mockNotifications);
-  const [filter, setFilter] = useState<NotificationType | "all">("all");
+function NotificationsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between">
+        <div>
+          <Skeleton className="h-9 w-40" />
+          <Skeleton className="h-5 w-60 mt-2" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-10 w-10" />
+        </div>
+      </div>
+      <Skeleton className="h-10 w-full" />
+      <div className="space-y-2">
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-28" />
+        ))}
+      </div>
+    </div>
+  );
+}
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+export default function NotificationsPage() {
+  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [filter, setFilter] = useState<NotificationType | "all">("all");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const response = await fetch("/api/notifications");
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   const filteredNotifications = notifications.filter(
     (n) => filter === "all" || n.type === filter
   );
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    setActionLoading("markAll");
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markAll: true }),
+      });
+      if (response.ok) {
+        setNotifications(notifications.map((n) => ({ ...n, read: true })));
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error("Failed to mark all as read:", error);
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const markAsRead = async (id: string) => {
+    setActionLoading(id);
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationIds: [id] }),
+      });
+      if (response.ok) {
+        setNotifications(
+          notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
+        );
+        setUnreadCount(Math.max(0, unreadCount - 1));
+      }
+    } catch (error) {
+      console.error("Failed to mark as read:", error);
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(notifications.filter((n) => n.id !== id));
+  const deleteNotification = async (id: string) => {
+    setActionLoading(`delete-${id}`);
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationIds: [id] }),
+      });
+      if (response.ok) {
+        const notification = notifications.find((n) => n.id === id);
+        setNotifications(notifications.filter((n) => n.id !== id));
+        if (notification && !notification.read) {
+          setUnreadCount(Math.max(0, unreadCount - 1));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to delete notification:", error);
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const clearAll = () => {
-    setNotifications([]);
+  const clearAll = async () => {
+    setActionLoading("clearAll");
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleteAll: true }),
+      });
+      if (response.ok) {
+        setNotifications([]);
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error("Failed to clear all notifications:", error);
+    } finally {
+      setActionLoading(null);
+    }
   };
+
+  if (loading) {
+    return <NotificationsSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
@@ -171,15 +239,24 @@ export default function NotificationsPage() {
         </div>
         <div className="flex gap-2">
           {unreadCount > 0 && (
-            <Button variant="outline" onClick={markAllAsRead} className="gap-2">
-              <Check className="h-4 w-4" />
+            <Button
+              variant="outline"
+              onClick={markAllAsRead}
+              className="gap-2"
+              disabled={actionLoading === "markAll"}
+            >
+              {actionLoading === "markAll" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
               Mark All Read
             </Button>
           )}
           <Button variant="outline" asChild>
-            <a href="/settings">
+            <Link href="/settings">
               <Settings className="h-4 w-4" />
-            </a>
+            </Link>
           </Button>
         </div>
       </div>
@@ -249,9 +326,9 @@ export default function NotificationsPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-3">
-                      {notification.actionUrl && (
+                      {notification.link && (
                         <Button size="sm" variant="outline" asChild>
-                          <a href={notification.actionUrl}>View</a>
+                          <Link href={notification.link}>View</Link>
                         </Button>
                       )}
                       {!notification.read && (
@@ -259,8 +336,13 @@ export default function NotificationsPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => markAsRead(notification.id)}
+                          disabled={actionLoading === notification.id}
                         >
-                          Mark as read
+                          {actionLoading === notification.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "Mark as read"
+                          )}
                         </Button>
                       )}
                       <Button
@@ -268,8 +350,13 @@ export default function NotificationsPage() {
                         variant="ghost"
                         className="text-muted-foreground hover:text-destructive"
                         onClick={() => deleteNotification(notification.id)}
+                        disabled={actionLoading === `delete-${notification.id}`}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {actionLoading === `delete-${notification.id}` ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -283,8 +370,20 @@ export default function NotificationsPage() {
       {/* Clear All */}
       {notifications.length > 0 && (
         <div className="text-center">
-          <Button variant="ghost" onClick={clearAll} className="text-muted-foreground">
-            Clear all notifications
+          <Button
+            variant="ghost"
+            onClick={clearAll}
+            className="text-muted-foreground"
+            disabled={actionLoading === "clearAll"}
+          >
+            {actionLoading === "clearAll" ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Clearing...
+              </>
+            ) : (
+              "Clear all notifications"
+            )}
           </Button>
         </div>
       )}

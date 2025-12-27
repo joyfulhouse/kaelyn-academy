@@ -1,4 +1,6 @@
-import { Metadata } from "next";
+"use client";
+
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   ClipboardList,
@@ -8,9 +10,14 @@ import {
   Users,
   CheckCircle,
   Clock,
-  AlertCircle,
   Filter,
   Search,
+  X,
+  Loader2,
+  AlertTriangle,
+  Copy,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,13 +30,26 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -39,81 +59,62 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Assignments | Teacher Dashboard | Kaelyn's Academy",
-  description: "Create and manage assignments for your classes",
-};
+interface Assignment {
+  id: string;
+  title: string;
+  description: string | null;
+  classId: string;
+  className: string;
+  dueDate: string | null;
+  assignedAt: string;
+  totalPoints: number;
+  passingScore: number;
+  submissions: {
+    submitted: number;
+    total: number;
+    graded: number;
+  };
+  avgScore: number | null;
+  status: "active" | "completed" | "past_due";
+}
 
-// Mock data - in production, this would come from the database
-const assignments = [
-  {
-    id: "1",
-    title: "Fractions Practice",
-    className: "5th Grade Math - Section A",
-    classId: "1",
-    dueDate: new Date(Date.now() + 1000 * 60 * 60 * 48),
-    assignedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-    totalPoints: 100,
-    submissions: { submitted: 18, total: 24, graded: 12 },
-    avgScore: 82,
-    status: "active",
-  },
-  {
-    id: "2",
-    title: "Decimals Quiz",
-    className: "5th Grade Math - Section A",
-    classId: "1",
-    dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5),
-    assignedAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    totalPoints: 50,
-    submissions: { submitted: 5, total: 24, graded: 0 },
-    avgScore: null,
-    status: "active",
-  },
-  {
-    id: "3",
-    title: "Geometry Review",
-    className: "5th Grade Math - Section B",
-    classId: "2",
-    dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-    assignedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9),
-    totalPoints: 100,
-    submissions: { submitted: 22, total: 22, graded: 22 },
-    avgScore: 78,
-    status: "completed",
-  },
-  {
-    id: "4",
-    title: "Addition & Subtraction Practice",
-    className: "4th Grade Math",
-    classId: "3",
-    dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-    assignedAt: new Date(Date.now()),
-    totalPoints: 75,
-    submissions: { submitted: 0, total: 20, graded: 0 },
-    avgScore: null,
-    status: "active",
-  },
-  {
-    id: "5",
-    title: "Reading Comprehension",
-    className: "4th Grade Reading",
-    classId: "4",
-    dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
-    assignedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12),
-    totalPoints: 100,
-    submissions: { submitted: 18, total: 20, graded: 18 },
-    avgScore: 85,
-    status: "completed",
-  },
-];
+interface AssignmentSummary {
+  total: number;
+  active: number;
+  needsGrading: number;
+  totalSubmissions: number;
+  completionRate: number;
+}
 
-function getStatusBadge(status: string, dueDate: Date, submitted: number, total: number) {
-  const isPastDue = dueDate < new Date();
-  const isComplete = submitted === total && status === "completed";
+function AssignmentsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between">
+        <div>
+          <Skeleton className="h-9 w-40" />
+          <Skeleton className="h-5 w-64 mt-2" />
+        </div>
+        <Skeleton className="h-10 w-40" />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-24 rounded-lg" />
+        ))}
+      </div>
+      <div className="flex gap-4">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-10 w-24" />
+      </div>
+      <Skeleton className="h-10 w-96" />
+      <Skeleton className="h-96 rounded-xl" />
+    </div>
+  );
+}
+
+function getStatusBadge(status: string, dueDate: string | null, submitted: number, total: number) {
+  const isPastDue = dueDate ? new Date(dueDate) < new Date() : false;
+  const isComplete = submitted === total && total > 0 && status === "completed";
 
   if (isComplete) {
     return <Badge className="bg-green-500">Completed</Badge>;
@@ -124,7 +125,10 @@ function getStatusBadge(status: string, dueDate: Date, submitted: number, total:
   return <Badge variant="secondary">Active</Badge>;
 }
 
-function formatDate(date: Date): string {
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return "No due date";
+
+  const date = new Date(dateStr);
   const now = new Date();
   const diffMs = date.getTime() - now.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -141,21 +145,142 @@ function formatDate(date: Date): string {
   return `In ${diffDays}d`;
 }
 
-export default async function AssignmentsPage() {
-  const session = await auth();
+export default function AssignmentsPage() {
+  const [loading, setLoading] = useState(true);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [summary, setSummary] = useState<AssignmentSummary>({
+    total: 0,
+    active: 0,
+    needsGrading: 0,
+    totalSubmissions: 0,
+    completionRate: 0,
+  });
 
-  if (!session?.user || session.user.role !== "teacher") {
-    redirect("/login");
-  }
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [classFilter, setClassFilter] = useState<string[]>([]);
 
-  const activeAssignments = assignments.filter((a) => a.status === "active");
-  const completedAssignments = assignments.filter((a) => a.status === "completed");
-  const needsGrading = assignments.filter(
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const response = await fetch("/api/teacher/assignments");
+      if (response.ok) {
+        const data = await response.json();
+        setAssignments(data.assignments || []);
+        setSummary(data.summary || {
+          total: 0,
+          active: 0,
+          needsGrading: 0,
+          totalSubmissions: 0,
+          completionRate: 0,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch assignments:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Get unique classes for filter
+  const uniqueClasses = useMemo(() => {
+    const classSet = new Map<string, string>();
+    assignments.forEach((a) => {
+      classSet.set(a.classId, a.className);
+    });
+    return Array.from(classSet.entries()).map(([id, name]) => ({ id, name }));
+  }, [assignments]);
+
+  // Filter assignments
+  const filteredAssignments = useMemo(() => {
+    return assignments.filter((a) => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (!a.title.toLowerCase().includes(query) &&
+            !(a.description?.toLowerCase().includes(query)) &&
+            !a.className.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+      if (classFilter.length > 0 && !classFilter.includes(a.classId)) {
+        return false;
+      }
+      return true;
+    });
+  }, [assignments, searchQuery, classFilter]);
+
+  // Categorize filtered assignments
+  const activeAssignments = filteredAssignments.filter((a) => a.status === "active");
+  const completedAssignments = filteredAssignments.filter((a) => a.status === "completed");
+  const needsGradingAssignments = filteredAssignments.filter(
     (a) => a.submissions.submitted > a.submissions.graded
   );
 
-  const totalSubmissions = assignments.reduce((acc, a) => acc + a.submissions.submitted, 0);
-  const totalStudents = assignments.reduce((acc, a) => acc + a.submissions.total, 0);
+  const handleDuplicateAssignment = async (assignment: Assignment) => {
+    try {
+      const response = await fetch("/api/teacher/assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: `${assignment.title} (Copy)`,
+          description: assignment.description,
+          classId: assignment.classId,
+          totalPoints: assignment.totalPoints,
+          passingScore: assignment.passingScore,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchData();
+      }
+    } catch (error) {
+      console.error("Failed to duplicate assignment:", error);
+    }
+  };
+
+  const handleDeleteAssignment = async () => {
+    if (!selectedAssignment) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/teacher/assignments/${selectedAssignment.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        await fetchData();
+        setDeleteDialogOpen(false);
+        setSelectedAssignment(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete assignment:", error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openDeleteDialog = (assignment: Assignment) => {
+    setSelectedAssignment(assignment);
+    setDeleteDialogOpen(true);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setClassFilter([]);
+  };
+
+  const hasActiveFilters = searchQuery || classFilter.length > 0;
+
+  if (loading) {
+    return <AssignmentsSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
@@ -184,7 +309,7 @@ export default async function AssignmentsPage() {
                 <ClipboardList className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{activeAssignments.length}</div>
+                <div className="text-2xl font-bold">{summary.active}</div>
                 <div className="text-xs text-muted-foreground">Active</div>
               </div>
             </div>
@@ -197,7 +322,7 @@ export default async function AssignmentsPage() {
                 <Clock className="h-5 w-5 text-amber-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{needsGrading.length}</div>
+                <div className="text-2xl font-bold">{summary.needsGrading}</div>
                 <div className="text-xs text-muted-foreground">Need Grading</div>
               </div>
             </div>
@@ -210,7 +335,7 @@ export default async function AssignmentsPage() {
                 <CheckCircle className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{totalSubmissions}</div>
+                <div className="text-2xl font-bold">{summary.totalSubmissions}</div>
                 <div className="text-xs text-muted-foreground">Submissions</div>
               </div>
             </div>
@@ -223,9 +348,7 @@ export default async function AssignmentsPage() {
                 <Users className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">
-                  {Math.round((totalSubmissions / totalStudents) * 100)}%
-                </div>
+                <div className="text-2xl font-bold">{summary.completionRate}%</div>
                 <div className="text-xs text-muted-foreground">Completion Rate</div>
               </div>
             </div>
@@ -237,166 +360,282 @@ export default async function AssignmentsPage() {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search assignments..." className="pl-9" />
+          <Input
+            placeholder="Search assignments..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <Button variant="outline" className="gap-2">
-          <Filter className="h-4 w-4" />
-          Filters
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <Filter className="h-4 w-4" />
+              Filters
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  {classFilter.length}
+                </Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Filter by Class</DropdownMenuLabel>
+            {uniqueClasses.map((cls) => (
+              <DropdownMenuCheckboxItem
+                key={cls.id}
+                checked={classFilter.includes(cls.id)}
+                onCheckedChange={(checked) => {
+                  setClassFilter(
+                    checked
+                      ? [...classFilter, cls.id]
+                      : classFilter.filter((c) => c !== cls.id)
+                  );
+                }}
+              >
+                {cls.name}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+            <X className="h-4 w-4" />
+            Clear
+          </Button>
+        )}
       </div>
 
-      {/* Assignments Tabs */}
-      <Tabs defaultValue="active" className="w-full">
-        <TabsList>
-          <TabsTrigger value="active">
-            Active ({activeAssignments.length})
-          </TabsTrigger>
-          <TabsTrigger value="needs-grading">
-            Needs Grading ({needsGrading.length})
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            Completed ({completedAssignments.length})
-          </TabsTrigger>
-          <TabsTrigger value="all">All ({assignments.length})</TabsTrigger>
-        </TabsList>
+      {/* Empty state */}
+      {assignments.length === 0 ? (
+        <Card className="border-dashed">
+          <CardContent className="py-12 text-center">
+            <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="font-semibold mb-1">No Assignments Yet</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Create your first assignment to start tracking student work
+            </p>
+            <Button asChild>
+              <Link href="/teacher/assignments/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Assignment
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        /* Assignments Tabs */
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList>
+            <TabsTrigger value="active">
+              Active ({activeAssignments.length})
+            </TabsTrigger>
+            <TabsTrigger value="needs-grading">
+              Needs Grading ({needsGradingAssignments.length})
+            </TabsTrigger>
+            <TabsTrigger value="completed">
+              Completed ({completedAssignments.length})
+            </TabsTrigger>
+            <TabsTrigger value="all">All ({filteredAssignments.length})</TabsTrigger>
+          </TabsList>
 
-        {["active", "needs-grading", "completed", "all"].map((tabValue) => {
-          let filteredAssignments = assignments;
-          if (tabValue === "active") {
-            filteredAssignments = activeAssignments;
-          } else if (tabValue === "needs-grading") {
-            filteredAssignments = needsGrading;
-          } else if (tabValue === "completed") {
-            filteredAssignments = completedAssignments;
-          }
+          {["active", "needs-grading", "completed", "all"].map((tabValue) => {
+            let tabAssignments = filteredAssignments;
+            if (tabValue === "active") {
+              tabAssignments = activeAssignments;
+            } else if (tabValue === "needs-grading") {
+              tabAssignments = needsGradingAssignments;
+            } else if (tabValue === "completed") {
+              tabAssignments = completedAssignments;
+            }
 
-          return (
-            <TabsContent key={tabValue} value={tabValue} className="mt-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Assignment</TableHead>
-                        <TableHead>Class</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead>Submissions</TableHead>
-                        <TableHead>Graded</TableHead>
-                        <TableHead>Avg Score</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="w-[50px]"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredAssignments.map((assignment) => (
-                        <TableRow key={assignment.id}>
-                          <TableCell>
-                            <Link
-                              href={`/teacher/assignments/${assignment.id}`}
-                              className="font-medium hover:text-primary transition-colors"
-                            >
-                              {assignment.title}
-                            </Link>
-                            <div className="text-xs text-muted-foreground">
-                              {assignment.totalPoints} points
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Link
-                              href={`/teacher/classes/${assignment.classId}`}
-                              className="hover:text-primary transition-colors"
-                            >
-                              {assignment.className}
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span>{formatDate(assignment.dueDate)}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Progress
-                                value={
-                                  (assignment.submissions.submitted /
-                                    assignment.submissions.total) *
-                                  100
-                                }
-                                className="h-2 w-16"
-                              />
-                              <span className="text-sm">
-                                {assignment.submissions.submitted}/
-                                {assignment.submissions.total}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Progress
-                                value={
-                                  assignment.submissions.submitted > 0
-                                    ? (assignment.submissions.graded /
-                                        assignment.submissions.submitted) *
-                                      100
-                                    : 0
-                                }
-                                className="h-2 w-16"
-                              />
-                              <span className="text-sm">
-                                {assignment.submissions.graded}/
-                                {assignment.submissions.submitted}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {assignment.avgScore !== null ? (
-                              <span className="font-medium">{assignment.avgScore}%</span>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {getStatusBadge(
-                              assignment.status,
-                              assignment.dueDate,
-                              assignment.submissions.submitted,
-                              assignment.submissions.total
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/teacher/assignments/${assignment.id}`}>
-                                    View Details
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>Grade Submissions</DropdownMenuItem>
-                                <DropdownMenuItem>Edit Assignment</DropdownMenuItem>
-                                <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">
-                                  Delete Assignment
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          );
-        })}
-      </Tabs>
+            return (
+              <TabsContent key={tabValue} value={tabValue} className="mt-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    {tabAssignments.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>No assignments in this category</p>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Assignment</TableHead>
+                            <TableHead>Class</TableHead>
+                            <TableHead>Due Date</TableHead>
+                            <TableHead>Submissions</TableHead>
+                            <TableHead>Graded</TableHead>
+                            <TableHead>Avg Score</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {tabAssignments.map((assignment) => (
+                            <TableRow key={assignment.id}>
+                              <TableCell>
+                                <Link
+                                  href={`/teacher/assignments/${assignment.id}`}
+                                  className="font-medium hover:text-primary transition-colors"
+                                >
+                                  {assignment.title}
+                                </Link>
+                                <div className="text-xs text-muted-foreground">
+                                  {assignment.totalPoints} points
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Link
+                                  href={`/teacher/classes/${assignment.classId}`}
+                                  className="hover:text-primary transition-colors"
+                                >
+                                  {assignment.className}
+                                </Link>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                                  <span>{formatDate(assignment.dueDate)}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Progress
+                                    value={
+                                      assignment.submissions.total > 0
+                                        ? (assignment.submissions.submitted /
+                                            assignment.submissions.total) *
+                                          100
+                                        : 0
+                                    }
+                                    className="h-2 w-16"
+                                  />
+                                  <span className="text-sm">
+                                    {assignment.submissions.submitted}/
+                                    {assignment.submissions.total}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Progress
+                                    value={
+                                      assignment.submissions.submitted > 0
+                                        ? (assignment.submissions.graded /
+                                            assignment.submissions.submitted) *
+                                          100
+                                        : 0
+                                    }
+                                    className="h-2 w-16"
+                                  />
+                                  <span className="text-sm">
+                                    {assignment.submissions.graded}/
+                                    {assignment.submissions.submitted}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {assignment.avgScore !== null ? (
+                                  <span className="font-medium">{assignment.avgScore}%</span>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {getStatusBadge(
+                                  assignment.status,
+                                  assignment.dueDate,
+                                  assignment.submissions.submitted,
+                                  assignment.submissions.total
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                      <Link href={`/teacher/assignments/${assignment.id}`}>
+                                        View Details
+                                      </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                      <Link href={`/teacher/assignments/${assignment.id}/grade`}>
+                                        <Pencil className="h-4 w-4 mr-2" />
+                                        Grade Submissions
+                                      </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                      <Link href={`/teacher/assignments/${assignment.id}/edit`}>
+                                        Edit Assignment
+                                      </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDuplicateAssignment(assignment)}>
+                                      <Copy className="h-4 w-4 mr-2" />
+                                      Duplicate
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      className="text-destructive"
+                                      onClick={() => openDeleteDialog(assignment)}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete Assignment
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            );
+          })}
+        </Tabs>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete Assignment?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{selectedAssignment?.title}</span>?
+              <br /><br />
+              This will permanently delete the assignment and all student submissions.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAssignment}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Assignment"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

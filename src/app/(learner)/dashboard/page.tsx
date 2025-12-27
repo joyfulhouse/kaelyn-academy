@@ -27,6 +27,7 @@ import {
   MasteryPieChart,
   StreakChart,
   CircularProgress,
+  type MasteryBreakdown,
 } from "@/components/dashboard/progress-charts";
 import { useTheme } from "@/components/providers/theme-provider";
 
@@ -54,10 +55,21 @@ interface RecentAttempt {
   completedAt: string;
 }
 
+interface WeeklyActivity {
+  day: string;
+  minutes: number;
+  lessons: number;
+}
+
 interface ProgressSummary {
   summary: {
     subjects: SubjectProgress[];
     recentActivity: RecentAttempt[];
+    achievementCount: number;
+    weeklyActivity: WeeklyActivity[];
+    masteryBreakdown: MasteryBreakdown[];
+    currentStreak: number;
+    longestStreak: number;
   };
 }
 
@@ -136,41 +148,38 @@ export default function LearnerDashboard() {
     }
   }, [learnerId, fetchProgress]);
 
-  // Mock data for demo
-  const mockSubjects: SubjectProgress[] = data?.summary?.subjects?.length
-    ? data.summary.subjects
-    : [
-        { id: "1", subjectId: "math", subjectName: "Math", masteryLevel: 75, completedLessons: 15, totalLessons: 20, currentStreak: 5, totalTimeSpent: 3600, lastActivityAt: new Date().toISOString() },
-        { id: "2", subjectId: "reading", subjectName: "Reading", masteryLevel: 82, completedLessons: 18, totalLessons: 25, currentStreak: 3, totalTimeSpent: 4200, lastActivityAt: new Date().toISOString() },
-        { id: "3", subjectId: "science", subjectName: "Science", masteryLevel: 68, completedLessons: 10, totalLessons: 18, currentStreak: 2, totalTimeSpent: 2100, lastActivityAt: new Date().toISOString() },
-        { id: "4", subjectId: "history", subjectName: "History", masteryLevel: 55, completedLessons: 7, totalLessons: 15, currentStreak: 0, totalTimeSpent: 1500, lastActivityAt: new Date().toISOString() },
-      ];
+  // Use real data from API with fallback to empty state
+  const subjects: SubjectProgress[] = data?.summary?.subjects || [];
 
-  const mockWeeklyActivity = [
-    { day: "Mon", minutes: 45, lessons: 2 },
-    { day: "Tue", minutes: 30, lessons: 1 },
-    { day: "Wed", minutes: 60, lessons: 3 },
-    { day: "Thu", minutes: 25, lessons: 1 },
-    { day: "Fri", minutes: 50, lessons: 2 },
-    { day: "Sat", minutes: 15, lessons: 1 },
+  const weeklyActivity: WeeklyActivity[] = data?.summary?.weeklyActivity || [
+    { day: "Mon", minutes: 0, lessons: 0 },
+    { day: "Tue", minutes: 0, lessons: 0 },
+    { day: "Wed", minutes: 0, lessons: 0 },
+    { day: "Thu", minutes: 0, lessons: 0 },
+    { day: "Fri", minutes: 0, lessons: 0 },
+    { day: "Sat", minutes: 0, lessons: 0 },
     { day: "Sun", minutes: 0, lessons: 0 },
   ];
 
-  const masteryBreakdown = [
-    { name: "Mastered", value: 45, color: "var(--success)" },
-    { name: "Learning", value: 30, color: "var(--primary)" },
-    { name: "Needs Review", value: 15, color: "var(--warning)" },
-    { name: "Not Started", value: 10, color: "var(--muted)" },
-  ];
+  const masteryBreakdown: MasteryBreakdown[] = data?.summary?.masteryBreakdown?.length
+    ? data.summary.masteryBreakdown
+    : [
+        { name: "Mastered", value: 0, color: "var(--success)" },
+        { name: "Learning", value: 0, color: "var(--primary)" },
+        { name: "Needs Review", value: 0, color: "var(--warning)" },
+      ];
 
-  const totalMastery = mockSubjects.length
-    ? Math.round(mockSubjects.reduce((acc, s) => acc + s.masteryLevel, 0) / mockSubjects.length)
+  const achievementCount = data?.summary?.achievementCount || 0;
+
+  const totalMastery = subjects.length
+    ? Math.round(subjects.reduce((acc, s) => acc + (s.masteryLevel || 0), 0) / subjects.length)
     : 0;
 
-  const totalLessonsCompleted = mockSubjects.reduce((acc, s) => acc + s.completedLessons, 0);
-  const totalLessons = mockSubjects.reduce((acc, s) => acc + s.totalLessons, 0);
-  const overallProgress = Math.round((totalLessonsCompleted / totalLessons) * 100) || 0;
-  const currentStreak = Math.max(...mockSubjects.map((s) => s.currentStreak), 0);
+  const totalLessonsCompleted = subjects.reduce((acc, s) => acc + (s.completedLessons || 0), 0);
+  const totalLessons = subjects.reduce((acc, s) => acc + (s.totalLessons || 0), 0);
+  const overallProgress = totalLessons > 0 ? Math.round((totalLessonsCompleted / totalLessons) * 100) : 0;
+  const currentStreak = data?.summary?.currentStreak || 0;
+  const longestStreak = data?.summary?.longestStreak || 0;
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -248,7 +257,7 @@ export default function LearnerDashboard() {
                 <Trophy className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold">12</p>
+                <p className="text-2xl font-bold">{achievementCount}</p>
                 <p className="text-xs text-muted-foreground">Achievements</p>
               </div>
             </div>
@@ -277,7 +286,7 @@ export default function LearnerDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <SubjectProgressChart data={mockSubjects} />
+            <SubjectProgressChart data={subjects} />
           </CardContent>
         </Card>
 
@@ -316,7 +325,7 @@ export default function LearnerDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <WeeklyActivityChart data={mockWeeklyActivity} />
+            <WeeklyActivityChart data={weeklyActivity} />
           </CardContent>
         </Card>
 
@@ -361,14 +370,14 @@ export default function LearnerDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <StreakChart currentStreak={currentStreak} longestStreak={14} />
+          <StreakChart currentStreak={currentStreak} longestStreak={longestStreak} />
           <div className="mt-4 flex gap-8">
             <div>
               <p className="text-2xl font-bold text-green-600">{currentStreak}</p>
               <p className="text-sm text-muted-foreground">Current Streak</p>
             </div>
             <div>
-              <p className="text-2xl font-bold">14</p>
+              <p className="text-2xl font-bold">{longestStreak}</p>
               <p className="text-sm text-muted-foreground">Longest Streak</p>
             </div>
           </div>
@@ -392,11 +401,12 @@ export default function LearnerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {(data?.summary?.recentActivity || [
-              { activityTitle: "Addition Practice", score: 95, passed: true, completedAt: new Date().toISOString() },
-              { activityTitle: "Reading Comprehension Quiz", score: 88, passed: true, completedAt: new Date(Date.now() - 86400000).toISOString() },
-              { activityTitle: "Science Lab: Plants", score: 100, passed: true, completedAt: new Date(Date.now() - 172800000).toISOString() },
-            ]).map((activity, i) => (
+            {(data?.summary?.recentActivity || []).length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No activity yet. Start learning to see your progress!
+              </p>
+            ) : null}
+            {(data?.summary?.recentActivity || []).map((activity, i) => (
               <div
                 key={i}
                 className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"

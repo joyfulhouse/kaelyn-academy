@@ -29,66 +29,93 @@ interface PlatformStats {
   totalTimeSpent: number;
 }
 
+interface Changes {
+  users: string;
+  activeUsers: string;
+  organizations: string;
+  lessonsCompleted: string;
+  averageMastery: string;
+  totalTimeSpent: string;
+}
+
+interface UserGrowthData {
+  month: string;
+  users: number;
+  active: number;
+  [key: string]: string | number;
+}
+
+interface RoleDistributionData {
+  name: string;
+  value: number;
+  color: string;
+  [key: string]: string | number;
+}
+
+interface DailyActivityData {
+  day: number;
+  lessons: number;
+  time: number;
+  [key: string]: string | number;
+}
+
+interface OrgPerformanceData {
+  name: string;
+  students: number;
+  mastery: number;
+  [key: string]: string | number;
+}
+
+interface SubjectEngagementData {
+  subject: string;
+  sessions: number;
+  avgTime: number;
+}
+
+interface AIUsageData {
+  tutorSessions: number;
+  problemsGenerated: number;
+  helpfulRating: number;
+  avgSessionDuration: number;
+}
+
+interface AnalyticsData {
+  stats: PlatformStats;
+  changes: Changes;
+  userGrowth: UserGrowthData[];
+  roleDistribution: RoleDistributionData[];
+  dailyActivity: DailyActivityData[];
+  organizationPerformance: OrgPerformanceData[];
+  subjectEngagement: SubjectEngagementData[];
+  aiUsage: AIUsageData;
+}
+
 export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d">("30d");
-
-  // Mock platform stats
-  const [stats] = useState<PlatformStats>({
-    totalUsers: 2847,
-    activeUsers: 1523,
-    totalOrganizations: 42,
-    totalLessonsCompleted: 48392,
-    averageMastery: 74,
-    totalTimeSpent: 892340,
-  });
+  const [data, setData] = useState<AnalyticsData | null>(null);
 
   const fetchData = useCallback(async () => {
-    // TODO: Fetch from API based on dateRange
-    setLoading(false);
-  }, []);
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/analytics?range=${dateRange}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch analytics");
+      }
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load analytics");
+    } finally {
+      setLoading(false);
+    }
+  }, [dateRange]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData, dateRange]);
-
-  // Mock trend data
-  const userGrowth = [
-    { month: "Aug", users: 1200, active: 890 },
-    { month: "Sep", users: 1580, active: 1100 },
-    { month: "Oct", users: 1920, active: 1250 },
-    { month: "Nov", users: 2340, active: 1380 },
-    { month: "Dec", users: 2847, active: 1523 },
-  ];
-
-  const dailyActivity = Array.from({ length: 30 }, (_, i) => ({
-    day: i + 1,
-    lessons: Math.floor(Math.random() * 500) + 1000,
-    time: Math.floor(Math.random() * 5000) + 20000,
-  }));
-
-  const roleDistribution = [
-    { name: "Learners", value: 2150, color: "#3b82f6" },
-    { name: "Parents", value: 420, color: "#10b981" },
-    { name: "Teachers", value: 185, color: "#8b5cf6" },
-    { name: "Admins", value: 92, color: "#f59e0b" },
-  ];
-
-  const organizationPerformance = [
-    { name: "Lincoln Elementary", students: 320, mastery: 82 },
-    { name: "Washington Middle", students: 280, mastery: 76 },
-    { name: "Jefferson High", students: 245, mastery: 71 },
-    { name: "Roosevelt Academy", students: 198, mastery: 79 },
-    { name: "Adams Charter", students: 165, mastery: 84 },
-  ];
-
-  const subjectEngagement = [
-    { subject: "Math", sessions: 12400, avgTime: 28 },
-    { subject: "Reading", sessions: 10800, avgTime: 32 },
-    { subject: "Science", sessions: 8200, avgTime: 25 },
-    { subject: "History", sessions: 6500, avgTime: 22 },
-    { subject: "Art", sessions: 4100, avgTime: 35 },
-  ];
+  }, [fetchData]);
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -111,6 +138,25 @@ export default function AdminAnalytics() {
       </div>
     );
   }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <p className="text-red-600">{error}</p>
+        <Button onClick={fetchData}>Retry</Button>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-gray-500">No analytics data available</p>
+      </div>
+    );
+  }
+
+  const { stats, changes, userGrowth, roleDistribution, dailyActivity, organizationPerformance, subjectEngagement, aiUsage } = data;
 
   return (
     <div className="space-y-6">
@@ -145,7 +191,9 @@ export default function AdminAnalytics() {
               {formatNumber(stats.totalUsers)}
             </div>
             <div className="text-sm text-gray-500">Total Users</div>
-            <div className="text-xs text-green-600 mt-1">+12% from last month</div>
+            <div className={`text-xs mt-1 ${changes.users.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+              {changes.users} from last period
+            </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
@@ -154,7 +202,9 @@ export default function AdminAnalytics() {
               {formatNumber(stats.activeUsers)}
             </div>
             <div className="text-sm text-gray-500">Active Users</div>
-            <div className="text-xs text-green-600 mt-1">+8% from last month</div>
+            <div className={`text-xs mt-1 ${changes.activeUsers.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+              {changes.activeUsers} from last period
+            </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
@@ -163,7 +213,9 @@ export default function AdminAnalytics() {
               {stats.totalOrganizations}
             </div>
             <div className="text-sm text-gray-500">Organizations</div>
-            <div className="text-xs text-green-600 mt-1">+5 this month</div>
+            <div className={`text-xs mt-1 ${changes.organizations.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+              {changes.organizations} this period
+            </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
@@ -172,7 +224,9 @@ export default function AdminAnalytics() {
               {formatNumber(stats.totalLessonsCompleted)}
             </div>
             <div className="text-sm text-gray-500">Lessons Done</div>
-            <div className="text-xs text-green-600 mt-1">+15% from last month</div>
+            <div className={`text-xs mt-1 ${changes.lessonsCompleted.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+              {changes.lessonsCompleted} from last period
+            </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
@@ -181,7 +235,9 @@ export default function AdminAnalytics() {
               {stats.averageMastery}%
             </div>
             <div className="text-sm text-gray-500">Avg. Mastery</div>
-            <div className="text-xs text-green-600 mt-1">+3% from last month</div>
+            <div className={`text-xs mt-1 ${changes.averageMastery.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+              {changes.averageMastery} from last period
+            </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
@@ -190,7 +246,9 @@ export default function AdminAnalytics() {
               {formatNumber(Math.round(stats.totalTimeSpent / 60))}h
             </div>
             <div className="text-sm text-gray-500">Total Study Time</div>
-            <div className="text-xs text-green-600 mt-1">+18% from last month</div>
+            <div className={`text-xs mt-1 ${changes.totalTimeSpent.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+              {changes.totalTimeSpent} from last period
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -300,7 +358,9 @@ export default function AdminAnalytics() {
         <Card className="md:col-span-2 border-0 shadow-md">
           <CardHeader>
             <CardTitle>Daily Activity</CardTitle>
-            <CardDescription>Lessons completed and study time over the last 30 days</CardDescription>
+            <CardDescription>
+              Lessons completed and study time over the last {dateRange === "7d" ? "7" : dateRange === "30d" ? "30" : "90"} days
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -318,7 +378,7 @@ export default function AdminAnalytics() {
                   formatter={(value, name) => {
                     const numValue = Number(value ?? 0);
                     return [
-                      name === "lessons" ? numValue : `${Math.round(numValue / 60)} hours`,
+                      name === "lessons" ? numValue : formatTime(numValue),
                       name === "lessons" ? "Lessons" : "Study Time",
                     ];
                   }}
@@ -330,7 +390,7 @@ export default function AdminAnalytics() {
                   stroke="#3b82f6"
                   strokeWidth={2}
                   dot={false}
-                  name="Lessons"
+                  name="lessons"
                 />
                 <Line
                   yAxisId="right"
@@ -339,7 +399,7 @@ export default function AdminAnalytics() {
                   stroke="#10b981"
                   strokeWidth={2}
                   dot={false}
-                  name="Study Time"
+                  name="time"
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -354,30 +414,36 @@ export default function AdminAnalytics() {
           <CardDescription>Performance by organization</CardDescription>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={organizationPerformance} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12 }} />
-              <YAxis
-                dataKey="name"
-                type="category"
-                width={150}
-                tick={{ fontSize: 12 }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "8px",
-                }}
-                formatter={(value, name) => [
-                  name === "mastery" ? `${value ?? 0}%` : (value ?? 0),
-                  name === "mastery" ? "Mastery" : "Students",
-                ]}
-              />
-              <Bar dataKey="mastery" fill="#8b5cf6" radius={[0, 4, 4, 0]} name="Mastery" />
-            </BarChart>
-          </ResponsiveContainer>
+          {organizationPerformance.length > 0 && organizationPerformance[0].students > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={organizationPerformance} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12 }} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={150}
+                  tick={{ fontSize: 12 }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                  }}
+                  formatter={(value, name) => [
+                    name === "mastery" ? `${value ?? 0}%` : (value ?? 0),
+                    name === "mastery" ? "Mastery" : "Students",
+                  ]}
+                />
+                <Bar dataKey="mastery" fill="#8b5cf6" radius={[0, 4, 4, 0]} name="mastery" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-gray-500">
+              No organization data available yet
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -388,30 +454,39 @@ export default function AdminAnalytics() {
           <CardDescription>Sessions and average time by subject</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {subjectEngagement.map((subject) => (
-              <div key={subject.subject} className="flex items-center gap-4">
-                <div className="w-20 font-medium">{subject.subject}</div>
-                <div className="flex-1">
-                  <div className="h-8 bg-gray-100 rounded-lg overflow-hidden relative">
-                    <div
-                      className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg"
-                      style={{ width: `${(subject.sessions / 12400) * 100}%` }}
-                    />
-                    <div className="absolute inset-0 flex items-center px-3">
-                      <span className="text-sm font-medium text-gray-700">
-                        {formatNumber(subject.sessions)} sessions
-                      </span>
+          {subjectEngagement.length > 0 ? (
+            <div className="space-y-4">
+              {subjectEngagement.map((subject) => {
+                const maxSessions = Math.max(...subjectEngagement.map((s) => s.sessions), 1);
+                return (
+                  <div key={subject.subject} className="flex items-center gap-4">
+                    <div className="w-20 font-medium">{subject.subject}</div>
+                    <div className="flex-1">
+                      <div className="h-8 bg-gray-100 rounded-lg overflow-hidden relative">
+                        <div
+                          className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg"
+                          style={{ width: `${(subject.sessions / maxSessions) * 100}%` }}
+                        />
+                        <div className="absolute inset-0 flex items-center px-3">
+                          <span className="text-sm font-medium text-gray-700">
+                            {formatNumber(subject.sessions)} sessions
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-24 text-right">
+                      <div className="text-sm font-medium">{formatTime(subject.avgTime)}</div>
+                      <div className="text-xs text-gray-500">avg. session</div>
                     </div>
                   </div>
-                </div>
-                <div className="w-24 text-right">
-                  <div className="text-sm font-medium">{formatTime(subject.avgTime)}</div>
-                  <div className="text-xs text-gray-500">avg. session</div>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-[200px] text-gray-500">
+              No subject engagement data available yet
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -419,26 +494,34 @@ export default function AdminAnalytics() {
       <Card className="border-0 shadow-md border-l-4 border-l-purple-500">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🤖 AI Agent Usage
+            AI Agent Usage
           </CardTitle>
           <CardDescription>AI tutoring and assistance metrics</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">12,847</div>
+              <div className="text-3xl font-bold text-purple-600">
+                {formatNumber(aiUsage.tutorSessions)}
+              </div>
               <div className="text-sm text-gray-500">Tutor Sessions</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">4,521</div>
+              <div className="text-3xl font-bold text-purple-600">
+                {formatNumber(aiUsage.problemsGenerated)}
+              </div>
               <div className="text-sm text-gray-500">Practice Problems Generated</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">89%</div>
+              <div className="text-3xl font-bold text-purple-600">
+                {aiUsage.helpfulRating > 0 ? `${aiUsage.helpfulRating}%` : "N/A"}
+              </div>
               <div className="text-sm text-gray-500">Helpful Rating</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">3.2min</div>
+              <div className="text-3xl font-bold text-purple-600">
+                {aiUsage.avgSessionDuration > 0 ? `${aiUsage.avgSessionDuration}min` : "N/A"}
+              </div>
               <div className="text-sm text-gray-500">Avg. Session Duration</div>
             </div>
           </div>

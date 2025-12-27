@@ -9,6 +9,8 @@ import {
   WeeklyActivityChart,
   CircularProgress,
 } from "@/components/dashboard/progress-charts";
+import { Download, Loader2 } from "lucide-react";
+import { generateProgressReportPDF } from "@/lib/reports/pdf-generator";
 
 interface Child {
   id: string;
@@ -28,6 +30,7 @@ interface Child {
 export default function ParentDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedChild, setSelectedChild] = useState<string | null>(null);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   // Mock children data - in real app, fetch from API
   const [children] = useState<Child[]>([
@@ -83,6 +86,28 @@ export default function ParentDashboard() {
     { day: "Sun", minutes: 0, lessons: 0 },
   ];
 
+  const handleDownloadReport = async () => {
+    if (!currentChild) return;
+
+    setIsGeneratingReport(true);
+    try {
+      // Small delay to show loading state
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      generateProgressReportPDF({
+        name: currentChild.name,
+        gradeLevel: currentChild.gradeLevel,
+        overallProgress: currentChild.overallProgress,
+        subjects: currentChild.subjects,
+        weeklyActivity: mockWeeklyActivity,
+      });
+    } catch (error) {
+      console.error("Failed to generate report:", error);
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -104,8 +129,18 @@ export default function ParentDashboard() {
             Track your children&apos;s learning progress
           </p>
         </div>
-        <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-          Download Report
+        <Button
+          variant="outline"
+          className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 gap-2"
+          onClick={handleDownloadReport}
+          disabled={isGeneratingReport || !currentChild}
+        >
+          {isGeneratingReport ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
+          {isGeneratingReport ? "Generating..." : "Download Report"}
         </Button>
       </div>
 

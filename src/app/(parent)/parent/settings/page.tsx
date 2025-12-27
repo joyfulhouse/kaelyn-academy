@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import {
   User,
   Bell,
@@ -10,6 +11,9 @@ import {
   Phone,
   Save,
   Camera,
+  Loader2,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,17 +35,209 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { signOut } from "next-auth/react";
+
+interface UserSettings {
+  name: string;
+  email: string;
+  phone: string;
+  timezone: string;
+  image?: string | null;
+  preferences: {
+    emailNotifications: boolean;
+    smsNotifications: boolean;
+    weeklyReport: boolean;
+    achievementAlerts: boolean;
+    strugglingAlerts: boolean;
+  };
+  twoFactorEnabled: boolean;
+}
+
+function SettingsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between">
+        <div>
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-5 w-64 mt-2" />
+        </div>
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <Skeleton className="h-12 w-full" />
+      <Skeleton className="h-80 rounded-xl" />
+    </div>
+  );
+}
 
 export default function ParentSettingsPage() {
-  const [name, setName] = useState("Sarah Johnson");
-  const [email, setEmail] = useState("sarah.johnson@example.com");
-  const [phone, setPhone] = useState("+1 (555) 123-4567");
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [smsNotifications, setSmsNotifications] = useState(false);
-  const [weeklyReport, setWeeklyReport] = useState(true);
-  const [achievementAlerts, setAchievementAlerts] = useState(true);
-  const [strugglingAlerts, setStrugglingAlerts] = useState(true);
-  const [timezone, setTimezone] = useState("America/New_York");
+  const { data: session } = useSession();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [settings, setSettings] = useState<UserSettings>({
+    name: "",
+    email: "",
+    phone: "",
+    timezone: "America/New_York",
+    preferences: {
+      emailNotifications: true,
+      smsNotifications: false,
+      weeklyReport: true,
+      achievementAlerts: true,
+      strugglingAlerts: true,
+    },
+    twoFactorEnabled: false,
+  });
+
+  // Password state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [twoFADialogOpen, setTwoFADialogOpen] = useState(false);
+  const [twoFALoading, setTwoFALoading] = useState(false);
+
+  const fetchSettings = useCallback(async () => {
+    if (!session?.user) return;
+
+    try {
+      // In a real app, we'd fetch from a parent settings API
+      // For now, use session data
+      setSettings({
+        name: session.user.name || "",
+        email: session.user.email || "",
+        phone: "",
+        timezone: "America/New_York",
+        image: session.user.image,
+        preferences: {
+          emailNotifications: true,
+          smsNotifications: false,
+          weeklyReport: true,
+          achievementAlerts: true,
+          strugglingAlerts: true,
+        },
+        twoFactorEnabled: false,
+      });
+    } catch (error) {
+      console.error("Failed to fetch settings:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (session) {
+      fetchSettings();
+    } else {
+      setLoading(false);
+    }
+  }, [session, fetchSettings]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveSuccess(false);
+
+    try {
+      // In a real app, this would save to an API
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    setPasswordError("");
+    setPasswordSuccess(false);
+
+    if (!currentPassword) {
+      setPasswordError("Current password is required");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+
+    setPasswordLoading(true);
+
+    try {
+      // In a real app, this would call a password change API
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setPasswordSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPasswordSuccess(false), 3000);
+    } catch {
+      setPasswordError("Failed to update password. Please try again.");
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleEnable2FA = async () => {
+    setTwoFALoading(true);
+
+    try {
+      // In a real app, this would initiate 2FA setup
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      setSettings((prev) => ({ ...prev, twoFactorEnabled: true }));
+      setTwoFADialogOpen(false);
+    } finally {
+      setTwoFALoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+
+    try {
+      // In a real app, this would delete the account
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setDeleteDialogOpen(false);
+      // Sign out and redirect to home
+      signOut({ callbackUrl: "/" });
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <SettingsSkeleton />;
+  }
+
+  const initials = settings.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
 
   return (
     <div className="space-y-6">
@@ -53,9 +249,15 @@ export default function ParentSettingsPage() {
             Manage your account and preferences
           </p>
         </div>
-        <Button className="gap-2">
-          <Save className="h-4 w-4" />
-          Save Changes
+        <Button className="gap-2" onClick={handleSave} disabled={saving}>
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : saveSuccess ? (
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          {saveSuccess ? "Saved!" : "Save Changes"}
         </Button>
       </div>
 
@@ -63,19 +265,19 @@ export default function ParentSettingsPage() {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile" className="gap-2">
             <User className="h-4 w-4" />
-            Profile
+            <span className="hidden sm:inline">Profile</span>
           </TabsTrigger>
           <TabsTrigger value="notifications" className="gap-2">
             <Bell className="h-4 w-4" />
-            Notifications
+            <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
           <TabsTrigger value="billing" className="gap-2">
             <CreditCard className="h-4 w-4" />
-            Billing
+            <span className="hidden sm:inline">Billing</span>
           </TabsTrigger>
           <TabsTrigger value="security" className="gap-2">
             <Shield className="h-4 w-4" />
-            Security
+            <span className="hidden sm:inline">Security</span>
           </TabsTrigger>
         </TabsList>
 
@@ -84,15 +286,17 @@ export default function ParentSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Profile Picture</CardTitle>
-              <CardDescription>
-                Your profile photo visible to teachers
-              </CardDescription>
+              <CardDescription>Your profile photo visible to teachers</CardDescription>
             </CardHeader>
             <CardContent className="flex items-center gap-6">
               <Avatar className="h-24 w-24">
-                <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-                  SJ
-                </AvatarFallback>
+                {settings.image ? (
+                  <AvatarImage src={settings.image} />
+                ) : (
+                  <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                    {initials || "?"}
+                  </AvatarFallback>
+                )}
               </Avatar>
               <div className="space-y-2">
                 <Button variant="outline" className="gap-2">
@@ -109,9 +313,7 @@ export default function ParentSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>
-              <CardDescription>
-                Update your account details
-              </CardDescription>
+              <CardDescription>Update your account details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
@@ -119,13 +321,20 @@ export default function ParentSettingsPage() {
                   <Label htmlFor="name">Full Name</Label>
                   <Input
                     id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={settings.name}
+                    onChange={(e) =>
+                      setSettings({ ...settings, name: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="timezone">Timezone</Label>
-                  <Select value={timezone} onValueChange={setTimezone}>
+                  <Select
+                    value={settings.timezone}
+                    onValueChange={(value) =>
+                      setSettings({ ...settings, timezone: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -141,16 +350,16 @@ export default function ParentSettingsPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button variant="outline">Verify</Button>
-                </div>
+                <Input
+                  id="email"
+                  type="email"
+                  value={settings.email}
+                  disabled
+                  className="bg-muted"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Email cannot be changed. Contact support for help.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -158,8 +367,11 @@ export default function ParentSettingsPage() {
                 <Input
                   id="phone"
                   type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  value={settings.phone}
+                  onChange={(e) =>
+                    setSettings({ ...settings, phone: e.target.value })
+                  }
+                  placeholder="+1 (555) 123-4567"
                 />
               </div>
             </CardContent>
@@ -187,8 +399,16 @@ export default function ParentSettingsPage() {
                   </div>
                 </div>
                 <Switch
-                  checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
+                  checked={settings.preferences.emailNotifications}
+                  onCheckedChange={(checked) =>
+                    setSettings({
+                      ...settings,
+                      preferences: {
+                        ...settings.preferences,
+                        emailNotifications: checked,
+                      },
+                    })
+                  }
                 />
               </div>
 
@@ -203,8 +423,16 @@ export default function ParentSettingsPage() {
                   </div>
                 </div>
                 <Switch
-                  checked={smsNotifications}
-                  onCheckedChange={setSmsNotifications}
+                  checked={settings.preferences.smsNotifications}
+                  onCheckedChange={(checked) =>
+                    setSettings({
+                      ...settings,
+                      preferences: {
+                        ...settings.preferences,
+                        smsNotifications: checked,
+                      },
+                    })
+                  }
                 />
               </div>
             </CardContent>
@@ -226,8 +454,16 @@ export default function ParentSettingsPage() {
                   </p>
                 </div>
                 <Switch
-                  checked={weeklyReport}
-                  onCheckedChange={setWeeklyReport}
+                  checked={settings.preferences.weeklyReport}
+                  onCheckedChange={(checked) =>
+                    setSettings({
+                      ...settings,
+                      preferences: {
+                        ...settings.preferences,
+                        weeklyReport: checked,
+                      },
+                    })
+                  }
                 />
               </div>
 
@@ -239,8 +475,16 @@ export default function ParentSettingsPage() {
                   </p>
                 </div>
                 <Switch
-                  checked={achievementAlerts}
-                  onCheckedChange={setAchievementAlerts}
+                  checked={settings.preferences.achievementAlerts}
+                  onCheckedChange={(checked) =>
+                    setSettings({
+                      ...settings,
+                      preferences: {
+                        ...settings.preferences,
+                        achievementAlerts: checked,
+                      },
+                    })
+                  }
                 />
               </div>
 
@@ -252,8 +496,16 @@ export default function ParentSettingsPage() {
                   </p>
                 </div>
                 <Switch
-                  checked={strugglingAlerts}
-                  onCheckedChange={setStrugglingAlerts}
+                  checked={settings.preferences.strugglingAlerts}
+                  onCheckedChange={(checked) =>
+                    setSettings({
+                      ...settings,
+                      preferences: {
+                        ...settings.preferences,
+                        strugglingAlerts: checked,
+                      },
+                    })
+                  }
                 />
               </div>
             </CardContent>
@@ -265,50 +517,24 @@ export default function ParentSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Current Plan</CardTitle>
-              <CardDescription>
-                Your subscription details
-              </CardDescription>
+              <CardDescription>Your subscription details</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between p-4 bg-primary/5 border border-primary/20 rounded-lg">
                 <div>
-                  <h3 className="font-semibold text-lg">Family Plan</h3>
+                  <h3 className="font-semibold text-lg">Free Trial</h3>
                   <p className="text-sm text-muted-foreground">
-                    Up to 4 children • All subjects • AI Tutor included
+                    Unlimited access during development
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold">$19.99</div>
+                  <div className="text-2xl font-bold">$0</div>
                   <div className="text-sm text-muted-foreground">/month</div>
                 </div>
               </div>
-              <div className="flex gap-2 mt-4">
-                <Button variant="outline">Change Plan</Button>
-                <Button variant="outline" className="text-destructive">
-                  Cancel Subscription
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Method</CardTitle>
-              <CardDescription>
-                Manage your payment information
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="h-8 w-8 text-muted-foreground" />
-                  <div>
-                    <div className="font-medium">•••• •••• •••• 4242</div>
-                    <div className="text-sm text-muted-foreground">Expires 12/25</div>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">Update</Button>
-              </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                Billing features will be available when the platform launches.
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -318,24 +544,58 @@ export default function ParentSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Password</CardTitle>
-              <CardDescription>
-                Change your account password
-              </CardDescription>
+              <CardDescription>Change your account password</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {passwordError && (
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="text-sm">{passwordError}</span>
+                </div>
+              )}
+              {passwordSuccess && (
+                <div className="p-3 bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2 text-green-800 dark:text-green-200">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span className="text-sm">Password updated successfully!</span>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
-                <Input id="currentPassword" type="password" />
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
-                <Input id="newPassword" type="password" />
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <Input id="confirmPassword" type="password" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
               </div>
-              <Button>Update Password</Button>
+              <Button onClick={handlePasswordChange} disabled={passwordLoading}>
+                {passwordLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Password"
+                )}
+              </Button>
             </CardContent>
           </Card>
 
@@ -349,12 +609,24 @@ export default function ParentSettingsPage() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">2FA is not enabled</p>
+                  <p className="font-medium">
+                    {settings.twoFactorEnabled
+                      ? "2FA is enabled"
+                      : "2FA is not enabled"}
+                  </p>
                   <p className="text-sm text-muted-foreground">
-                    Protect your account with two-factor authentication
+                    {settings.twoFactorEnabled
+                      ? "Your account is protected with two-factor authentication"
+                      : "Protect your account with two-factor authentication"}
                   </p>
                 </div>
-                <Button>Enable 2FA</Button>
+                {settings.twoFactorEnabled ? (
+                  <Button variant="outline">Disable 2FA</Button>
+                ) : (
+                  <Button onClick={() => setTwoFADialogOpen(true)}>
+                    Enable 2FA
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -362,16 +634,82 @@ export default function ParentSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-destructive">Danger Zone</CardTitle>
-              <CardDescription>
-                Irreversible account actions
-              </CardDescription>
+              <CardDescription>Irreversible account actions</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button variant="destructive">Delete Account</Button>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Deleting your account will permanently remove all your data,
+                including your children&apos;s progress and settings. This action
+                cannot be undone.
+              </p>
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                Delete Account
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* 2FA Dialog */}
+      <AlertDialog open={twoFADialogOpen} onOpenChange={setTwoFADialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Enable Two-Factor Authentication</AlertDialogTitle>
+            <AlertDialogDescription>
+              Two-factor authentication adds an extra layer of security to your
+              account. You&apos;ll need to enter a code from your authenticator app
+              each time you sign in.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={twoFALoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleEnable2FA} disabled={twoFALoading}>
+              {twoFALoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Setting up...
+                </>
+              ) : (
+                "Enable 2FA"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Account Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you absolutely sure? This action cannot be undone. This will
+              permanently delete your account and remove all data associated with
+              it, including all children&apos;s progress and achievements.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Account"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

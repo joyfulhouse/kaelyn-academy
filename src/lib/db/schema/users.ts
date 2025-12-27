@@ -23,15 +23,23 @@ export const users = pgTable("users", {
   // Preferences
   preferences: jsonb("preferences").$type<{
     language?: string;
+    theme?: "light" | "dark" | "system";
+    fontSize?: "small" | "medium" | "large" | "extra-large";
+    soundEnabled?: boolean;
+    soundVolume?: number; // 0-100
+    avatarId?: string;
     notifications?: {
       email?: boolean;
       push?: boolean;
       achievements?: boolean;
+      reminders?: boolean;
+      messages?: boolean;
     };
     accessibility?: {
       highContrast?: boolean;
       largeText?: boolean;
       reducedMotion?: boolean;
+      readAloud?: boolean;
     };
   }>(),
 
@@ -89,6 +97,21 @@ export const learners = pgTable("learners", {
     learningStyle?: "visual" | "auditory" | "kinesthetic";
     readingLevel?: string;
     mathLevel?: string;
+    // UI/UX Settings
+    theme?: "light" | "dark" | "system";
+    fontSize?: "small" | "medium" | "large" | "extra-large";
+    soundEnabled?: boolean;
+    soundVolume?: number; // 0-100
+    notifications?: {
+      achievements?: boolean;
+      reminders?: boolean;
+      messages?: boolean;
+    };
+    accessibility?: {
+      readAloud?: boolean;
+      highContrast?: boolean;
+      reducedMotion?: boolean;
+    };
   }>(),
 
   // Parental controls

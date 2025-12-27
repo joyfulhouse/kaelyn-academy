@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   Search,
-  Filter,
   Download,
   Mail,
   TrendingUp,
@@ -12,19 +11,23 @@ import {
   MoreVertical,
   Users,
   GraduationCap,
+  FileSpreadsheet,
+  MessageSquare,
+  Eye,
+  BarChart3,
+  Phone,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -47,105 +50,71 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
-const students = [
-  {
-    id: "1",
-    name: "Alex Martinez",
-    email: "alex.m@school.edu",
-    class: "5th Grade Math - A",
-    progress: 85,
-    mastery: 88,
-    streak: 15,
-    lastActive: new Date(Date.now() - 1000 * 60 * 30),
-    status: "excelling",
-    trend: "up",
-  },
-  {
-    id: "2",
-    name: "Jordan Kim",
-    email: "jordan.k@school.edu",
-    class: "5th Grade Math - A",
-    progress: 72,
-    mastery: 75,
-    streak: 8,
-    lastActive: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    status: "on-track",
-    trend: "stable",
-  },
-  {
-    id: "3",
-    name: "Sam Patel",
-    email: "sam.p@school.edu",
-    class: "5th Grade Math - B",
-    progress: 45,
-    mastery: 48,
-    streak: 0,
-    lastActive: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-    status: "struggling",
-    trend: "down",
-  },
-  {
-    id: "4",
-    name: "Taylor Rodriguez",
-    email: "taylor.r@school.edu",
-    class: "5th Grade Math - A",
-    progress: 92,
-    mastery: 95,
-    streak: 22,
-    lastActive: new Date(Date.now() - 1000 * 60 * 45),
-    status: "excelling",
-    trend: "up",
-  },
-  {
-    id: "5",
-    name: "Morgan Chen",
-    email: "morgan.c@school.edu",
-    class: "5th Grade Math - B",
-    progress: 68,
-    mastery: 70,
-    streak: 5,
-    lastActive: new Date(Date.now() - 1000 * 60 * 60 * 5),
-    status: "on-track",
-    trend: "up",
-  },
-  {
-    id: "6",
-    name: "Casey Johnson",
-    email: "casey.j@school.edu",
-    class: "4th Grade Reading",
-    progress: 55,
-    mastery: 58,
-    streak: 2,
-    lastActive: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    status: "needs-attention",
-    trend: "down",
-  },
-  {
-    id: "7",
-    name: "Riley Brown",
-    email: "riley.b@school.edu",
-    class: "4th Grade Reading",
-    progress: 78,
-    mastery: 80,
-    streak: 10,
-    lastActive: new Date(Date.now() - 1000 * 60 * 60 * 3),
-    status: "on-track",
-    trend: "stable",
-  },
-  {
-    id: "8",
-    name: "Dakota Smith",
-    email: "dakota.s@school.edu",
-    class: "5th Grade Math - B",
-    progress: 62,
-    mastery: 65,
-    streak: 7,
-    lastActive: new Date(Date.now() - 1000 * 60 * 60 * 8),
-    status: "on-track",
-    trend: "up",
-  },
-];
+interface Student {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  gradeLevel: number;
+  classId: string;
+  className: string;
+  progress: number;
+  mastery: number;
+  streak: number;
+  trend: "up" | "down" | "stable";
+  status: "excelling" | "on-track" | "needs-attention" | "struggling";
+  lastActive: string | null;
+}
+
+interface ClassInfo {
+  id: string;
+  name: string;
+}
+
+interface Summary {
+  total: number;
+  excelling: number;
+  struggling: number;
+  avgProgress: number;
+}
+
+function StudentsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between">
+        <div>
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-5 w-48 mt-2" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-24 rounded-lg" />
+        ))}
+      </div>
+      <div className="flex gap-4">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-10 w-40" />
+      </div>
+      <Skeleton className="h-96 rounded-xl" />
+    </div>
+  );
+}
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -171,7 +140,10 @@ function getTrendIcon(trend: string) {
   }
 }
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(dateStr: string | null): string {
+  if (!dateStr) return "Never";
+
+  const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / (1000 * 60));
@@ -183,24 +155,127 @@ function formatTimeAgo(date: Date): string {
   return `${diffDays}d ago`;
 }
 
+function formatGradeLevel(grade: number): string {
+  if (grade === 0) return "K";
+  return String(grade);
+}
+
 export default function TeacherStudentsPage() {
+  const [loading, setLoading] = useState(true);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [classes, setClasses] = useState<ClassInfo[]>([]);
+  const [summary, setSummary] = useState<Summary>({
+    total: 0,
+    excelling: 0,
+    struggling: 0,
+    avgProgress: 0,
+  });
+
+  // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [classFilter, setClassFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const filteredStudents = students.filter((student) => {
-    const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesClass = classFilter === "all" || student.class === classFilter;
-    const matchesStatus = statusFilter === "all" || student.status === statusFilter;
-    return matchesSearch && matchesClass && matchesStatus;
-  });
+  // Message dialog
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [messageRecipient, setMessageRecipient] = useState<Student | null>(null);
+  const [messageContent, setMessageContent] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const stats = {
-    total: students.length,
-    excelling: students.filter((s) => s.status === "excelling").length,
-    struggling: students.filter((s) => s.status === "struggling" || s.status === "needs-attention").length,
-    avgProgress: Math.round(students.reduce((sum, s) => sum + s.progress, 0) / students.length),
+  const fetchData = useCallback(async () => {
+    try {
+      const response = await fetch("/api/teacher/students");
+      if (response.ok) {
+        const data = await response.json();
+        setStudents(data.students || []);
+        setClasses(data.classes || []);
+        setSummary(data.summary || {
+          total: 0,
+          excelling: 0,
+          struggling: 0,
+          avgProgress: 0,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch students:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => {
+      const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesClass = classFilter === "all" || student.classId === classFilter;
+      const matchesStatus = statusFilter === "all" || student.status === statusFilter;
+      return matchesSearch && matchesClass && matchesStatus;
+    });
+  }, [students, searchQuery, classFilter, statusFilter]);
+
+  const handleExportCSV = () => {
+    const headers = ["Name", "Class", "Grade", "Progress", "Mastery", "Streak", "Status", "Last Active"];
+    const rows = filteredStudents.map((s) => [
+      s.name,
+      s.className,
+      `Grade ${formatGradeLevel(s.gradeLevel)}`,
+      `${s.progress}%`,
+      `${s.mastery}%`,
+      `${s.streak} days`,
+      s.status,
+      s.lastActive ? new Date(s.lastActive).toLocaleDateString() : "Never",
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `students-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
   };
+
+  const handleSendMessage = async () => {
+    if (!messageRecipient || !messageContent.trim()) return;
+    setSending(true);
+
+    try {
+      // In a real app, this would send a notification to the parent
+      // For now, we'll just simulate the action
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      setMessageDialogOpen(false);
+      setMessageRecipient(null);
+      setMessageContent("");
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const openMessageDialog = (student: Student) => {
+    setMessageRecipient(student);
+    setMessageDialogOpen(true);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setClassFilter("all");
+    setStatusFilter("all");
+  };
+
+  const hasActiveFilters = searchQuery || classFilter !== "all" || statusFilter !== "all";
+
+  if (loading) {
+    return <StudentsSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
@@ -213,13 +288,9 @@ export default function TeacherStudentsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-          <Button variant="outline" className="gap-2">
-            <Mail className="h-4 w-4" />
-            Message All
+          <Button variant="outline" className="gap-2" onClick={handleExportCSV}>
+            <FileSpreadsheet className="h-4 w-4" />
+            Export CSV
           </Button>
         </div>
       </div>
@@ -233,7 +304,7 @@ export default function TeacherStudentsPage() {
                 <Users className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{stats.total}</div>
+                <div className="text-2xl font-bold">{summary.total}</div>
                 <div className="text-xs text-muted-foreground">Total Students</div>
               </div>
             </div>
@@ -246,7 +317,7 @@ export default function TeacherStudentsPage() {
                 <TrendingUp className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{stats.excelling}</div>
+                <div className="text-2xl font-bold">{summary.excelling}</div>
                 <div className="text-xs text-muted-foreground">Excelling</div>
               </div>
             </div>
@@ -259,7 +330,7 @@ export default function TeacherStudentsPage() {
                 <TrendingDown className="h-5 w-5 text-red-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{stats.struggling}</div>
+                <div className="text-2xl font-bold">{summary.struggling}</div>
                 <div className="text-xs text-muted-foreground">Need Help</div>
               </div>
             </div>
@@ -272,7 +343,7 @@ export default function TeacherStudentsPage() {
                 <GraduationCap className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{stats.avgProgress}%</div>
+                <div className="text-2xl font-bold">{summary.avgProgress}%</div>
                 <div className="text-xs text-muted-foreground">Avg Progress</div>
               </div>
             </div>
@@ -298,9 +369,11 @@ export default function TeacherStudentsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Classes</SelectItem>
-            <SelectItem value="5th Grade Math - A">5th Grade Math - A</SelectItem>
-            <SelectItem value="5th Grade Math - B">5th Grade Math - B</SelectItem>
-            <SelectItem value="4th Grade Reading">4th Grade Reading</SelectItem>
+            {classes.map((cls) => (
+              <SelectItem key={cls.id} value={cls.id}>
+                {cls.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
@@ -316,96 +389,188 @@ export default function TeacherStudentsPage() {
             <SelectItem value="struggling">Struggling</SelectItem>
           </SelectContent>
         </Select>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+            <X className="h-4 w-4" />
+            Clear
+          </Button>
+        )}
       </div>
 
-      {/* Students Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Student</TableHead>
-                <TableHead>Class</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Mastery</TableHead>
-                <TableHead>Streak</TableHead>
-                <TableHead>Trend</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Active</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStudents.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-xs">
-                          {student.name.split(" ").map((n) => n[0]).join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{student.name}</div>
-                        <div className="text-xs text-muted-foreground">{student.email}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">{student.class}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Progress value={student.progress} className="h-2 w-16" />
-                      <span className="text-sm">{student.progress}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{student.mastery}%</TableCell>
-                  <TableCell>
-                    {student.streak > 0 ? (
-                      <span className="text-orange-500">{student.streak}d</span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{getTrendIcon(student.trend)}</TableCell>
-                  <TableCell>{getStatusBadge(student.status)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatTimeAgo(student.lastActive)}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Profile</DropdownMenuItem>
-                        <DropdownMenuItem>View Progress</DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Mail className="h-4 w-4 mr-2" />
-                          Send Message
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Contact Parent</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+      {/* Empty state */}
+      {students.length === 0 ? (
+        <Card className="border-dashed">
+          <CardContent className="py-12 text-center">
+            <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="font-semibold mb-1">No Students Yet</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Students will appear here once they enroll in your classes
+            </p>
+            <Button asChild variant="outline">
+              <Link href="/teacher/classes">Manage Classes</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : filteredStudents.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="font-semibold mb-1">No Students Found</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Try adjusting your search or filters
+            </p>
+            <Button variant="outline" onClick={clearFilters}>
+              Clear Filters
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        /* Students Table */
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Student</TableHead>
+                  <TableHead>Class</TableHead>
+                  <TableHead>Progress</TableHead>
+                  <TableHead>Mastery</TableHead>
+                  <TableHead>Streak</TableHead>
+                  <TableHead>Trend</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Active</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {filteredStudents.length === 0 && (
-        <div className="text-center py-12">
-          <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="font-semibold mb-1">No students found</h3>
-          <p className="text-sm text-muted-foreground">
-            Try adjusting your search or filters
-          </p>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.map((student) => (
+                  <TableRow key={`${student.id}-${student.classId}`}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={student.avatarUrl || undefined} />
+                          <AvatarFallback className="text-xs">
+                            {student.name.split(" ").map((n) => n[0]).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{student.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Grade {formatGradeLevel(student.gradeLevel)}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm">{student.className}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={student.progress} className="h-2 w-16" />
+                        <span className="text-sm">{student.progress}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{student.mastery}%</TableCell>
+                    <TableCell>
+                      {student.streak > 0 ? (
+                        <span className="text-orange-500">{student.streak}d</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{getTrendIcon(student.trend)}</TableCell>
+                    <TableCell>{getStatusBadge(student.status)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {formatTimeAgo(student.lastActive)}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/teacher/students?id=${student.id}`}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Profile
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/teacher/students?id=${student.id}&tab=progress`}>
+                              <BarChart3 className="h-4 w-4 mr-2" />
+                              View Progress
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openMessageDialog(student)}>
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Send Message to Parent
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => openMessageDialog(student)}>
+                            <Phone className="h-4 w-4 mr-2" />
+                            Contact Parent
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
+
+      {/* Message Dialog */}
+      <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Message to Parent</DialogTitle>
+            <DialogDescription>
+              Send a message to {messageRecipient?.name}&apos;s parent or guardian.
+              They will receive a notification in their parent dashboard.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Student</Label>
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={messageRecipient?.avatarUrl || undefined} />
+                  <AvatarFallback>
+                    {messageRecipient?.name.split(" ").map((n) => n[0]).join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-medium">{messageRecipient?.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {messageRecipient?.className}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
+              <Textarea
+                id="message"
+                placeholder="Type your message here..."
+                value={messageContent}
+                onChange={(e) => setMessageContent(e.target.value)}
+                rows={5}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMessageDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendMessage} disabled={!messageContent.trim() || sending}>
+              {sending ? "Sending..." : "Send Message"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
