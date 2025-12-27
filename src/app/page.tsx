@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { StatsSection } from "@/components/marketing/stats-section";
 
 export default function LandingPage() {
   const features = [
@@ -238,32 +239,7 @@ export default function LandingPage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/50">
-          <div className="max-w-7xl mx-auto">
-            <Card className="bg-primary text-primary-foreground border-0">
-              <CardContent className="p-12">
-                <div className="grid md:grid-cols-4 gap-8 text-center">
-                  <div>
-                    <div className="text-4xl font-bold mb-2">10K+</div>
-                    <div className="text-primary-foreground/80">Active Learners</div>
-                  </div>
-                  <div>
-                    <div className="text-4xl font-bold mb-2">500+</div>
-                    <div className="text-primary-foreground/80">Lesson Modules</div>
-                  </div>
-                  <div>
-                    <div className="text-4xl font-bold mb-2">95%</div>
-                    <div className="text-primary-foreground/80">Parent Satisfaction</div>
-                  </div>
-                  <div>
-                    <div className="text-4xl font-bold mb-2">4.9</div>
-                    <div className="text-primary-foreground/80">App Store Rating</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+        <StatsSection />
 
         {/* CTA Section */}
         <section className="py-20 px-4 sm:px-6 lg:px-8">
