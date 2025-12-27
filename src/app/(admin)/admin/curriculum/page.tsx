@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
 
 interface Subject {
   id: string;
@@ -19,46 +20,99 @@ interface Subject {
 interface Unit {
   id: string;
   title: string;
+  slug: string;
+  description?: string;
   subjectId: string;
   gradeLevel: number;
   lessonsCount: number;
   isPublished: boolean;
+  estimatedMinutes?: number;
+}
+
+interface CurriculumData {
+  subjects: Subject[];
+  units: Unit[];
+  stats: {
+    totalSubjects: number;
+    totalUnits: number;
+    totalLessons: number;
+    publishedUnits: number;
+  };
 }
 
 export default function AdminCurriculumPage() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"subjects" | "units" | "lessons">("subjects");
   const [searchQuery, setSearchQuery] = useState("");
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
+  const [data, setData] = useState<CurriculumData | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
-      // TODO: Fetch from API
-      setSubjects([
-        { id: "1", name: "Mathematics", slug: "math", iconName: "calculator", color: "#3b82f6", unitsCount: 12, lessonsCount: 48, isPublished: true },
-        { id: "2", name: "Reading & ELA", slug: "reading", iconName: "book-open", color: "#10b981", unitsCount: 10, lessonsCount: 42, isPublished: true },
-        { id: "3", name: "Science", slug: "science", iconName: "flask", color: "#8b5cf6", unitsCount: 8, lessonsCount: 32, isPublished: true },
-        { id: "4", name: "History", slug: "history", iconName: "landmark", color: "#f59e0b", unitsCount: 6, lessonsCount: 24, isPublished: false },
-        { id: "5", name: "Technology", slug: "technology", iconName: "laptop", color: "#ec4899", unitsCount: 4, lessonsCount: 16, isPublished: false },
-      ]);
-      setUnits([
-        { id: "u1", title: "Numbers & Counting", subjectId: "1", gradeLevel: 0, lessonsCount: 8, isPublished: true },
-        { id: "u2", title: "Addition & Subtraction", subjectId: "1", gradeLevel: 1, lessonsCount: 10, isPublished: true },
-        { id: "u3", title: "Multiplication Basics", subjectId: "1", gradeLevel: 2, lessonsCount: 8, isPublished: true },
-        { id: "u4", title: "Fractions Introduction", subjectId: "1", gradeLevel: 3, lessonsCount: 6, isPublished: false },
-      ]);
-    } catch (error) {
-      console.error("Failed to fetch curriculum:", error);
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams();
+      if (searchQuery) params.set("search", searchQuery);
+      if (selectedSubject) params.set("subjectId", selectedSubject);
+
+      const response = await fetch(`/api/admin/curriculum?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch curriculum data");
+      }
+
+      const curriculumData = await response.json();
+      setData(curriculumData);
+    } catch (err) {
+      console.error("Failed to fetch curriculum:", err);
+      setError(err instanceof Error ? err.message : "Failed to load curriculum");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [searchQuery, selectedSubject]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (data) {
+        fetchData();
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  if (loading && !data) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (error && !data) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900">Curriculum Management</h1>
+        <Card className="border-0 shadow-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-red-600">{error}</p>
+            <Button onClick={fetchData} className="mt-4">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const subjects = data?.subjects || [];
+  const units = data?.units || [];
+  const stats = data?.stats || { totalSubjects: 0, totalUnits: 0, totalLessons: 0, publishedUnits: 0 };
 
   const filteredSubjects = subjects.filter((s) =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -69,16 +123,7 @@ export default function AdminCurriculumPage() {
     u.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalLessons = subjects.reduce((acc, s) => acc + s.lessonsCount, 0);
   const publishedSubjects = subjects.filter((s) => s.isPublished).length;
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -97,25 +142,25 @@ export default function AdminCurriculumPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">{subjects.length}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.totalSubjects}</div>
             <div className="text-sm text-gray-500">Subjects</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{units.length}</div>
+            <div className="text-2xl font-bold text-blue-600">{stats.totalUnits}</div>
             <div className="text-sm text-gray-500">Units</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{totalLessons}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.totalLessons}</div>
             <div className="text-sm text-gray-500">Total Lessons</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{publishedSubjects}/{subjects.length}</div>
+            <div className="text-2xl font-bold text-purple-600">{publishedSubjects}/{stats.totalSubjects}</div>
             <div className="text-sm text-gray-500">Published</div>
           </CardContent>
         </Card>
@@ -156,51 +201,57 @@ export default function AdminCurriculumPage() {
             <CardDescription>Core subject areas in the curriculum</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredSubjects.map((subject) => (
-                <div
-                  key={subject.id}
-                  className="p-4 rounded-lg border hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
-                  onClick={() => {
-                    setSelectedSubject(subject.id);
-                    setActiveTab("units");
-                  }}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl"
-                      style={{ backgroundColor: subject.color }}
-                    >
-                      {subject.name[0]}
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      subject.isPublished
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-600"
-                    }`}>
-                      {subject.isPublished ? "Published" : "Draft"}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900">{subject.name}</h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {subject.unitsCount} units • {subject.lessonsCount} lessons
-                  </p>
-                  <div className="flex gap-2 mt-3">
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      Edit
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      View
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {/* Add New Subject Card */}
-              <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-blue-300 transition-colors cursor-pointer flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 min-h-[180px]">
-                <div className="text-3xl mb-2">+</div>
-                <div className="font-medium">Add Subject</div>
+            {filteredSubjects.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <p>No subjects found</p>
               </div>
-            </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredSubjects.map((subject) => (
+                  <div
+                    key={subject.id}
+                    className="p-4 rounded-lg border hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+                    onClick={() => {
+                      setSelectedSubject(subject.id);
+                      setActiveTab("units");
+                    }}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl"
+                        style={{ backgroundColor: subject.color || "#6b7280" }}
+                      >
+                        {subject.name[0]}
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        subject.isPublished
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}>
+                        {subject.isPublished ? "Published" : "Draft"}
+                      </span>
+                    </div>
+                    <h3 className="font-semibold text-gray-900">{subject.name}</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {subject.unitsCount} units • {subject.lessonsCount} lessons
+                    </p>
+                    <div className="flex gap-2 mt-3">
+                      <Button variant="ghost" size="sm" className="flex-1">
+                        Edit
+                      </Button>
+                      <Button variant="ghost" size="sm" className="flex-1">
+                        View
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {/* Add New Subject Card */}
+                <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-blue-300 transition-colors cursor-pointer flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 min-h-[180px]">
+                  <div className="text-3xl mb-2">+</div>
+                  <div className="font-medium">Add Subject</div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -225,57 +276,63 @@ export default function AdminCurriculumPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b text-left">
-                    <th className="pb-3 font-medium text-gray-500 text-sm">Unit</th>
-                    <th className="pb-3 font-medium text-gray-500 text-sm">Subject</th>
-                    <th className="pb-3 font-medium text-gray-500 text-sm">Grade</th>
-                    <th className="pb-3 font-medium text-gray-500 text-sm">Lessons</th>
-                    <th className="pb-3 font-medium text-gray-500 text-sm">Status</th>
-                    <th className="pb-3 font-medium text-gray-500 text-sm">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUnits.map((unit) => {
-                    const subject = subjects.find((s) => s.id === unit.subjectId);
-                    return (
-                      <tr key={unit.id} className="border-b last:border-0 hover:bg-gray-50">
-                        <td className="py-4 font-medium">{unit.title}</td>
-                        <td className="py-4">
-                          <span
-                            className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                            style={{ backgroundColor: subject?.color }}
-                          >
-                            {subject?.name}
-                          </span>
-                        </td>
-                        <td className="py-4 text-gray-600">
-                          {unit.gradeLevel === 0 ? "K" : `Grade ${unit.gradeLevel}`}
-                        </td>
-                        <td className="py-4 text-gray-600">{unit.lessonsCount}</td>
-                        <td className="py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            unit.isPublished
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}>
-                            {unit.isPublished ? "Published" : "Draft"}
-                          </span>
-                        </td>
-                        <td className="py-4">
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">Edit</Button>
-                            <Button variant="ghost" size="sm">View</Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            {filteredUnits.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <p>No units found</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b text-left">
+                      <th className="pb-3 font-medium text-gray-500 text-sm">Unit</th>
+                      <th className="pb-3 font-medium text-gray-500 text-sm">Subject</th>
+                      <th className="pb-3 font-medium text-gray-500 text-sm">Grade</th>
+                      <th className="pb-3 font-medium text-gray-500 text-sm">Lessons</th>
+                      <th className="pb-3 font-medium text-gray-500 text-sm">Status</th>
+                      <th className="pb-3 font-medium text-gray-500 text-sm">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUnits.map((unit) => {
+                      const subject = subjects.find((s) => s.id === unit.subjectId);
+                      return (
+                        <tr key={unit.id} className="border-b last:border-0 hover:bg-gray-50">
+                          <td className="py-4 font-medium">{unit.title}</td>
+                          <td className="py-4">
+                            <span
+                              className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                              style={{ backgroundColor: subject?.color || "#6b7280" }}
+                            >
+                              {subject?.name || "Unknown"}
+                            </span>
+                          </td>
+                          <td className="py-4 text-gray-600">
+                            {unit.gradeLevel === 0 ? "K" : `Grade ${unit.gradeLevel}`}
+                          </td>
+                          <td className="py-4 text-gray-600">{unit.lessonsCount}</td>
+                          <td className="py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              unit.isPublished
+                                ? "bg-green-100 text-green-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}>
+                              {unit.isPublished ? "Published" : "Draft"}
+                            </span>
+                          </td>
+                          <td className="py-4">
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm">Edit</Button>
+                              <Button variant="ghost" size="sm">View</Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

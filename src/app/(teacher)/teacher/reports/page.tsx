@@ -1,12 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -24,11 +21,9 @@ import {
   TrendingUp,
   TrendingDown,
   Users,
-  BookOpen,
   Target,
   Calendar,
-  Filter,
-  ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,7 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -57,51 +51,56 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// Mock data for reports
-const weeklyProgressData = [
-  { week: "Week 1", progress: 45, mastery: 40 },
-  { week: "Week 2", progress: 52, mastery: 48 },
-  { week: "Week 3", progress: 58, mastery: 55 },
-  { week: "Week 4", progress: 65, mastery: 62 },
-  { week: "Week 5", progress: 68, mastery: 65 },
-  { week: "Week 6", progress: 72, mastery: 70 },
-  { week: "Week 7", progress: 75, mastery: 73 },
-  { week: "Week 8", progress: 78, mastery: 76 },
-];
+interface WeeklyProgress {
+  week: string;
+  progress: number;
+  mastery: number;
+}
 
-const subjectPerformance = [
-  { name: "Math", value: 78, color: "#3b82f6" },
-  { name: "Reading", value: 72, color: "#10b981" },
-  { name: "Science", value: 68, color: "#8b5cf6" },
-  { name: "History", value: 65, color: "#f59e0b" },
-];
+interface SubjectPerformance {
+  name: string;
+  value: number;
+  color: string;
+}
 
-const studentPerformance = [
-  { name: "Alex M.", progress: 85, mastery: 88, trend: "up", status: "excelling" },
-  { name: "Jordan K.", progress: 72, mastery: 75, trend: "stable", status: "on-track" },
-  { name: "Sam P.", progress: 45, mastery: 48, trend: "down", status: "struggling" },
-  { name: "Taylor R.", progress: 92, mastery: 95, trend: "up", status: "excelling" },
-  { name: "Morgan C.", progress: 68, mastery: 70, trend: "up", status: "on-track" },
-  { name: "Casey J.", progress: 55, mastery: 58, trend: "down", status: "needs-attention" },
-  { name: "Riley B.", progress: 78, mastery: 80, trend: "stable", status: "on-track" },
-  { name: "Dakota S.", progress: 62, mastery: 65, trend: "up", status: "on-track" },
-];
+interface StudentPerformance {
+  name: string;
+  progress: number;
+  mastery: number;
+  trend: "up" | "down" | "stable";
+  status: "excelling" | "on-track" | "needs-attention" | "struggling";
+}
 
-const engagementData = [
-  { day: "Mon", active: 22, total: 24 },
-  { day: "Tue", active: 20, total: 24 },
-  { day: "Wed", active: 23, total: 24 },
-  { day: "Thu", active: 19, total: 24 },
-  { day: "Fri", active: 18, total: 24 },
-  { day: "Sat", active: 8, total: 24 },
-  { day: "Sun", active: 5, total: 24 },
-];
+interface EngagementData {
+  day: string;
+  active: number;
+  total: number;
+}
 
-const assignmentCompletionData = [
-  { name: "Completed", value: 156, color: "#10b981" },
-  { name: "In Progress", value: 42, color: "#f59e0b" },
-  { name: "Not Started", value: 22, color: "#ef4444" },
-];
+interface TeacherClass {
+  id: string;
+  name: string;
+  gradeLevel: number;
+}
+
+interface ReportData {
+  summary: {
+    avgProgress: number;
+    avgMastery: number;
+    totalStudents: number;
+    activeToday: number;
+  };
+  weeklyProgress: WeeklyProgress[];
+  subjectPerformance: SubjectPerformance[];
+  studentPerformance: StudentPerformance[];
+  engagementData: EngagementData[];
+  assignmentCompletion: {
+    completed: number;
+    inProgress: number;
+    notStarted: number;
+  };
+  classes: TeacherClass[];
+}
 
 function getTrendIcon(trend: string) {
   switch (trend) {
@@ -130,12 +129,83 @@ function getStatusBadge(status: string) {
 export default function ReportsPage() {
   const [selectedClass, setSelectedClass] = useState("all");
   const [dateRange, setDateRange] = useState("30days");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<ReportData | null>(null);
 
-  // Summary stats
-  const avgProgress = 72;
-  const avgMastery = 70;
-  const totalStudents = 71;
-  const activeToday = 45;
+  const fetchReports = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams();
+      if (selectedClass !== "all") params.set("classId", selectedClass);
+      params.set("dateRange", dateRange);
+
+      const response = await fetch(`/api/teacher/reports?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch report data");
+      }
+
+      const reportData = await response.json();
+      setData(reportData);
+    } catch (err) {
+      console.error("Error fetching reports:", err);
+      setError(err instanceof Error ? err.message : "Failed to load reports");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedClass, dateRange]);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  // Handle class change
+  const handleClassChange = (value: string) => {
+    setSelectedClass(value);
+  };
+
+  // Handle date range change
+  const handleDateRangeChange = (value: string) => {
+    setDateRange(value);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-foreground">Reports</h1>
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <p className="text-red-600">{error}</p>
+            <Button onClick={fetchReports} className="mt-4">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const { summary, weeklyProgress, subjectPerformance, studentPerformance, engagementData, assignmentCompletion, classes } = data;
+
+  const assignmentCompletionData = [
+    { name: "Completed", value: assignmentCompletion.completed, color: "#10b981" },
+    { name: "In Progress", value: assignmentCompletion.inProgress, color: "#f59e0b" },
+    { name: "Not Started", value: assignmentCompletion.notStarted, color: "#ef4444" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -161,19 +231,21 @@ export default function ReportsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4">
-        <Select value={selectedClass} onValueChange={setSelectedClass}>
+        <Select value={selectedClass} onValueChange={handleClassChange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select class" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Classes</SelectItem>
-            <SelectItem value="1">5th Grade Math - A</SelectItem>
-            <SelectItem value="2">5th Grade Math - B</SelectItem>
-            <SelectItem value="3">4th Grade Reading</SelectItem>
+            {classes.map((cls) => (
+              <SelectItem key={cls.id} value={cls.id}>
+                {cls.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
-        <Select value={dateRange} onValueChange={setDateRange}>
+        <Select value={dateRange} onValueChange={handleDateRangeChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Date range" />
           </SelectTrigger>
@@ -196,7 +268,7 @@ export default function ReportsPage() {
                 <TrendingUp className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{avgProgress}%</div>
+                <div className="text-2xl font-bold">{summary.avgProgress}%</div>
                 <div className="text-xs text-muted-foreground">Avg Progress</div>
               </div>
             </div>
@@ -209,7 +281,7 @@ export default function ReportsPage() {
                 <Target className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{avgMastery}%</div>
+                <div className="text-2xl font-bold">{summary.avgMastery}%</div>
                 <div className="text-xs text-muted-foreground">Avg Mastery</div>
               </div>
             </div>
@@ -222,7 +294,7 @@ export default function ReportsPage() {
                 <Users className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{totalStudents}</div>
+                <div className="text-2xl font-bold">{summary.totalStudents}</div>
                 <div className="text-xs text-muted-foreground">Total Students</div>
               </div>
             </div>
@@ -235,7 +307,7 @@ export default function ReportsPage() {
                 <Calendar className="h-5 w-5 text-amber-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{activeToday}</div>
+                <div className="text-2xl font-bold">{summary.activeToday}</div>
                 <div className="text-xs text-muted-foreground">Active Today</div>
               </div>
             </div>
@@ -253,7 +325,7 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={weeklyProgressData}>
+              <AreaChart data={weeklyProgress}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="week" tick={{ fontSize: 12 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
@@ -290,26 +362,32 @@ export default function ReportsPage() {
             <CardDescription>Average mastery by subject</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={subjectPerformance} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12 }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={80} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                  }}
-                  formatter={(value) => [`${value}%`, "Mastery"]}
-                />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                  {subjectPerformance.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {subjectPerformance.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={subjectPerformance} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12 }} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={80} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--background))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                    }}
+                    formatter={(value) => [`${value}%`, "Mastery"]}
+                  />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    {subjectPerformance.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                No subject data available
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -345,44 +423,52 @@ export default function ReportsPage() {
             <CardDescription>Overall assignment completion</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={assignmentCompletionData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {assignmentCompletionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex justify-center gap-6 mt-4">
-              {assignmentCompletionData.map((item) => (
-                <div key={item.name} className="flex items-center gap-2 text-sm">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span>{item.name}</span>
-                  <span className="font-medium">({item.value})</span>
+            {assignmentCompletion.completed + assignmentCompletion.inProgress + assignmentCompletion.notStarted > 0 ? (
+              <>
+                <div className="flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={assignmentCompletionData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {assignmentCompletionData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--background))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-              ))}
-            </div>
+                <div className="flex justify-center gap-6 mt-4">
+                  {assignmentCompletionData.map((item) => (
+                    <div key={item.name} className="flex items-center gap-2 text-sm">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span>{item.name}</span>
+                      <span className="font-medium">({item.value})</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-[250px] text-muted-foreground">
+                No assignment data available
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -402,38 +488,44 @@ export default function ReportsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Student</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Mastery</TableHead>
-                <TableHead>Trend</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {studentPerformance.map((student) => (
-                <TableRow key={student.name}>
-                  <TableCell className="font-medium">{student.name}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Progress value={student.progress} className="h-2 w-20" />
-                      <span className="text-sm">{student.progress}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Progress value={student.mastery} className="h-2 w-20" />
-                      <span className="text-sm">{student.mastery}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{getTrendIcon(student.trend)}</TableCell>
-                  <TableCell>{getStatusBadge(student.status)}</TableCell>
+          {studentPerformance.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Student</TableHead>
+                  <TableHead>Progress</TableHead>
+                  <TableHead>Mastery</TableHead>
+                  <TableHead>Trend</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {studentPerformance.map((student, index) => (
+                  <TableRow key={`${student.name}-${index}`}>
+                    <TableCell className="font-medium">{student.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={student.progress} className="h-2 w-20" />
+                        <span className="text-sm">{student.progress}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={student.mastery} className="h-2 w-20" />
+                        <span className="text-sm">{student.mastery}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{getTrendIcon(student.trend)}</TableCell>
+                    <TableCell>{getStatusBadge(student.status)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No student data available
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
