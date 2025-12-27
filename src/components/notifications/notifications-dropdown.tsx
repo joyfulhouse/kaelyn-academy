@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Bell,
@@ -11,6 +11,7 @@ import {
   Flame,
   Star,
   X,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,53 +27,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Notification {
   id: string;
-  type: "achievement" | "lesson" | "message" | "streak" | "reminder";
+  type: string;
   title: string;
   message: string;
-  timestamp: Date;
+  time: string;
   read: boolean;
-  link?: string;
-  data?: Record<string, unknown>;
+  link?: string | null;
+  metadata?: Record<string, unknown> | null;
 }
-
-// Sample notifications - in production, these would come from the database
-const sampleNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "achievement",
-    title: "New Badge Earned!",
-    message: "You earned the 'First Steps' badge for completing your first lesson.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 min ago
-    read: false,
-    link: "/achievements",
-  },
-  {
-    id: "2",
-    type: "streak",
-    title: "Keep Your Streak!",
-    message: "You're on a 3-day learning streak! Don't break it - learn something today.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-    read: false,
-    link: "/subjects",
-  },
-  {
-    id: "3",
-    type: "lesson",
-    title: "New Lesson Available",
-    message: "A new lesson 'Introduction to Fractions' is ready for you!",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-    read: true,
-    link: "/subjects/math",
-  },
-  {
-    id: "4",
-    type: "message",
-    title: "Message from Teacher",
-    message: "Great work on your last assignment! Keep it up.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-    read: true,
-  },
-];
 
 const notificationIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   achievement: Award,
@@ -90,7 +52,8 @@ const notificationColors: Record<string, string> = {
   reminder: "text-purple-500 bg-purple-500/10",
 };
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / (1000 * 60));
@@ -105,23 +68,92 @@ function formatTimeAgo(date: Date): string {
 }
 
 export function NotificationsDropdown() {
-  const [notifications, setNotifications] = useState(sampleNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const response = await fetch("/api/notifications?limit=10");
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  // Fetch on mount and when dropdown opens
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  useEffect(() => {
+    if (open) {
+      fetchNotifications();
+    }
+  }, [open, fetchNotifications]);
+
+  const markAsRead = async (id: string) => {
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationIds: [id] }),
+      });
+
+      if (response.ok) {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error("Failed to mark as read:", error);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markAll: true }),
+      });
+
+      if (response.ok) {
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error("Failed to mark all as read:", error);
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const deleteNotification = async (id: string) => {
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationIds: [id] }),
+      });
+
+      if (response.ok) {
+        const notification = notifications.find((n) => n.id === id);
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+        if (notification && !notification.read) {
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to delete notification:", error);
+    }
   };
 
   return (
@@ -134,7 +166,7 @@ export function NotificationsDropdown() {
               variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
-              {unreadCount}
+              {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}
         </Button>
@@ -156,7 +188,11 @@ export function NotificationsDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        {notifications.length === 0 ? (
+        {loading ? (
+          <div className="py-8 flex justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : notifications.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground">
             <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No notifications yet</p>
@@ -192,7 +228,7 @@ export function NotificationsDropdown() {
                       {notification.message}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {formatTimeAgo(notification.timestamp)}
+                      {formatTimeAgo(notification.time)}
                     </p>
                   </div>
                   <Button

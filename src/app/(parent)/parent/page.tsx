@@ -12,6 +12,13 @@ import {
 import { Download, Loader2 } from "lucide-react";
 import { generateProgressReportPDF } from "@/lib/reports/pdf-generator";
 
+interface SubjectProgress {
+  subjectName: string;
+  masteryLevel: number;
+  completedLessons: number;
+  totalLessons: number;
+}
+
 interface Child {
   id: string;
   name: string;
@@ -19,60 +26,67 @@ interface Child {
   avatarUrl?: string;
   lastActive: string;
   overallProgress: number;
-  subjects: {
-    subjectName: string;
-    masteryLevel: number;
-    completedLessons: number;
-    totalLessons: number;
-  }[];
+  subjects: SubjectProgress[];
 }
 
 export default function ParentDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedChild, setSelectedChild] = useState<string | null>(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-
-  // Mock children data - in real app, fetch from API
-  const [children] = useState<Child[]>([
-    {
-      id: "1",
-      name: "Emma",
-      gradeLevel: 3,
-      lastActive: new Date().toISOString(),
-      overallProgress: 78,
-      subjects: [
-        { subjectName: "Math", masteryLevel: 85, completedLessons: 18, totalLessons: 20 },
-        { subjectName: "Reading", masteryLevel: 92, completedLessons: 22, totalLessons: 25 },
-        { subjectName: "Science", masteryLevel: 70, completedLessons: 12, totalLessons: 18 },
-        { subjectName: "History", masteryLevel: 65, completedLessons: 8, totalLessons: 15 },
-      ],
-    },
-    {
-      id: "2",
-      name: "Liam",
-      gradeLevel: 5,
-      lastActive: new Date(Date.now() - 86400000).toISOString(),
-      overallProgress: 65,
-      subjects: [
-        { subjectName: "Math", masteryLevel: 72, completedLessons: 14, totalLessons: 22 },
-        { subjectName: "Reading", masteryLevel: 68, completedLessons: 15, totalLessons: 25 },
-        { subjectName: "Science", masteryLevel: 58, completedLessons: 10, totalLessons: 20 },
-        { subjectName: "History", masteryLevel: 55, completedLessons: 8, totalLessons: 18 },
-      ],
-    },
-  ]);
+  const [children, setChildren] = useState<Child[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    // TODO: Fetch children data from API
-    setLoading(false);
-  }, []);
+    try {
+      // Fetch children from API
+      const childrenResponse = await fetch("/api/parent/children");
+      if (!childrenResponse.ok) {
+        throw new Error("Failed to fetch children");
+      }
+      const childrenData = await childrenResponse.json();
+
+      // Map API response to Child interface
+      const mappedChildren: Child[] = (childrenData.children || []).map((child: {
+        id: string;
+        name: string;
+        gradeLevel: number;
+        avatarUrl?: string;
+        progress?: {
+          overallProgress: number;
+          subjects: SubjectProgress[];
+        };
+        lastActive?: string;
+      }) => ({
+        id: child.id,
+        name: child.name,
+        gradeLevel: child.gradeLevel,
+        avatarUrl: child.avatarUrl,
+        lastActive: child.lastActive || new Date().toISOString(),
+        overallProgress: child.progress?.overallProgress || 0,
+        subjects: child.progress?.subjects || [
+          { subjectName: "Math", masteryLevel: 0, completedLessons: 0, totalLessons: 0 },
+          { subjectName: "Reading", masteryLevel: 0, completedLessons: 0, totalLessons: 0 },
+          { subjectName: "Science", masteryLevel: 0, completedLessons: 0, totalLessons: 0 },
+          { subjectName: "History", masteryLevel: 0, completedLessons: 0, totalLessons: 0 },
+        ],
+      }));
+
+      setChildren(mappedChildren);
+
+      if (mappedChildren.length > 0 && !selectedChild) {
+        setSelectedChild(mappedChildren[0].id);
+      }
+    } catch (err) {
+      console.error("Error fetching children:", err);
+      setError(err instanceof Error ? err.message : "Failed to load children");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedChild]);
 
   useEffect(() => {
     fetchData();
-    if (children.length > 0 && !selectedChild) {
-      setSelectedChild(children[0].id);
-    }
-  }, [fetchData, children, selectedChild]);
+  }, [fetchData]);
 
   const currentChild = children.find((c) => c.id === selectedChild) || children[0];
 
@@ -111,7 +125,36 @@ export default function ParentDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" />
+        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
+        <Card className="border-0 shadow-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-red-600">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (children.length === 0) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
+        <Card className="border-0 shadow-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-gray-600 mb-4">No children registered yet.</p>
+            <Button asChild>
+              <a href="/parent/children/add">Add a Child</a>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

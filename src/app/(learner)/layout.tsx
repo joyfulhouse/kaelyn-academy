@@ -4,6 +4,9 @@ import { LearnerSidebar } from "@/components/layouts/learner-sidebar";
 import { LearnerHeader } from "@/components/layouts/learner-header";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { db } from "@/lib/db";
+import { learners } from "@/lib/db/schema/users";
+import { eq, and, isNull } from "drizzle-orm";
 
 export default async function LearnerLayout({
   children,
@@ -23,8 +26,19 @@ export default async function LearnerLayout({
     redirect("/");
   }
 
-  // TODO: Get actual grade level from learner profile
-  const gradeLevel = 5;
+  // Fetch grade level from learner profile
+  const learner = await db.query.learners.findFirst({
+    where: and(
+      eq(learners.userId, session.user.id),
+      isNull(learners.deletedAt)
+    ),
+    columns: {
+      gradeLevel: true,
+    },
+  });
+
+  // Default to grade 5 if no learner profile exists yet
+  const gradeLevel = learner?.gradeLevel ?? 5;
 
   return (
     <ThemeProvider defaultGradeLevel={gradeLevel}>

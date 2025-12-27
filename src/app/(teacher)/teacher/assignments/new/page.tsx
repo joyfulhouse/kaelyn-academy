@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,6 +10,7 @@ import {
   Target,
   Clock,
   Info,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,14 +35,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Mock data - in production, this would come from the database
-const classes = [
-  { id: "1", name: "5th Grade Math - Section A", gradeLevel: 5, studentCount: 24 },
-  { id: "2", name: "5th Grade Math - Section B", gradeLevel: 5, studentCount: 22 },
-  { id: "3", name: "4th Grade Math", gradeLevel: 4, studentCount: 20 },
-  { id: "4", name: "4th Grade Reading", gradeLevel: 4, studentCount: 20 },
-];
+interface TeacherClass {
+  id: string;
+  name: string;
+  gradeLevel: number;
+  studentCount: number;
+}
 
+// Curriculum lessons - will be fetched from API when curriculum feature is ready
 const curriculumLessons = [
   { id: "math-fractions-1", title: "Introduction to Fractions", subject: "Math", duration: 30 },
   { id: "math-fractions-2", title: "Adding Fractions", subject: "Math", duration: 25 },
@@ -54,6 +55,9 @@ const curriculumLessons = [
 export default function NewAssignmentPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [loadingClasses, setLoadingClasses] = useState(true);
+  const [classes, setClasses] = useState<TeacherClass[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -69,17 +73,64 @@ export default function NewAssignmentPage() {
     selectedLessons: [] as string[],
   });
 
+  // Fetch teacher's classes on mount
+  useEffect(() => {
+    async function fetchClasses() {
+      try {
+        const response = await fetch("/api/teacher/classes");
+        if (response.ok) {
+          const data = await response.json();
+          setClasses(data.classes || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch classes:", err);
+      } finally {
+        setLoadingClasses(false);
+      }
+    }
+    fetchClasses();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    // TODO: Submit to API
-    console.log("Creating assignment:", formData);
+    try {
+      // Build due date ISO string if both date and time are provided
+      let dueDateISO: string | undefined;
+      if (formData.dueDate) {
+        dueDateISO = new Date(`${formData.dueDate}T${formData.dueTime || "23:59"}`).toISOString();
+      }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch("/api/teacher/assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description || undefined,
+          instructions: formData.instructions || undefined,
+          classId: formData.classId,
+          dueDate: dueDateISO,
+          totalPoints: parseInt(formData.totalPoints, 10),
+          passingScore: parseInt(formData.passingScore, 10),
+          allowLateSubmissions: formData.allowLateSubmissions,
+          maxAttempts: formData.maxAttempts === "unlimited" ? 10 : parseInt(formData.maxAttempts, 10),
+          lessonIds: formData.selectedLessons.length > 0 ? formData.selectedLessons : undefined,
+        }),
+      });
 
-    router.push("/teacher/assignments");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create assignment");
+      }
+
+      router.push("/teacher/assignments");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create assignment");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleLesson = (lessonId: string) => {
@@ -110,6 +161,12 @@ export default function NewAssignmentPage() {
           Create a new assignment for your students
         </p>
       </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid lg:grid-cols-3 gap-6">
@@ -242,23 +299,38 @@ export default function NewAssignmentPage() {
               <CardContent>
                 <div className="space-y-2">
                   <Label htmlFor="class">Class *</Label>
-                  <Select
-                    value={formData.classId}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, classId: value }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classes.map((cls) => (
-                        <SelectItem key={cls.id} value={cls.id}>
-                          {cls.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {loadingClasses ? (
+                    <div className="h-10 flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading classes...
+                    </div>
+                  ) : classes.length === 0 ? (
+                    <div className="text-sm text-muted-foreground">
+                      No classes found.{" "}
+                      <Link href="/teacher/classes/new" className="text-primary hover:underline">
+                        Create a class
+                      </Link>{" "}
+                      first.
+                    </div>
+                  ) : (
+                    <Select
+                      value={formData.classId}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, classId: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a class" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {classes.map((cls) => (
+                          <SelectItem key={cls.id} value={cls.id}>
+                            {cls.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 {selectedClass && (
@@ -266,7 +338,7 @@ export default function NewAssignmentPage() {
                     <Info className="h-4 w-4" />
                     <AlertDescription>
                       This assignment will be sent to {selectedClass.studentCount}{" "}
-                      students in Grade {selectedClass.gradeLevel}
+                      students in Grade {selectedClass.gradeLevel === 0 ? "K" : selectedClass.gradeLevel}
                     </AlertDescription>
                   </Alert>
                 )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -9,12 +9,11 @@ import {
   Eye,
   Bell,
   Lock,
-  Settings,
   Save,
   Info,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -23,7 +22,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -36,53 +34,192 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Mock data for children
-const children = [
-  { id: "1", name: "Emma Johnson", gradeLevel: 3 },
-  { id: "2", name: "Liam Johnson", gradeLevel: 5 },
-];
+interface Child {
+  id: string;
+  name: string;
+  slug: string;
+  gradeLevel: number;
+}
+
+interface Controls {
+  dailyLimitEnabled: boolean;
+  dailyLimit: number;
+  weekendLimit: number;
+  breakReminders: boolean;
+  breakInterval: number;
+  contentFilterLevel: string;
+  blockExternalLinks: boolean;
+  requireApprovalForNew: boolean;
+  dailySummary: boolean;
+  progressAlerts: boolean;
+  achievementAlerts: boolean;
+  inactivityAlerts: boolean;
+  inactivityThreshold: number;
+  shareProgressWithTeacher: boolean;
+  showOnClassLeaderboard: boolean;
+  allowMessagesFromTeacher: boolean;
+}
+
+const defaultControls: Controls = {
+  dailyLimitEnabled: true,
+  dailyLimit: 60,
+  weekendLimit: 90,
+  breakReminders: true,
+  breakInterval: 30,
+  contentFilterLevel: "strict",
+  blockExternalLinks: true,
+  requireApprovalForNew: false,
+  dailySummary: true,
+  progressAlerts: true,
+  achievementAlerts: true,
+  inactivityAlerts: true,
+  inactivityThreshold: 3,
+  shareProgressWithTeacher: true,
+  showOnClassLeaderboard: true,
+  allowMessagesFromTeacher: true,
+};
 
 export default function ParentalControlsPage() {
-  const [selectedChild, setSelectedChild] = useState(children[0].id);
+  const [children, setChildren] = useState<Child[]>([]);
+  const [selectedChildSlug, setSelectedChildSlug] = useState<string>("");
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [controls, setControls] = useState<Controls>(defaultControls);
 
-  // Control settings state
-  const [controls, setControls] = useState({
-    // Time limits
-    dailyLimitEnabled: true,
-    dailyLimit: 60, // minutes
-    weekendLimit: 90,
-    breakReminders: true,
-    breakInterval: 30, // minutes
+  // Fetch children on mount
+  useEffect(() => {
+    async function fetchChildren() {
+      try {
+        const response = await fetch("/api/parent/children");
+        if (!response.ok) throw new Error("Failed to fetch children");
+        const data = await response.json();
+        setChildren(data.children || []);
+        if (data.children?.length > 0) {
+          setSelectedChildSlug(data.children[0].slug);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load children");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchChildren();
+  }, []);
 
-    // Content filtering
-    contentFilterLevel: "strict",
-    blockExternalLinks: true,
-    requireApprovalForNew: false,
+  // Fetch controls when child changes
+  const fetchControls = useCallback(async (slug: string) => {
+    if (!slug) return;
+    try {
+      const response = await fetch(`/api/parent/children/${slug}/controls`);
+      if (!response.ok) throw new Error("Failed to fetch controls");
+      const data = await response.json();
 
-    // Notifications
-    dailySummary: true,
-    progressAlerts: true,
-    achievementAlerts: true,
-    inactivityAlerts: true,
-    inactivityThreshold: 3, // days
+      // Map API response to local state
+      setControls({
+        dailyLimitEnabled: true,
+        dailyLimit: data.controls.dailyLimit ?? 60,
+        weekendLimit: data.controls.weekendLimit ?? 90,
+        breakReminders: data.controls.breakReminders ?? true,
+        breakInterval: data.controls.breakInterval ?? 30,
+        contentFilterLevel: data.controls.contentFiltering ?? "strict",
+        blockExternalLinks: data.controls.blockExternalLinks ?? true,
+        requireApprovalForNew: data.controls.requireApprovalForNew ?? false,
+        dailySummary: data.controls.notifyWeeklyReport ?? true,
+        progressAlerts: data.controls.notifyOnStruggling ?? true,
+        achievementAlerts: data.controls.notifyOnAchievement ?? true,
+        inactivityAlerts: data.controls.inactivityAlerts ?? true,
+        inactivityThreshold: data.controls.inactivityThreshold ?? 3,
+        shareProgressWithTeacher: data.controls.shareProgressWithTeacher ?? true,
+        showOnClassLeaderboard: data.controls.allowAnonymousComparison ?? true,
+        allowMessagesFromTeacher: data.controls.allowMessagesFromTeacher ?? true,
+      });
+    } catch (err) {
+      console.error("Failed to fetch controls:", err);
+    }
+  }, []);
 
-    // Privacy
-    shareProgressWithTeacher: true,
-    showOnClassLeaderboard: true,
-    allowMessagesFromTeacher: true,
-  });
+  useEffect(() => {
+    if (selectedChildSlug) {
+      fetchControls(selectedChildSlug);
+    }
+  }, [selectedChildSlug, fetchControls]);
 
   const handleSave = async () => {
+    if (!selectedChildSlug) return;
     setSaving(true);
-    // TODO: Save to API
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setSaving(false);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/parent/children/${selectedChildSlug}/controls`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          screenTimeLimit: controls.dailyLimit,
+          weekendTimeLimit: controls.weekendLimit,
+          contentFiltering: controls.contentFilterLevel,
+          breakReminders: controls.breakReminders,
+          breakInterval: controls.breakInterval,
+          notifications: {
+            onAchievement: controls.achievementAlerts,
+            onStruggling: controls.progressAlerts,
+            weeklyReport: controls.dailySummary,
+          },
+          privacy: {
+            shareWithTeacher: controls.shareProgressWithTeacher,
+            allowAnonymousComparison: controls.showOnClassLeaderboard,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save controls");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const currentChild = children.find((c) => c.id === selectedChild);
+  const currentChild = children.find((c) => c.slug === selectedChildSlug);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (children.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Link
+            href="/parent/children"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Children
+          </Link>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground text-center">
+              No children found. Add a child first to configure parental controls.
+            </p>
+            <div className="flex justify-center mt-4">
+              <Link href="/parent/children/add">
+                <Button>Add Child</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -113,19 +250,26 @@ export default function ParentalControlsPage() {
         </div>
       </div>
 
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Child Selector */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
             <Label className="shrink-0">Select Child:</Label>
-            <Select value={selectedChild} onValueChange={setSelectedChild}>
+            <Select value={selectedChildSlug} onValueChange={setSelectedChildSlug}>
               <SelectTrigger className="w-[250px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {children.map((child) => (
-                  <SelectItem key={child.id} value={child.id}>
-                    {child.name} (Grade {child.gradeLevel})
+                  <SelectItem key={child.id} value={child.slug}>
+                    {child.name} (Grade {child.gradeLevel === 0 ? "K" : child.gradeLevel})
                   </SelectItem>
                 ))}
               </SelectContent>

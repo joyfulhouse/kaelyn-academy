@@ -64,11 +64,24 @@ function ConsentContent() {
 
     setLoading(true);
     try {
-      // TODO: Submit consent to API
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch("/api/consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          token: token ?? undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to submit consent");
+      }
+
       router.push("/consent/success");
     } catch (error) {
       console.error("Failed to submit consent:", error);
+      alert(error instanceof Error ? error.message : "Failed to submit consent");
     } finally {
       setLoading(false);
     }
