@@ -1,16 +1,29 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { classes, classEnrollments } from "@/lib/db/schema/classroom";
-import { learners } from "@/lib/db/schema/users";
+import { learners, users } from "@/lib/db/schema/users";
 import { learnerSubjectProgress, activityAttempts } from "@/lib/db/schema/progress";
 import { eq, and, sql, isNull, desc, gte, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+
+// Helper to verify teacher role
+async function verifyTeacher(userId: string) {
+  const [user] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, userId));
+  return user?.role === "teacher";
+}
 
 // GET /api/teacher/students - Get all students across teacher's classes
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!(await verifyTeacher(session.user.id))) {
+    return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
   try {
@@ -63,16 +76,18 @@ export async function GET() {
         )
       );
 
-    // Get progress and activity data for each student
+    // Get unique learner IDs for batch queries
+    const learnerIds = [...new Set(enrolledStudents.map((s) => s.learnerId))];
+
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-    const studentsWithDetails = await Promise.all(
-      enrolledStudents.map(async (student) => {
-        // Get overall progress
-        const progressData = await db
+    // Batch query: Get all progress data for all learners at once
+    const allProgressData = learnerIds.length > 0
+      ? await db
           .select({
+            learnerId: learnerSubjectProgress.learnerId,
             avgMastery: sql<number>`coalesce(avg(${learnerSubjectProgress.masteryLevel}), 0)::int`,
             avgProgress: sql<number>`coalesce(avg(
               case
@@ -85,65 +100,94 @@ export async function GET() {
             lastActivity: sql<string>`max(${learnerSubjectProgress.lastActivityAt})`,
           })
           .from(learnerSubjectProgress)
-          .where(eq(learnerSubjectProgress.learnerId, student.learnerId));
+          .where(inArray(learnerSubjectProgress.learnerId, learnerIds))
+          .groupBy(learnerSubjectProgress.learnerId)
+      : [];
 
-        // Get activity count for trend calculation (last 7 days vs previous 7 days)
-        const recentActivityCount = await db
-          .select({ count: sql<number>`count(*)::int` })
+    const progressByLearner = new Map(
+      allProgressData.map((p) => [p.learnerId, p])
+    );
+
+    // Batch query: Get recent activity counts (last 7 days) for all learners
+    const recentActivityCounts = learnerIds.length > 0
+      ? await db
+          .select({
+            learnerId: activityAttempts.learnerId,
+            count: sql<number>`count(*)::int`,
+          })
           .from(activityAttempts)
           .where(
             and(
-              eq(activityAttempts.learnerId, student.learnerId),
+              inArray(activityAttempts.learnerId, learnerIds),
               gte(activityAttempts.createdAt, sevenDaysAgo)
             )
-          );
+          )
+          .groupBy(activityAttempts.learnerId)
+      : [];
 
-        const previousActivityCount = await db
-          .select({ count: sql<number>`count(*)::int` })
+    const recentActivityByLearner = new Map(
+      recentActivityCounts.map((a) => [a.learnerId, a.count])
+    );
+
+    // Batch query: Get previous activity counts (7-14 days ago) for all learners
+    const previousActivityCounts = learnerIds.length > 0
+      ? await db
+          .select({
+            learnerId: activityAttempts.learnerId,
+            count: sql<number>`count(*)::int`,
+          })
           .from(activityAttempts)
           .where(
             and(
-              eq(activityAttempts.learnerId, student.learnerId),
+              inArray(activityAttempts.learnerId, learnerIds),
               gte(activityAttempts.createdAt, fourteenDaysAgo),
               sql`${activityAttempts.createdAt} < ${sevenDaysAgo}`
             )
-          );
+          )
+          .groupBy(activityAttempts.learnerId)
+      : [];
 
-        const recentCount = recentActivityCount[0]?.count || 0;
-        const previousCount = previousActivityCount[0]?.count || 0;
-
-        // Calculate trend
-        let trend: "up" | "down" | "stable" = "stable";
-        if (recentCount > previousCount * 1.2) trend = "up";
-        else if (recentCount < previousCount * 0.8) trend = "down";
-
-        const mastery = progressData[0]?.avgMastery || 0;
-        const progress = progressData[0]?.avgProgress || 0;
-        const streak = progressData[0]?.currentStreak || 0;
-        const lastActivityAt = progressData[0]?.lastActivity;
-
-        // Determine status
-        let status: "excelling" | "on-track" | "needs-attention" | "struggling" = "on-track";
-        if (mastery >= 85) status = "excelling";
-        else if (mastery < 50) status = "struggling";
-        else if (mastery < 65 || streak === 0) status = "needs-attention";
-
-        return {
-          id: student.learnerId,
-          name: student.learnerName,
-          avatarUrl: student.avatarUrl,
-          gradeLevel: student.gradeLevel,
-          classId: student.classId,
-          className: classMap[student.classId] || "Unknown",
-          progress,
-          mastery,
-          streak,
-          trend,
-          status,
-          lastActive: lastActivityAt ? new Date(lastActivityAt).toISOString() : null,
-        };
-      })
+    const previousActivityByLearner = new Map(
+      previousActivityCounts.map((a) => [a.learnerId, a.count])
     );
+
+    // Map student data using in-memory lookups
+    const studentsWithDetails = enrolledStudents.map((student) => {
+      const progressData = progressByLearner.get(student.learnerId);
+      const recentCount = recentActivityByLearner.get(student.learnerId) || 0;
+      const previousCount = previousActivityByLearner.get(student.learnerId) || 0;
+
+      // Calculate trend
+      let trend: "up" | "down" | "stable" = "stable";
+      if (recentCount > previousCount * 1.2) trend = "up";
+      else if (recentCount < previousCount * 0.8) trend = "down";
+
+      const mastery = progressData?.avgMastery || 0;
+      const progress = progressData?.avgProgress || 0;
+      const streak = progressData?.currentStreak || 0;
+      const lastActivityAt = progressData?.lastActivity;
+
+      // Determine status
+      let status: "excelling" | "on-track" | "needs-attention" | "struggling" = "on-track";
+      if (mastery >= 85) status = "excelling";
+      else if (mastery < 50) status = "struggling";
+      else if (mastery < 65 || streak === 0) status = "needs-attention";
+
+      return {
+        id: student.learnerId,
+        name: student.learnerName,
+        avatarUrl: student.avatarUrl,
+        gradeLevel: student.gradeLevel,
+        classId: student.classId,
+        className: classMap[student.classId] || "Unknown",
+        progress,
+        mastery,
+        streak,
+        trend,
+        status,
+        lastActive: lastActivityAt ? new Date(lastActivityAt).toISOString() : null,
+      };
+    });
 
     // Remove duplicates (student in multiple classes)
     const uniqueStudents = Array.from(

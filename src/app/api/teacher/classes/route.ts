@@ -1,17 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { classes, classEnrollments } from "@/lib/db/schema/classroom";
-import { learners } from "@/lib/db/schema/users";
+import { users, learners } from "@/lib/db/schema/users";
 import { learnerSubjectProgress } from "@/lib/db/schema/progress";
-import { eq, and, sql, isNull, desc } from "drizzle-orm";
+import { eq, and, sql, isNull, desc, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+
+// Helper to verify teacher role
+async function verifyTeacher(userId: string) {
+  const [user] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, userId));
+  return user?.role === "teacher";
+}
 
 // GET /api/teacher/classes - Get all classes for the current teacher
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!(await verifyTeacher(session.user.id))) {
+    return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
   try {
@@ -35,58 +48,88 @@ export async function GET() {
       )
       .orderBy(desc(classes.createdAt));
 
-    // Get student counts and averages for each class
-    const classesWithStats = await Promise.all(
-      teacherClasses.map(async (cls) => {
-        // Get enrolled students
-        const enrollments = await db
+    const classIds = teacherClasses.map((c) => c.id);
+
+    // Batch query: Get all enrollments for all classes at once
+    const allEnrollments = classIds.length > 0
+      ? await db
           .select({
+            classId: classEnrollments.classId,
             learnerId: classEnrollments.learnerId,
           })
           .from(classEnrollments)
           .where(
             and(
-              eq(classEnrollments.classId, cls.id),
+              inArray(classEnrollments.classId, classIds),
               eq(classEnrollments.status, "active")
             )
-          );
+          )
+      : [];
 
-        const studentCount = enrollments.length;
-        const learnerIds = enrollments.map((e) => e.learnerId);
+    // Group enrollments by classId
+    const enrollmentsByClass = new Map<string, string[]>();
+    for (const enrollment of allEnrollments) {
+      const learners = enrollmentsByClass.get(enrollment.classId) || [];
+      learners.push(enrollment.learnerId);
+      enrollmentsByClass.set(enrollment.classId, learners);
+    }
 
-        // Calculate average progress/mastery for enrolled students
-        let averageProgress = 0;
-        let averageMastery = 0;
+    // Get all unique learner IDs for progress query
+    const allLearnerIds = [...new Set(allEnrollments.map((e) => e.learnerId))];
 
-        if (learnerIds.length > 0) {
-          const progressData = await db
-            .select({
-              avgMastery: sql<number>`coalesce(avg(${learnerSubjectProgress.masteryLevel}), 0)::int`,
-              avgCompletion: sql<number>`coalesce(avg(
-                case
-                  when ${learnerSubjectProgress.totalLessons} > 0
-                  then (${learnerSubjectProgress.completedLessons}::float / ${learnerSubjectProgress.totalLessons}) * 100
-                  else 0
-                end
-              ), 0)::int`,
-            })
-            .from(learnerSubjectProgress)
-            .where(
-              sql`${learnerSubjectProgress.learnerId} = ANY(${learnerIds})`
-            );
+    // Batch query: Get progress for all learners at once
+    const allProgressData = allLearnerIds.length > 0
+      ? await db
+          .select({
+            learnerId: learnerSubjectProgress.learnerId,
+            avgMastery: sql<number>`coalesce(avg(${learnerSubjectProgress.masteryLevel}), 0)::int`,
+            avgCompletion: sql<number>`coalesce(avg(
+              case
+                when ${learnerSubjectProgress.totalLessons} > 0
+                then (${learnerSubjectProgress.completedLessons}::float / ${learnerSubjectProgress.totalLessons}) * 100
+                else 0
+              end
+            ), 0)::int`,
+          })
+          .from(learnerSubjectProgress)
+          .where(inArray(learnerSubjectProgress.learnerId, allLearnerIds))
+          .groupBy(learnerSubjectProgress.learnerId)
+      : [];
 
-          averageMastery = progressData[0]?.avgMastery || 0;
-          averageProgress = progressData[0]?.avgCompletion || 0;
-        }
-
-        return {
-          ...cls,
-          studentCount,
-          averageProgress,
-          averageMastery,
-        };
-      })
+    const progressByLearner = new Map(
+      allProgressData.map((p) => [p.learnerId, { avgMastery: p.avgMastery, avgCompletion: p.avgCompletion }])
     );
+
+    // Calculate class stats using in-memory data
+    const classesWithStats = teacherClasses.map((cls) => {
+      const learnerIds = enrollmentsByClass.get(cls.id) || [];
+      const studentCount = learnerIds.length;
+
+      let averageProgress = 0;
+      let averageMastery = 0;
+
+      if (studentCount > 0) {
+        const progressValues = learnerIds
+          .map((id) => progressByLearner.get(id))
+          .filter(Boolean) as { avgMastery: number; avgCompletion: number }[];
+
+        if (progressValues.length > 0) {
+          averageMastery = Math.round(
+            progressValues.reduce((acc, p) => acc + p.avgMastery, 0) / progressValues.length
+          );
+          averageProgress = Math.round(
+            progressValues.reduce((acc, p) => acc + p.avgCompletion, 0) / progressValues.length
+          );
+        }
+      }
+
+      return {
+        ...cls,
+        studentCount,
+        averageProgress,
+        averageMastery,
+      };
+    });
 
     // Calculate total students across all classes
     const totalStudents = classesWithStats.reduce((acc, c) => acc + c.studentCount, 0);
@@ -125,6 +168,10 @@ export async function POST(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!(await verifyTeacher(session.user.id))) {
+    return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
   try {

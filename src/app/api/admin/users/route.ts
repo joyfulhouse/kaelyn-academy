@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { users, learners } from "@/lib/db/schema/users";
 import { organizations } from "@/lib/db/schema/organizations";
 import { learnerSubjectProgress } from "@/lib/db/schema/progress";
-import { eq, sql, isNull, or, ilike, desc, and, gte } from "drizzle-orm";
+import { eq, sql, isNull, or, ilike, desc, and, gte, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 
@@ -95,33 +95,45 @@ export async function GET(request: NextRequest) {
       roleStats.map((r) => [r.role, r.count])
     );
 
-    // Get last active for each user (through their learners)
-    const usersWithActivity = await Promise.all(
-      allUsers.map(async (user) => {
-        // For parents, get last activity from their learners
-        if (user.role === "parent") {
-          const [lastActivity] = await db
-            .select({
-              lastActivityAt: sql<string>`max(${learnerSubjectProgress.lastActivityAt})`,
-            })
-            .from(learners)
-            .innerJoin(learnerSubjectProgress, eq(learners.id, learnerSubjectProgress.learnerId))
-            .where(eq(learners.userId, user.id));
+    // Get parent user IDs for batch activity query
+    const parentUserIds = allUsers
+      .filter((u) => u.role === "parent")
+      .map((u) => u.id);
 
-          return {
-            ...user,
-            lastActiveAt: lastActivity?.lastActivityAt || null,
-            isActive: !user.deletedAt,
-          };
-        }
+    // Batch query: Get last activity for all parents at once
+    const parentActivityMap = new Map<string, string | null>();
+    if (parentUserIds.length > 0) {
+      const parentActivity = await db
+        .select({
+          userId: learners.userId,
+          lastActivityAt: sql<string>`max(${learnerSubjectProgress.lastActivityAt})`,
+        })
+        .from(learners)
+        .innerJoin(learnerSubjectProgress, eq(learners.id, learnerSubjectProgress.learnerId))
+        .where(inArray(learners.userId, parentUserIds))
+        .groupBy(learners.userId);
 
+      for (const activity of parentActivity) {
+        parentActivityMap.set(activity.userId, activity.lastActivityAt);
+      }
+    }
+
+    // Map users with activity using in-memory lookup
+    const usersWithActivity = allUsers.map((user) => {
+      if (user.role === "parent") {
         return {
           ...user,
-          lastActiveAt: user.updatedAt?.toISOString() || null,
+          lastActiveAt: parentActivityMap.get(user.id) || null,
           isActive: !user.deletedAt,
         };
-      })
-    );
+      }
+
+      return {
+        ...user,
+        lastActiveAt: user.updatedAt?.toISOString() || null,
+        isActive: !user.deletedAt,
+      };
+    });
 
     return NextResponse.json({
       users: usersWithActivity,

@@ -48,6 +48,22 @@ export async function GET(request: NextRequest) {
       if (userLearners.length > 0) {
         learnerId = userLearners[0].id;
       }
+    } else {
+      // Verify the user has access to this learner
+      const learnerAccess = await db.query.learners.findFirst({
+        where: and(
+          eq(learners.id, learnerId),
+          eq(learners.userId, session.user.id),
+          isNull(learners.deletedAt)
+        ),
+      });
+
+      if (!learnerAccess) {
+        return NextResponse.json(
+          { error: "Learner not found or access denied" },
+          { status: 404 }
+        );
+      }
     }
 
     // Get all available achievements

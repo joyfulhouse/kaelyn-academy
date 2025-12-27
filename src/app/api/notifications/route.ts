@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { notifications } from "@/lib/db/schema/marketing";
-import { eq, and, desc, sql, isNull, or } from "drizzle-orm";
+import { eq, and, desc, sql, isNull, or, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { ValidationError } from "@/lib/validation";
@@ -124,21 +124,19 @@ export async function PATCH(request: NextRequest) {
           )
         );
     } else if (notificationIds?.length) {
-      // Mark specific notifications as read
-      for (const id of notificationIds) {
-        await db
-          .update(notifications)
-          .set({
-            isRead: true,
-            readAt: new Date(),
-          })
-          .where(
-            and(
-              eq(notifications.id, id),
-              eq(notifications.userId, session.user.id)
-            )
-          );
-      }
+      // Mark specific notifications as read using batch update
+      await db
+        .update(notifications)
+        .set({
+          isRead: true,
+          readAt: new Date(),
+        })
+        .where(
+          and(
+            inArray(notifications.id, notificationIds),
+            eq(notifications.userId, session.user.id)
+          )
+        );
     } else {
       return NextResponse.json(
         { error: "Either notificationIds or markAll is required" },
@@ -188,17 +186,15 @@ export async function DELETE(request: NextRequest) {
         .delete(notifications)
         .where(eq(notifications.userId, session.user.id));
     } else if (notificationIds?.length) {
-      // Delete specific notifications
-      for (const id of notificationIds) {
-        await db
-          .delete(notifications)
-          .where(
-            and(
-              eq(notifications.id, id),
-              eq(notifications.userId, session.user.id)
-            )
-          );
-      }
+      // Delete specific notifications using batch delete
+      await db
+        .delete(notifications)
+        .where(
+          and(
+            inArray(notifications.id, notificationIds),
+            eq(notifications.userId, session.user.id)
+          )
+        );
     } else {
       return NextResponse.json(
         { error: "Either notificationIds or deleteAll is required" },

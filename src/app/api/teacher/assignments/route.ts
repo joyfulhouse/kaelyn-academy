@@ -1,15 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { assignments, assignmentSubmissions, classes } from "@/lib/db/schema/classroom";
+import { assignments, assignmentSubmissions, classes, classEnrollments } from "@/lib/db/schema/classroom";
+import { users } from "@/lib/db/schema/users";
 import { eq, and, sql, isNull, desc, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+
+// Helper to verify teacher role
+async function verifyTeacher(userId: string) {
+  const [user] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, userId));
+  return user?.role === "teacher";
+}
 
 // GET /api/teacher/assignments - Get all assignments for the teacher
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!(await verifyTeacher(session.user.id))) {
+    return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
   try {
@@ -47,65 +61,82 @@ export async function GET() {
       .where(inArray(assignments.classId, classIds))
       .orderBy(desc(assignments.createdAt));
 
-    // Get submission stats for each assignment
-    const assignmentsWithStats = await Promise.all(
-      allAssignments.map(async (assignment) => {
-        // Count total enrolled students
-        const enrolledCount = await db
-          .select({ count: sql<number>`count(*)::int` })
-          .from(sql`class_enrollments`)
-          .where(
-            and(
-              sql`class_id = ${assignment.classId}`,
-              sql`status = 'active'`
-            )
-          );
+    const assignmentIds = allAssignments.map((a) => a.id);
 
-        const totalStudents = enrolledCount[0]?.count || 0;
+    // Batch query: Get enrollment counts per class
+    const enrollmentCounts = await db
+      .select({
+        classId: classEnrollments.classId,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(classEnrollments)
+      .where(
+        and(
+          inArray(classEnrollments.classId, classIds),
+          eq(classEnrollments.status, "active")
+        )
+      )
+      .groupBy(classEnrollments.classId);
 
-        // Get submission stats
-        const submissionStats = await db
+    const enrollmentByClass = new Map(
+      enrollmentCounts.map((e) => [e.classId, e.count])
+    );
+
+    // Batch query: Get submission stats for all assignments at once
+    const allSubmissionStats = assignmentIds.length > 0
+      ? await db
           .select({
+            assignmentId: assignmentSubmissions.assignmentId,
             submitted: sql<number>`count(*) filter (where ${assignmentSubmissions.submittedAt} is not null)::int`,
             graded: sql<number>`count(*) filter (where ${assignmentSubmissions.gradedAt} is not null)::int`,
             avgScore: sql<number>`coalesce(avg(${assignmentSubmissions.percentageScore}) filter (where ${assignmentSubmissions.gradedAt} is not null), 0)::int`,
           })
           .from(assignmentSubmissions)
-          .where(eq(assignmentSubmissions.assignmentId, assignment.id));
+          .where(inArray(assignmentSubmissions.assignmentId, assignmentIds))
+          .groupBy(assignmentSubmissions.assignmentId)
+      : [];
 
-        const submitted = submissionStats[0]?.submitted || 0;
-        const graded = submissionStats[0]?.graded || 0;
-        const avgScore = submissionStats[0]?.avgScore || null;
-
-        // Determine status
-        const now = new Date();
-        const isPastDue = assignment.dueDate && assignment.dueDate < now;
-        const isComplete = submitted === totalStudents && submitted > 0;
-
-        let status: "active" | "completed" | "past_due" = "active";
-        if (isComplete) status = "completed";
-        else if (isPastDue) status = "past_due";
-
-        return {
-          id: assignment.id,
-          title: assignment.title,
-          description: assignment.description,
-          classId: assignment.classId,
-          className: classMap[assignment.classId] || "Unknown Class",
-          dueDate: assignment.dueDate,
-          assignedAt: assignment.assignedAt,
-          totalPoints: assignment.totalPoints,
-          passingScore: assignment.passingScore,
-          submissions: {
-            submitted,
-            total: totalStudents,
-            graded,
-          },
-          avgScore: graded > 0 ? avgScore : null,
-          status,
-        };
-      })
+    const submissionsByAssignment = new Map(
+      allSubmissionStats.map((s) => [s.assignmentId, s])
     );
+
+    // Map assignments with stats using in-memory data
+    const now = new Date();
+    const assignmentsWithStats = allAssignments.map((assignment) => {
+      const totalStudents = enrollmentByClass.get(assignment.classId) || 0;
+      const stats = submissionsByAssignment.get(assignment.id);
+
+      const submitted = stats?.submitted || 0;
+      const graded = stats?.graded || 0;
+      const avgScore = stats?.avgScore || null;
+
+      // Determine status
+      const isPastDue = assignment.dueDate && assignment.dueDate < now;
+      const isComplete = submitted === totalStudents && submitted > 0;
+
+      let status: "active" | "completed" | "past_due" = "active";
+      if (isComplete) status = "completed";
+      else if (isPastDue) status = "past_due";
+
+      return {
+        id: assignment.id,
+        title: assignment.title,
+        description: assignment.description,
+        classId: assignment.classId,
+        className: classMap[assignment.classId] || "Unknown Class",
+        dueDate: assignment.dueDate,
+        assignedAt: assignment.assignedAt,
+        totalPoints: assignment.totalPoints,
+        passingScore: assignment.passingScore,
+        submissions: {
+          submitted,
+          total: totalStudents,
+          graded,
+        },
+        avgScore: graded > 0 ? avgScore : null,
+        status,
+      };
+    });
 
     // Calculate summary stats
     const activeCount = assignmentsWithStats.filter((a) => a.status === "active").length;
@@ -160,6 +191,10 @@ export async function POST(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!(await verifyTeacher(session.user.id))) {
+    return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
   try {

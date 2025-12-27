@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { assignments, assignmentSubmissions, classes, classEnrollments } from "@/lib/db/schema/classroom";
-import { learners } from "@/lib/db/schema/users";
+import { learners, users } from "@/lib/db/schema/users";
 import { eq, and, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+
+// Helper to verify teacher role
+async function verifyTeacher(userId: string) {
+  const [user] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, userId));
+  return user?.role === "teacher";
+}
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -15,6 +24,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!(await verifyTeacher(session.user.id))) {
+    return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
   const { id } = await context.params;
@@ -147,6 +160,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!(await verifyTeacher(session.user.id))) {
+    return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
+  }
+
   const { id } = await context.params;
 
   try {
@@ -200,6 +217,10 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!(await verifyTeacher(session.user.id))) {
+    return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
   const { id } = await context.params;

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { classes, classEnrollments } from "@/lib/db/schema/classroom";
-import { learners } from "@/lib/db/schema/users";
+import { users, learners } from "@/lib/db/schema/users";
 import { learnerSubjectProgress, activityAttempts } from "@/lib/db/schema/progress";
 import { subjects } from "@/lib/db/schema/curriculum";
-import { eq, and, sql, isNull, lt, gte } from "drizzle-orm";
+import { eq, and, sql, isNull, lt, gte, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
 interface StudentAlert {
@@ -21,6 +21,16 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Verify user is a teacher
+  const [currentUser] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, session.user.id));
+
+  if (!currentUser || currentUser.role !== "teacher") {
+    return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
   try {
@@ -74,55 +84,78 @@ export async function GET() {
     const learnerIds = [...new Set(enrolledStudents.map((e) => e.learnerId))];
     const totalStudents = learnerIds.length;
 
-    // Calculate class stats
-    const classesWithStats = await Promise.all(
-      teacherClasses.map(async (cls) => {
-        const classStudents = enrolledStudents.filter((e) => e.classId === cls.id);
-        const studentCount = classStudents.length;
-
-        let averageProgress = 0;
-        let averageMastery = 0;
-
-        if (studentCount > 0) {
-          const studentIds = classStudents.map((s) => s.learnerId);
-          const progressData = await db
-            .select({
-              avgMastery: sql<number>`coalesce(avg(${learnerSubjectProgress.masteryLevel}), 0)::int`,
-              avgCompletion: sql<number>`coalesce(avg(
-                case
-                  when ${learnerSubjectProgress.totalLessons} > 0
-                  then (${learnerSubjectProgress.completedLessons}::float / ${learnerSubjectProgress.totalLessons}) * 100
-                  else 0
-                end
-              ), 0)::int`,
-            })
-            .from(learnerSubjectProgress)
-            .where(sql`${learnerSubjectProgress.learnerId} = ANY(${studentIds})`);
-
-          averageMastery = progressData[0]?.avgMastery || 0;
-          averageProgress = progressData[0]?.avgCompletion || 0;
-        }
-
-        return {
-          id: cls.id,
-          name: cls.name,
-          gradeLevel: cls.gradeLevel,
-          studentCount,
-          averageProgress,
-          averageMastery,
-        };
-      })
+    // Build learner name map for alert generation
+    const learnerNameMap = new Map(
+      enrolledStudents.map((e) => [e.learnerId, e.learnerName])
     );
 
-    // Generate alerts for students who need attention
+    // Batch query: Get all progress data for all learners at once
+    const allProgressData = learnerIds.length > 0
+      ? await db
+          .select({
+            learnerId: learnerSubjectProgress.learnerId,
+            avgMastery: sql<number>`coalesce(avg(${learnerSubjectProgress.masteryLevel}), 0)::int`,
+            avgCompletion: sql<number>`coalesce(avg(
+              case
+                when ${learnerSubjectProgress.totalLessons} > 0
+                then (${learnerSubjectProgress.completedLessons}::float / ${learnerSubjectProgress.totalLessons}) * 100
+                else 0
+              end
+            ), 0)::int`,
+          })
+          .from(learnerSubjectProgress)
+          .where(inArray(learnerSubjectProgress.learnerId, learnerIds))
+          .groupBy(learnerSubjectProgress.learnerId)
+      : [];
+
+    // Create a map of learnerId -> progress stats
+    const progressByLearner = new Map(
+      allProgressData.map((p) => [p.learnerId, { avgMastery: p.avgMastery, avgCompletion: p.avgCompletion }])
+    );
+
+    // Calculate class stats using in-memory data
+    const classesWithStats = teacherClasses.map((cls) => {
+      const classStudents = enrolledStudents.filter((e) => e.classId === cls.id);
+      const studentCount = classStudents.length;
+
+      let averageProgress = 0;
+      let averageMastery = 0;
+
+      if (studentCount > 0) {
+        const progressValues = classStudents
+          .map((s) => progressByLearner.get(s.learnerId))
+          .filter(Boolean) as { avgMastery: number; avgCompletion: number }[];
+
+        if (progressValues.length > 0) {
+          averageMastery = Math.round(
+            progressValues.reduce((acc, p) => acc + p.avgMastery, 0) / progressValues.length
+          );
+          averageProgress = Math.round(
+            progressValues.reduce((acc, p) => acc + p.avgCompletion, 0) / progressValues.length
+          );
+        }
+      }
+
+      return {
+        id: cls.id,
+        name: cls.name,
+        gradeLevel: cls.gradeLevel,
+        studentCount,
+        averageProgress,
+        averageMastery,
+      };
+    });
+
+    // Generate alerts using batch queries instead of per-student queries
     const alerts: StudentAlert[] = [];
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
 
-    for (const student of enrolledStudents) {
-      // Check for struggling students (mastery < 50%)
-      const progress = await db
+    if (learnerIds.length > 0) {
+      // Batch query: Get all struggling students (mastery < 50%)
+      const strugglingProgress = await db
         .select({
+          learnerId: learnerSubjectProgress.learnerId,
           subjectName: subjects.name,
           masteryLevel: learnerSubjectProgress.masteryLevel,
         })
@@ -130,49 +163,63 @@ export async function GET() {
         .innerJoin(subjects, eq(learnerSubjectProgress.subjectId, subjects.id))
         .where(
           and(
-            eq(learnerSubjectProgress.learnerId, student.learnerId),
+            inArray(learnerSubjectProgress.learnerId, learnerIds),
             lt(learnerSubjectProgress.masteryLevel, 50)
           )
         );
 
-      for (const p of progress) {
+      for (const p of strugglingProgress) {
         if (p.masteryLevel !== null) {
+          const studentName = learnerNameMap.get(p.learnerId) || "Unknown";
           alerts.push({
-            id: `struggling-${student.learnerId}-${p.subjectName}`,
-            studentName: student.learnerName,
+            id: `struggling-${p.learnerId}-${p.subjectName}`,
+            studentName,
             type: "struggling",
             subject: p.subjectName,
             message: `Below 50% mastery in ${p.subjectName.toLowerCase()}`,
-            learnerId: student.learnerId,
+            learnerId: p.learnerId,
           });
         }
       }
 
-      // Check for inactive students (no activity in 5 days)
-      const recentActivity = await db
-        .select({ count: sql<number>`count(*)::int` })
+      // Batch query: Get recent activity counts for all learners
+      const activityCounts = await db
+        .select({
+          learnerId: activityAttempts.learnerId,
+          count: sql<number>`count(*)::int`,
+        })
         .from(activityAttempts)
         .where(
           and(
-            eq(activityAttempts.learnerId, student.learnerId),
+            inArray(activityAttempts.learnerId, learnerIds),
             gte(activityAttempts.createdAt, fiveDaysAgo)
           )
-        );
+        )
+        .groupBy(activityAttempts.learnerId);
 
-      if (recentActivity[0]?.count === 0) {
-        alerts.push({
-          id: `inactive-${student.learnerId}`,
-          studentName: student.learnerName,
-          type: "inactive",
-          subject: "All",
-          message: "No activity in the last 5 days",
-          learnerId: student.learnerId,
-        });
+      const activityByLearner = new Map(
+        activityCounts.map((a) => [a.learnerId, a.count])
+      );
+
+      // Find inactive students (those with no recent activity)
+      for (const learnerId of learnerIds) {
+        if (!activityByLearner.has(learnerId) || activityByLearner.get(learnerId) === 0) {
+          const studentName = learnerNameMap.get(learnerId) || "Unknown";
+          alerts.push({
+            id: `inactive-${learnerId}`,
+            studentName,
+            type: "inactive",
+            subject: "All",
+            message: "No activity in the last 5 days",
+            learnerId,
+          });
+        }
       }
 
-      // Check for excelling students (mastery > 90%)
+      // Batch query: Get all excelling students (mastery >= 90%)
       const excellingProgress = await db
         .select({
+          learnerId: learnerSubjectProgress.learnerId,
           subjectName: subjects.name,
           masteryLevel: learnerSubjectProgress.masteryLevel,
         })
@@ -180,35 +227,38 @@ export async function GET() {
         .innerJoin(subjects, eq(learnerSubjectProgress.subjectId, subjects.id))
         .where(
           and(
-            eq(learnerSubjectProgress.learnerId, student.learnerId),
+            inArray(learnerSubjectProgress.learnerId, learnerIds),
             gte(learnerSubjectProgress.masteryLevel, 90)
           )
         );
 
       for (const p of excellingProgress) {
         if (p.masteryLevel !== null) {
+          const studentName = learnerNameMap.get(p.learnerId) || "Unknown";
           alerts.push({
-            id: `excelling-${student.learnerId}-${p.subjectName}`,
-            studentName: student.learnerName,
+            id: `excelling-${p.learnerId}-${p.subjectName}`,
+            studentName,
             type: "excelling",
             subject: p.subjectName,
             message: `Excellent mastery (${Math.round(p.masteryLevel)}%) in ${p.subjectName.toLowerCase()}`,
-            learnerId: student.learnerId,
+            learnerId: p.learnerId,
           });
         }
       }
     }
 
     // Calculate subject distribution
-    const subjectData = await db
-      .select({
-        subjectName: subjects.name,
-        totalTime: sql<number>`sum(${learnerSubjectProgress.totalTimeSpent})::int`,
-      })
-      .from(learnerSubjectProgress)
-      .innerJoin(subjects, eq(learnerSubjectProgress.subjectId, subjects.id))
-      .where(sql`${learnerSubjectProgress.learnerId} = ANY(${learnerIds.length > 0 ? learnerIds : [""]})`)
-      .groupBy(subjects.name);
+    const subjectData = learnerIds.length > 0
+      ? await db
+          .select({
+            subjectName: subjects.name,
+            totalTime: sql<number>`sum(${learnerSubjectProgress.totalTimeSpent})::int`,
+          })
+          .from(learnerSubjectProgress)
+          .innerJoin(subjects, eq(learnerSubjectProgress.subjectId, subjects.id))
+          .where(inArray(learnerSubjectProgress.learnerId, learnerIds))
+          .groupBy(subjects.name)
+      : [];
 
     const totalTime = subjectData.reduce((acc, s) => acc + (s.totalTime || 0), 0);
     const subjectDistribution = subjectData.map((s, index) => {
