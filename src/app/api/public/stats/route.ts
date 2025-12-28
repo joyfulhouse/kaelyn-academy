@@ -64,14 +64,13 @@ export async function GET() {
         .then((result) => result[0]?.count ?? 0),
     ]);
 
-    // Calculate parent satisfaction from quiz pass rates
-    // For now, use a placeholder. In production, this would aggregate
-    // from a feedback/ratings table or NPS surveys
-    const parentSatisfaction = 95; // Placeholder - would come from actual survey data
-
-    // App store rating - typically fetched from external API or stored in config
-    // For now, use a placeholder value
-    const appRating = 4.9; // Placeholder
+    // Parent satisfaction and app rating are marketing metrics
+    // Sourced from environment variables for easy updates without code changes
+    // In production, these would come from:
+    // - parentSatisfaction: NPS surveys, feedback forms, or satisfaction tracking
+    // - appRating: App store API integration or aggregated user reviews
+    const parentSatisfaction = Number(process.env.PUBLIC_PARENT_SATISFACTION) || 95;
+    const appRating = Number(process.env.PUBLIC_APP_RATING) || 4.9;
 
     const stats: PublicStats = {
       activeLearners: activeLearnerCount,
@@ -97,8 +96,8 @@ export async function GET() {
     const fallbackStats: PublicStats = {
       activeLearners: 0,
       lessonModules: curriculumStats.totalLessons,
-      parentSatisfaction: 95,
-      appRating: 4.9,
+      parentSatisfaction: Number(process.env.PUBLIC_PARENT_SATISFACTION) || 95,
+      appRating: Number(process.env.PUBLIC_APP_RATING) || 4.9,
       totalOrganizations: 0,
       lessonsCompleted: 0,
     };
