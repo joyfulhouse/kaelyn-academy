@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { learners } from "@/lib/db/schema/users";
 import { organizations } from "@/lib/db/schema/organizations";
 import { lessonProgress } from "@/lib/db/schema/progress";
 import { count, eq, isNull, and } from "drizzle-orm";
 import { getCurriculumStats } from "@/data/curriculum";
+import { checkPublicRateLimit } from "@/lib/rate-limit";
 
 /**
  * Public stats for the landing page
@@ -26,7 +27,13 @@ export interface PublicStats {
  * This endpoint is public (no auth required) and heavily cached.
  * Stats are aggregated from the database and curriculum data.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // SECURITY: Rate limit public endpoints to prevent abuse
+  const rateLimitResult = await checkPublicRateLimit(request);
+  if (!rateLimitResult.success && rateLimitResult.response) {
+    return rateLimitResult.response;
+  }
+
   try {
     // Get curriculum stats (static data)
     const curriculumStats = getCurriculumStats();

@@ -99,12 +99,22 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+              // SECURITY: Remove unsafe-eval in production (unsafe-inline still needed for Next.js hydration)
+              // TODO: Implement nonce-based CSP with middleware for full protection
+              process.env.NODE_ENV === "development"
+                ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'"
+                : "script-src 'self' 'unsafe-inline'",
+              // unsafe-inline for styles is common with Tailwind/CSS-in-JS
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com",
+              "connect-src 'self' https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com wss:",
+              "worker-src 'self' blob:",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
               "frame-ancestors 'none'",
+              "upgrade-insecure-requests",
             ].join("; "),
           },
         ],

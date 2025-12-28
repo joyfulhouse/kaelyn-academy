@@ -5,6 +5,7 @@ import { organizations } from "@/lib/db/schema/organizations";
 import { learnerSubjectProgress } from "@/lib/db/schema/progress";
 import { eq, sql, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { invalidateSessionsWithLogging } from "@/lib/auth/session-management";
 import { z } from "zod";
 
 interface RouteContext {
@@ -18,9 +19,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check if user is admin
+  // Check if user is admin and get their organization
   const [currentUser] = await db
-    .select({ role: users.role })
+    .select({ role: users.role, organizationId: users.organizationId })
     .from(users)
     .where(eq(users.id, session.user.id));
 
@@ -30,7 +31,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const { id } = await context.params;
 
+  // SECURITY: school_admin can only view users in their organization
+  const isPlatformAdmin = currentUser.role === "platform_admin";
+  const adminOrgId = currentUser.organizationId;
+
+  if (!isPlatformAdmin && !adminOrgId) {
+    return NextResponse.json({ error: "School admin must have an organization" }, { status: 400 });
+  }
+
   try {
+    // Build where conditions - SECURITY: Add organization filter for school_admin
+    const whereConditions = isPlatformAdmin
+      ? eq(users.id, id)
+      : and(eq(users.id, id), eq(users.organizationId, adminOrgId!));
+
     // Get user with organization
     const [user] = await db
       .select({
@@ -51,7 +65,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       })
       .from(users)
       .leftJoin(organizations, eq(users.organizationId, organizations.id))
-      .where(eq(users.id, id));
+      .where(whereConditions);
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -126,9 +140,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
   try {
-    // Verify user exists
+    // Verify user exists and get current values for privilege change detection
     const [existing] = await db
-      .select({ id: users.id })
+      .select({
+        id: users.id,
+        role: users.role,
+        organizationId: users.organizationId,
+        deletedAt: users.deletedAt,
+      })
       .from(users)
       .where(eq(users.id, id));
 
@@ -183,6 +202,23 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .set(updateData)
       .where(eq(users.id, id))
       .returning();
+
+    // SECURITY: Invalidate sessions on privilege changes
+    // This prevents session fixation attacks when roles/permissions change
+    const privilegeChanged =
+      (data.role !== undefined && data.role !== existing.role) ||
+      (data.organizationId !== undefined && data.organizationId !== existing.organizationId) ||
+      (data.isActive === false && !existing.deletedAt);
+
+    if (privilegeChanged) {
+      const reason = data.role !== existing.role
+        ? `Role changed from ${existing.role} to ${data.role}`
+        : data.organizationId !== existing.organizationId
+        ? "Organization changed"
+        : "User deactivated";
+
+      await invalidateSessionsWithLogging(id, reason);
+    }
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
@@ -255,6 +291,9 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
         updatedAt: new Date(),
       })
       .where(eq(learners.userId, id));
+
+    // SECURITY: Invalidate all sessions for deleted user
+    await invalidateSessionsWithLogging(id, "User deleted");
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Apply rate limiting
-  const rateLimitResult = checkAiRateLimit(request, session.user.id);
+  const rateLimitResult = await checkAiRateLimit(request, session.user.id);
   if (!rateLimitResult.success && rateLimitResult.response) {
     return rateLimitResult.response;
   }

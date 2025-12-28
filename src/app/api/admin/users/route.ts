@@ -5,6 +5,7 @@ import { organizations } from "@/lib/db/schema/organizations";
 import { learnerSubjectProgress } from "@/lib/db/schema/progress";
 import { eq, sql, isNull, or, ilike, desc, and, gte, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { validatePagination, PAGINATION_PRESETS } from "@/lib/api/pagination";
 import { z } from "zod";
 
 // GET /api/admin/users - Get all users with stats
@@ -14,9 +15,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check if user is admin
+  // Check if user is admin and get their organization
   const [currentUser] = await db
-    .select({ role: users.role })
+    .select({ role: users.role, organizationId: users.organizationId })
     .from(users)
     .where(eq(users.id, session.user.id));
 
@@ -27,12 +28,25 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const search = searchParams.get("search") || "";
   const roleFilter = searchParams.get("role") || "";
-  const limit = parseInt(searchParams.get("limit") || "50");
-  const offset = parseInt(searchParams.get("offset") || "0");
+  // SECURITY: Validate pagination bounds to prevent abuse
+  const { limit, offset } = validatePagination(searchParams, PAGINATION_PRESETS.admin);
+
+  // SECURITY: school_admin can only see users in their organization
+  const isPlatformAdmin = currentUser.role === "platform_admin";
+  const adminOrgId = currentUser.organizationId;
+
+  if (!isPlatformAdmin && !adminOrgId) {
+    return NextResponse.json({ error: "School admin must have an organization" }, { status: 400 });
+  }
 
   try {
     // Build where conditions
     const conditions = [isNull(users.deletedAt)];
+
+    // SECURITY: Add organization filter for school_admin
+    if (!isPlatformAdmin && adminOrgId) {
+      conditions.push(eq(users.organizationId, adminOrgId));
+    }
 
     if (search) {
       conditions.push(
@@ -75,20 +89,28 @@ export async function GET(request: NextRequest) {
       .from(users)
       .where(and(...conditions));
 
-    // Get learner counts
+    // Get learner counts - SECURITY: Scoped by organization for school_admin
+    const learnerConditions = [isNull(learners.deletedAt)];
+    if (!isPlatformAdmin && adminOrgId) {
+      learnerConditions.push(eq(learners.organizationId, adminOrgId));
+    }
     const [learnerCount] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(learners)
-      .where(isNull(learners.deletedAt));
+      .where(and(...learnerConditions));
 
-    // Get role breakdown
+    // Get role breakdown - SECURITY: Scoped by organization for school_admin
+    const roleConditions = [isNull(users.deletedAt)];
+    if (!isPlatformAdmin && adminOrgId) {
+      roleConditions.push(eq(users.organizationId, adminOrgId));
+    }
     const roleStats = await db
       .select({
         role: users.role,
         count: sql<number>`count(*)::int`,
       })
       .from(users)
-      .where(isNull(users.deletedAt))
+      .where(and(...roleConditions))
       .groupBy(users.role);
 
     const roleCounts = Object.fromEntries(

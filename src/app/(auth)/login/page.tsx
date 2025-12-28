@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { sanitizeCallbackUrl } from "@/lib/utils";
 
 interface Provider {
   id: string;
@@ -105,7 +106,8 @@ const providerConfig: Record<string, {
 
 function LoginContent() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/auth/redirect";
+  // SECURITY: Sanitize callback URL to prevent open redirect attacks
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"));
   const error = searchParams.get("error");
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);

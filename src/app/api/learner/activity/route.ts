@@ -5,6 +5,7 @@ import { learners } from "@/lib/db/schema/users";
 import { eq, and, isNull } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { enforceParentalControls } from "@/lib/api/parental-controls";
 
 /**
  * Extended lastPosition type for activity tracking
@@ -14,19 +15,60 @@ interface ActivityState {
   scrollPosition?: number;
   // Activity tracking
   completedActivities?: number[]; // Array of completed activity indices
-  activityStartTimes?: Record<number, number>; // Activity index -> start timestamp
-  activityTimes?: Record<number, number>; // Activity index -> time spent (seconds)
+  activityStartTimes?: Record<string, number>; // Activity index (as string key) -> start timestamp
+  activityTimes?: Record<string, number>; // Activity index (as string key) -> time spent (seconds)
   lastActivityIndex?: number;
 }
 
+// SECURITY: Maximum limits to prevent resource exhaustion
+const MAX_ACTIVITY_INDEX = 1000; // Maximum activity index allowed
+const MAX_ACTIVITIES = 500; // Maximum activities per lesson
+const MAX_TIME_PER_ACTIVITY = 86400; // 24 hours in seconds
+const MAX_SCROLL_POSITION = 1000000; // Maximum scroll position
+
 // Schema for activity state update
 const activityStateSchema = z.object({
-  lessonId: z.string().min(1), // Curriculum lesson ID (string)
+  lessonId: z.string().min(1).max(100), // Curriculum lesson ID (string)
   action: z.enum(["start", "complete", "update_time"]),
-  activityIndex: z.number().int().min(0),
-  totalActivities: z.number().int().min(1),
-  timeSpent: z.number().int().min(0).optional(), // Seconds spent on activity
+  activityIndex: z.number().int().min(0).max(MAX_ACTIVITY_INDEX),
+  totalActivities: z.number().int().min(1).max(MAX_ACTIVITIES),
+  timeSpent: z.number().int().min(0).max(MAX_TIME_PER_ACTIVITY).optional(), // Seconds spent on activity
 });
+
+// SECURITY: Schema for validating stored activity state from database
+// This prevents JSONB injection attacks via persisted malicious data
+const storedActivityStateSchema = z.object({
+  conceptId: z.string().max(100).optional(),
+  scrollPosition: z.number().int().min(0).max(MAX_SCROLL_POSITION).optional(),
+  completedActivities: z.array(z.number().int().min(0).max(MAX_ACTIVITY_INDEX)).max(MAX_ACTIVITIES).optional(),
+  activityStartTimes: z.record(
+    z.string().regex(/^\d+$/), // Keys must be numeric strings
+    z.number().int().min(0)
+  ).optional(),
+  activityTimes: z.record(
+    z.string().regex(/^\d+$/), // Keys must be numeric strings
+    z.number().int().min(0).max(MAX_TIME_PER_ACTIVITY)
+  ).optional(),
+  lastActivityIndex: z.number().int().min(0).max(MAX_ACTIVITY_INDEX).optional(),
+}).strict();
+
+/**
+ * SECURITY: Safely parse stored activity state from database
+ * Returns validated data or empty defaults, never unvalidated JSONB
+ */
+function safeParseActivityState(state: unknown): ActivityState {
+  const result = storedActivityStateSchema.safeParse(state);
+  if (result.success) {
+    return result.data;
+  }
+  // If validation fails, log and return empty state
+  console.warn("Invalid activity state in database, using defaults:", result.error.issues);
+  return {
+    completedActivities: [],
+    activityStartTimes: {},
+    activityTimes: {},
+  };
+}
 
 /**
  * POST /api/learner/activity - Track activity completion
@@ -63,6 +105,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // COPPA: Enforce parental controls (screen time limits, allowed subjects, etc.)
+    const controlsBlock = await enforceParentalControls(learner.id);
+    if (controlsBlock) {
+      return controlsBlock;
+    }
+
     // Find existing lesson progress (using lessonId as string identifier)
     // Note: We're treating lessonId as a TEXT field for curriculum lessons
     // The database column is UUID but we store/query as text for curriculum IDs
@@ -79,10 +127,13 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     const now = Date.now();
-    const currentState: ActivityState =
-      (existingProgress[0]?.lastPosition as ActivityState) ?? {};
 
-    // Initialize tracking arrays if needed
+    // SECURITY: Validate stored JSONB before trusting it
+    const currentState: ActivityState = safeParseActivityState(
+      existingProgress[0]?.lastPosition
+    );
+
+    // Ensure tracking arrays/objects are initialized
     if (!currentState.completedActivities) {
       currentState.completedActivities = [];
     }
@@ -93,10 +144,13 @@ export async function POST(request: NextRequest) {
       currentState.activityTimes = {};
     }
 
+    // SECURITY: Use string keys for object access to prevent prototype pollution
+    const activityKey = String(activityIndex);
+
     switch (action) {
       case "start":
         // Record activity start time
-        currentState.activityStartTimes[activityIndex] = now;
+        currentState.activityStartTimes[activityKey] = now;
         currentState.lastActivityIndex = activityIndex;
         break;
 
@@ -107,24 +161,32 @@ export async function POST(request: NextRequest) {
           currentState.completedActivities.sort((a, b) => a - b);
         }
         // Calculate time spent if start time exists
-        if (currentState.activityStartTimes[activityIndex]) {
+        if (currentState.activityStartTimes[activityKey]) {
           const elapsed = Math.round(
-            (now - currentState.activityStartTimes[activityIndex]) / 1000
+            (now - currentState.activityStartTimes[activityKey]) / 1000
           );
-          currentState.activityTimes[activityIndex] =
-            (currentState.activityTimes[activityIndex] ?? 0) + elapsed;
-          delete currentState.activityStartTimes[activityIndex];
+          // SECURITY: Clamp total time to prevent overflow
+          const newTime = Math.min(
+            (currentState.activityTimes[activityKey] ?? 0) + elapsed,
+            MAX_TIME_PER_ACTIVITY
+          );
+          currentState.activityTimes[activityKey] = newTime;
+          delete currentState.activityStartTimes[activityKey];
         } else if (timeSpent) {
           // Use provided time if no start time recorded
-          currentState.activityTimes[activityIndex] = timeSpent;
+          currentState.activityTimes[activityKey] = Math.min(timeSpent, MAX_TIME_PER_ACTIVITY);
         }
         break;
 
       case "update_time":
         // Update time spent on current activity
         if (timeSpent !== undefined) {
-          currentState.activityTimes[activityIndex] =
-            (currentState.activityTimes[activityIndex] ?? 0) + timeSpent;
+          // SECURITY: Clamp total time to prevent overflow
+          const newTime = Math.min(
+            (currentState.activityTimes[activityKey] ?? 0) + timeSpent,
+            MAX_TIME_PER_ACTIVITY
+          );
+          currentState.activityTimes[activityKey] = newTime;
         }
         break;
     }
@@ -270,14 +332,12 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (progress[0]) {
-      const state = progress[0].lastPosition as ActivityState | null;
+      // SECURITY: Validate stored JSONB before returning to client
+      const state = safeParseActivityState(progress[0].lastPosition);
       return NextResponse.json({
         progress: progress[0],
-        activityState: state ?? {
-          completedActivities: [],
-          activityTimes: {},
-        },
-        completedCount: state?.completedActivities?.length ?? 0,
+        activityState: state,
+        completedCount: state.completedActivities?.length ?? 0,
       });
     }
 

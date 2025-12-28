@@ -5,24 +5,62 @@ import { learners, users } from "@/lib/db/schema";
 import { eq, and, isNull } from "drizzle-orm";
 import { z } from "zod";
 
+// SECURITY: Strict schema for parental controls to prevent JSONB injection
+// Using .strict() to reject unknown properties that could be used for injection
+const notificationsSchema = z.object({
+  onAchievement: z.boolean().optional(),
+  onStruggling: z.boolean().optional(),
+  weeklyReport: z.boolean().optional(),
+}).strict();
+
+const privacySchema = z.object({
+  shareWithTeacher: z.boolean().optional(),
+  allowAnonymousComparison: z.boolean().optional(),
+}).strict();
+
+// Allowed subjects whitelist to prevent arbitrary values
+const ALLOWED_SUBJECTS = ["math", "reading", "science", "history", "technology", "art", "music", "physical-education"] as const;
+
 // Schema for updating parental controls
 const updateControlsSchema = z.object({
-  screenTimeLimit: z.number().min(15).max(240).optional(),
-  weekendTimeLimit: z.number().min(15).max(360).optional(),
+  screenTimeLimit: z.number().int().min(15).max(240).optional(),
+  weekendTimeLimit: z.number().int().min(15).max(360).optional(),
   contentFiltering: z.enum(["strict", "moderate", "minimal"]).optional(),
   breakReminders: z.boolean().optional(),
-  breakInterval: z.number().min(15).max(60).optional(),
+  breakInterval: z.number().int().min(15).max(60).optional(),
+  allowedSubjects: z.array(z.enum(ALLOWED_SUBJECTS)).optional(),
+  notifications: notificationsSchema.optional(),
+  privacy: privacySchema.optional(),
+}).strict();
+
+// Schema for validating stored parental controls from database
+// SECURITY: Validate JSONB data from database before trusting it
+const storedControlsSchema = z.object({
+  screenTimeLimit: z.number().int().min(15).max(240).optional(),
+  weekendTimeLimit: z.number().int().min(15).max(360).optional(),
+  contentFiltering: z.enum(["strict", "moderate", "minimal"]).optional(),
+  breakReminders: z.boolean().optional(),
+  breakInterval: z.number().int().min(15).max(60).optional(),
   allowedSubjects: z.array(z.string()).optional(),
-  notifications: z.object({
-    onAchievement: z.boolean().optional(),
-    onStruggling: z.boolean().optional(),
-    weeklyReport: z.boolean().optional(),
-  }).optional(),
-  privacy: z.object({
-    shareWithTeacher: z.boolean().optional(),
-    allowAnonymousComparison: z.boolean().optional(),
-  }).optional(),
-});
+  blockedContent: z.array(z.string()).optional(),
+  requireParentApproval: z.boolean().optional(),
+  notifications: notificationsSchema.optional(),
+  privacy: privacySchema.optional(),
+}).strict().nullable();
+
+/**
+ * SECURITY: Safely parse stored parental controls from database
+ * Returns only validated fields, discarding any injected properties
+ */
+function safeParseStoredControls(controls: unknown): z.infer<typeof storedControlsSchema> {
+  const result = storedControlsSchema.safeParse(controls);
+  if (result.success) {
+    return result.data;
+  }
+  // If validation fails, return empty object (log for monitoring)
+  console.warn("Invalid parental controls in database, using defaults:", result.error.issues);
+  return null;
+}
 
 // Helper to find child by slug
 async function findChildBySlug(userId: string, slug: string) {
@@ -83,20 +121,25 @@ export async function GET(
       return NextResponse.json({ error: "Child not found" }, { status: 404 });
     }
 
-    // Return controls with defaults
+    // SECURITY: Validate stored JSONB before using it
+    const validatedControls = safeParseStoredControls(child.parentalControls);
+
+    // Return controls with defaults, only using validated data
     const controls = {
-      dailyLimit: child.parentalControls?.screenTimeLimit ?? 60,
-      weekendLimit: child.parentalControls?.screenTimeLimit ? Math.round(child.parentalControls.screenTimeLimit * 1.5) : 90,
-      contentFiltering: "moderate",
-      breakReminders: true,
-      breakInterval: 30,
-      allowedSubjects: child.parentalControls?.allowedSubjects ?? ["math", "reading", "science", "history"],
-      notifyOnAchievement: true,
-      notifyOnStruggling: true,
-      notifyWeeklyReport: true,
-      shareProgressWithTeacher: true,
-      allowAnonymousComparison: false,
-      ...(child.parentalControls || {}),
+      dailyLimit: validatedControls?.screenTimeLimit ?? 60,
+      weekendLimit: validatedControls?.weekendTimeLimit ?? (validatedControls?.screenTimeLimit ? Math.round(validatedControls.screenTimeLimit * 1.5) : 90),
+      contentFiltering: validatedControls?.contentFiltering ?? "moderate",
+      breakReminders: validatedControls?.breakReminders ?? true,
+      breakInterval: validatedControls?.breakInterval ?? 30,
+      allowedSubjects: validatedControls?.allowedSubjects ?? ["math", "reading", "science", "history"],
+      notifyOnAchievement: validatedControls?.notifications?.onAchievement ?? true,
+      notifyOnStruggling: validatedControls?.notifications?.onStruggling ?? true,
+      notifyWeeklyReport: validatedControls?.notifications?.weeklyReport ?? true,
+      shareProgressWithTeacher: validatedControls?.privacy?.shareWithTeacher ?? true,
+      allowAnonymousComparison: validatedControls?.privacy?.allowAnonymousComparison ?? false,
+      // Include raw validated controls for reference
+      blockedContent: validatedControls?.blockedContent ?? [],
+      requireParentApproval: validatedControls?.requireParentApproval ?? false,
     };
 
     return NextResponse.json({
@@ -149,20 +192,23 @@ export async function PUT(
       );
     }
 
-    // Merge with existing controls
+    // SECURITY: Validate existing controls before merging
+    // This prevents injected data from being preserved across updates
+    const existingControls = safeParseStoredControls(child.parentalControls);
+
+    // SECURITY: Explicitly construct new controls from validated data only
+    // Do NOT use spread from unvalidated sources
     const updatedControls = {
-      ...child.parentalControls,
-      screenTimeLimit: parsed.data.screenTimeLimit ?? child.parentalControls?.screenTimeLimit,
-      allowedSubjects: parsed.data.allowedSubjects ?? child.parentalControls?.allowedSubjects,
-      blockedContent: child.parentalControls?.blockedContent,
-      requireParentApproval: child.parentalControls?.requireParentApproval,
-      // Extended controls stored as JSON
-      weekendTimeLimit: parsed.data.weekendTimeLimit,
-      contentFiltering: parsed.data.contentFiltering,
-      breakReminders: parsed.data.breakReminders,
-      breakInterval: parsed.data.breakInterval,
-      notifications: parsed.data.notifications,
-      privacy: parsed.data.privacy,
+      screenTimeLimit: parsed.data.screenTimeLimit ?? existingControls?.screenTimeLimit,
+      weekendTimeLimit: parsed.data.weekendTimeLimit ?? existingControls?.weekendTimeLimit,
+      contentFiltering: parsed.data.contentFiltering ?? existingControls?.contentFiltering,
+      breakReminders: parsed.data.breakReminders ?? existingControls?.breakReminders,
+      breakInterval: parsed.data.breakInterval ?? existingControls?.breakInterval,
+      allowedSubjects: parsed.data.allowedSubjects ?? existingControls?.allowedSubjects,
+      blockedContent: existingControls?.blockedContent,
+      requireParentApproval: existingControls?.requireParentApproval,
+      notifications: parsed.data.notifications ?? existingControls?.notifications,
+      privacy: parsed.data.privacy ?? existingControls?.privacy,
     };
 
     await db

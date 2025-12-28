@@ -1,5 +1,6 @@
 import { streamText, generateText } from "ai";
 import { getModelForCapability, type AIProvider } from "./providers";
+import { sanitizeLearnerName, sanitizeText } from "./pii-sanitizer";
 
 export interface TutoringContext {
   learnerId: string;
@@ -22,11 +23,13 @@ function getGradeLevelDescription(grade: number): string {
 
 function buildTutoringSystemPrompt(context: TutoringContext): string {
   const gradeDesc = getGradeLevelDescription(context.gradeLevel);
+  // SECURITY: Pseudonymize student name for COPPA/privacy compliance
+  const displayName = sanitizeLearnerName(context.learnerName);
 
-  return `You are a friendly, encouraging tutor for Kaelyn's Academy, helping ${context.learnerName} learn.
+  return `You are a friendly, encouraging tutor for Kaelyn's Academy, helping ${displayName} learn.
 
 STUDENT PROFILE:
-- Name: ${context.learnerName}
+- Name: ${displayName}
 - Grade Level: ${gradeDesc}
 - Subject: ${context.subject}
 - Current Topic: ${context.topic}
@@ -61,12 +64,13 @@ export async function streamTutoringResponse(
 ) {
   const model = getModelForCapability("tutoring", context.preferredProvider);
 
+  // SECURITY: Sanitize all message content for PII before sending to AI
   const messages = [
     ...(context.previousMessages ?? []).map((m) => ({
       role: m.role as "user" | "assistant",
-      content: m.content,
+      content: sanitizeText(m.content),
     })),
-    { role: "user" as const, content: userMessage },
+    { role: "user" as const, content: sanitizeText(userMessage) },
   ];
 
   return streamText({
@@ -84,12 +88,13 @@ export async function generateTutoringResponse(
 ): Promise<string> {
   const model = getModelForCapability("tutoring", context.preferredProvider);
 
+  // SECURITY: Sanitize all message content for PII before sending to AI
   const messages = [
     ...(context.previousMessages ?? []).map((m) => ({
       role: m.role as "user" | "assistant",
-      content: m.content,
+      content: sanitizeText(m.content),
     })),
-    { role: "user" as const, content: userMessage },
+    { role: "user" as const, content: sanitizeText(userMessage) },
   ];
 
   const result = await generateText({
@@ -119,9 +124,12 @@ export async function generateHint(request: HintRequest): Promise<string> {
     3: "Give a direct hint that clearly explains the next step without giving the final answer",
   };
 
+  // SECURITY: Sanitize student answer for PII
+  const sanitizedAnswer = request.studentAnswer ? sanitizeText(request.studentAnswer) : null;
+
   const prompt = `
 The student is working on this question: "${request.question}"
-${request.studentAnswer ? `Their current answer attempt: "${request.studentAnswer}"` : "They haven't answered yet."}
+${sanitizedAnswer ? `Their current answer attempt: "${sanitizedAnswer}"` : "They haven't answered yet."}
 
 ${hintDescriptions[request.hintLevel]}
 
@@ -156,8 +164,11 @@ export async function generateExplanation(request: ExplanationRequest): Promise<
     analogy: "Use relatable analogies and comparisons to everyday things the student would understand.",
   };
 
+  // SECURITY: Pseudonymize student name for COPPA/privacy compliance
+  const displayName = sanitizeLearnerName(request.context.learnerName);
+
   const prompt = `
-Explain the concept of "${request.concept}" to ${request.context.learnerName}.
+Explain the concept of "${request.concept}" to ${displayName}.
 
 Style: ${styleInstructions[request.style]}
 

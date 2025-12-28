@@ -12,6 +12,10 @@ import type { Role } from "./rbac";
 
 const isDev = process.env.NODE_ENV === "development";
 
+// SECURITY: Dev OAuth requires BOTH development mode AND explicit opt-in
+const isDevOAuthEnabled =
+  isDev && process.env.ENABLE_DEV_OAUTH === "true";
+
 // Build providers array based on configured environment variables
 const providers: NonNullable<NextAuthConfig["providers"]> = [];
 
@@ -52,7 +56,8 @@ if (process.env.AUTH_MICROSOFT_ENTRA_ID && process.env.AUTH_MICROSOFT_ENTRA_SECR
 }
 
 // Development-only OAuth provider (local mock)
-if (isDev) {
+// SECURITY: Requires BOTH NODE_ENV=development AND ENABLE_DEV_OAUTH=true
+if (isDevOAuthEnabled) {
   const port = process.env.PORT || "3000";
   const baseUrl = process.env.NEXTAUTH_URL || `http://localhost:${port}`;
   providers.push({
@@ -70,7 +75,7 @@ if (isDev) {
       url: `${baseUrl}/api/dev-oauth/userinfo`,
     },
     clientId: "dev-oauth-client",
-    clientSecret: "dev-oauth-secret",
+    clientSecret: process.env.DEV_OAUTH_SECRET || "dev-oauth-secret-fallback",
     checks: ["state"], // Only use state check, not PKCE (our mock doesn't support PKCE)
     profile(profile) {
       return {
@@ -111,7 +116,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async signIn({ user, account, profile }) {
       // For dev-oauth provider, update user's role from the profile
-      if (isDev && account?.provider === "dev-oauth" && profile?.role && user?.id) {
+      // SECURITY: Only allowed when dev OAuth is explicitly enabled
+      if (isDevOAuthEnabled && account?.provider === "dev-oauth" && profile?.role && user?.id) {
         const role = profile.role as Role;
         await db
           .update(users)
@@ -143,7 +149,8 @@ export function getAvailableProviders() {
   const available: { id: string; name: string; isDev?: boolean }[] = [];
 
   // Development-only provider (shown first for convenience)
-  if (isDev) {
+  // SECURITY: Only shown when explicitly enabled
+  if (isDevOAuthEnabled) {
     available.push({ id: "dev-oauth", name: "Development", isDev: true });
   }
 

@@ -2,16 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { learners } from "@/lib/db/schema/users";
 import { learnerSubjectProgress } from "@/lib/db/schema/progress";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { requireLearnerAccess, AuthorizationError, type Role } from "@/lib/auth/rbac";
+import {
+  requireLearnerAccess,
+  AuthorizationError,
+  getTeacherAccessibleLearnerIds,
+  type Role,
+} from "@/lib/auth/rbac";
 import {
   validateBody,
-  validateQuery,
   ValidationError,
-  learnerIdSchema,
   createLearnerSchema,
-  paginationSchema,
 } from "@/lib/validation";
 import { z } from "zod";
 
@@ -92,28 +94,55 @@ export async function GET(request: NextRequest) {
     }
 
     // List learners - scoped by role
-    const conditions = [];
+    // SECURITY: Each role has different access patterns
 
     if (userRole === "admin") {
       // Admins can see all learners in their organization
-      if (organizationId) {
-        conditions.push(eq(learners.organizationId, organizationId));
-      }
-    } else if (userRole === "teacher") {
-      // Teachers see learners in their organization
-      if (organizationId) {
-        conditions.push(eq(learners.organizationId, organizationId));
-      } else {
-        // No organization = no access
-        return NextResponse.json({ learners: [] });
-      }
-    } else {
-      // Parents see only their own children
-      conditions.push(eq(learners.userId, userId));
+      const conditions = organizationId
+        ? [eq(learners.organizationId, organizationId)]
+        : [];
+
+      const learnerList = await db.query.learners.findMany({
+        where: conditions.length > 0 ? and(...conditions) : undefined,
+        orderBy: (learners, { desc }) => [desc(learners.createdAt)],
+        limit: query.limit,
+        offset: (query.page - 1) * query.limit,
+      });
+
+      return NextResponse.json({ learners: learnerList });
     }
 
+    if (userRole === "teacher") {
+      // SECURITY: Teachers can ONLY see learners enrolled in their classes
+      if (!organizationId) {
+        return NextResponse.json({ learners: [] });
+      }
+
+      const accessibleLearnerIds = await getTeacherAccessibleLearnerIds(
+        userId,
+        organizationId
+      );
+
+      if (accessibleLearnerIds.length === 0) {
+        return NextResponse.json({ learners: [] });
+      }
+
+      const learnerList = await db.query.learners.findMany({
+        where: and(
+          inArray(learners.id, accessibleLearnerIds),
+          eq(learners.organizationId, organizationId)
+        ),
+        orderBy: (learners, { desc }) => [desc(learners.createdAt)],
+        limit: query.limit,
+        offset: (query.page - 1) * query.limit,
+      });
+
+      return NextResponse.json({ learners: learnerList });
+    }
+
+    // Parents see only their own children
     const learnerList = await db.query.learners.findMany({
-      where: conditions.length > 0 ? and(...conditions) : undefined,
+      where: eq(learners.userId, userId),
       orderBy: (learners, { desc }) => [desc(learners.createdAt)],
       limit: query.limit,
       offset: (query.page - 1) * query.limit,

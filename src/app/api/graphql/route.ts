@@ -60,7 +60,7 @@ export async function POST(request: NextRequest): Promise<NextResponse | Respons
   const userId = session?.user?.id;
 
   // Apply rate limiting
-  const rateLimitResult = checkGraphqlRateLimit(request, userId);
+  const rateLimitResult = await checkGraphqlRateLimit(request, userId);
   if (!rateLimitResult.success && rateLimitResult.response) {
     return rateLimitResult.response;
   }

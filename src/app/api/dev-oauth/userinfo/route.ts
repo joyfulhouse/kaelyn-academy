@@ -1,24 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
-import { DEV_USERS, type DevRole } from "../authorize/route";
+import { DEV_USERS, type DevRole, isDevOAuthEnabled, verifyDevToken } from "../authorize/route";
 
 /**
  * Dev OAuth UserInfo Endpoint
- * Returns user profile based on the access token's role - only available in development
+ * Returns user profile based on the access token's role - only available in development with explicit opt-in
+ * Requires cryptographically signed and valid (non-expired) access token
  */
 export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV !== "development") {
+  // SECURITY: Require both development mode AND explicit opt-in
+  if (!isDevOAuthEnabled()) {
     return NextResponse.json({ error: "Not available" }, { status: 404 });
   }
 
   // Extract the access token from Authorization header
   const authHeader = request.headers.get("authorization");
-  const accessToken = authHeader?.replace("Bearer ", "") || "";
+  if (!authHeader?.startsWith("Bearer ")) {
+    return NextResponse.json(
+      { error: "Missing or invalid Authorization header" },
+      { status: 401 }
+    );
+  }
+  const accessToken = authHeader.slice(7); // Remove "Bearer " prefix
 
-  // Extract role from token format: dev_access_token_{role}_{timestamp}
-  const roleMatch = accessToken.match(/^dev_access_token_(\w+)_\d+$/);
-  const role = (roleMatch ? roleMatch[1] : "learner") as DevRole;
+  // SECURITY: Verify the access token signature and expiration
+  const verified = verifyDevToken(accessToken);
+  if (!verified) {
+    return NextResponse.json(
+      { error: "Invalid or expired access token" },
+      { status: 401 }
+    );
+  }
 
-  // Get the user profile for this role
+  // Extract role from verified token data (format: "token:{role}")
+  const roleMatch = verified.data.match(/^token:(\w+)$/);
+  if (!roleMatch) {
+    return NextResponse.json(
+      { error: "Invalid access token format" },
+      { status: 401 }
+    );
+  }
+  const role = roleMatch[1] as DevRole;
+
+  // Get the user profile for this role (fallback to learner if unknown)
   const user = DEV_USERS[role] || DEV_USERS.learner;
 
   return NextResponse.json({

@@ -1,6 +1,7 @@
 import { generateObject } from "ai";
 import { z } from "zod";
 import { getModelForCapability, type AIProvider } from "./providers";
+import { sanitizeText } from "./pii-sanitizer";
 
 export interface PracticeGenerationRequest {
   subject: string;
@@ -289,6 +290,9 @@ export async function gradeShortAnswer(
     suggestions: z.string(),
   });
 
+  // SECURITY: Sanitize student answer for PII before sending to AI
+  const sanitizedAnswer = sanitizeText(studentAnswer);
+
   const result = await generateObject({
     model,
     schema: gradeSchema,
@@ -298,7 +302,7 @@ Grade this ${getGradeLevelDescription(gradeLevel)} student's answer.
 QUESTION: ${question.question}
 MODEL ANSWER: ${question.sampleAnswer}
 KEY POINTS EXPECTED: ${question.keyPoints.join(", ")}
-STUDENT'S ANSWER: ${studentAnswer}
+STUDENT'S ANSWER: ${sanitizedAnswer}
 
 GRADING RUBRIC:
 - Excellent (90-100): ${question.rubric.excellent}

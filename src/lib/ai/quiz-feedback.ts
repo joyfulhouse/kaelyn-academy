@@ -5,6 +5,7 @@
 
 import { generateText } from "ai";
 import { getModelForCapability, getDefaultProvider } from "./providers";
+import { sanitizeLearnerName, sanitizeText } from "./pii-sanitizer";
 import type { QuizConfig, QuestionResult } from "@/lib/assessment/types";
 
 export interface QuizFeedbackRequest {
@@ -37,6 +38,8 @@ function buildFeedbackPrompt(request: QuizFeedbackRequest): string {
   const gradeDesc = getGradeDescription(gradeLevel);
   const correctCount = questionResults.filter((q) => q.correct).length;
   const incorrectCount = questionResults.length - correctCount;
+  // SECURITY: Pseudonymize student name for COPPA/privacy compliance
+  const displayName = sanitizeLearnerName(learnerName);
 
   // Build summary of incorrect answers
   const incorrectQuestions = questionResults
@@ -46,7 +49,8 @@ function buildFeedbackPrompt(request: QuizFeedbackRequest): string {
       if (!question) return null;
       return {
         question: question.question,
-        studentAnswer: q.answer,
+        // SECURITY: Sanitize student answers for PII
+        studentAnswer: sanitizeText(String(q.answer)),
         correctAnswer: question.correctAnswer,
         explanation: question.explanation,
       };
@@ -55,7 +59,7 @@ function buildFeedbackPrompt(request: QuizFeedbackRequest): string {
 
   return `You are a supportive, encouraging K-12 tutor providing feedback on a quiz attempt.
 
-Student: ${learnerName || "Student"} (${gradeDesc})
+Student: ${displayName} (${gradeDesc})
 Quiz: ${quizConfig.title}
 Score: ${score}% (${correctCount}/${questionResults.length} correct)
 Result: ${passed ? "PASSED" : "Did not pass yet"}

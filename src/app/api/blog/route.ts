@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { blogPosts, blogCategories } from "@/lib/db/schema";
 import { users } from "@/lib/db/schema/users";
 import { eq, and, desc, isNull, ilike, or, sql, lte } from "drizzle-orm";
+import { checkPublicRateLimit } from "@/lib/rate-limit";
+import { validatePagination, PAGINATION_PRESETS } from "@/lib/api/pagination";
 
 /**
  * GET /api/blog - Get published blog posts for public consumption
@@ -15,13 +17,19 @@ import { eq, and, desc, isNull, ilike, or, sql, lte } from "drizzle-orm";
  * - offset: Pagination offset (default: 0)
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Rate limit public endpoints to prevent abuse
+  const rateLimitResult = await checkPublicRateLimit(request);
+  if (!rateLimitResult.success && rateLimitResult.response) {
+    return rateLimitResult.response;
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const categorySlug = searchParams.get("category");
     const search = searchParams.get("search");
     const featuredOnly = searchParams.get("featured") === "true";
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
-    const offset = parseInt(searchParams.get("offset") || "0");
+    // SECURITY: Validate pagination bounds to prevent abuse
+    const { limit, offset } = validatePagination(searchParams, PAGINATION_PRESETS.public);
 
     // Build where conditions for published posts only
     const conditions = [

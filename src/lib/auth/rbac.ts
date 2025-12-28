@@ -2,7 +2,8 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { learners } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { classes, classEnrollments } from "@/lib/db/schema/classroom";
+import { eq, and, inArray } from "drizzle-orm";
 
 export type Role = "learner" | "parent" | "teacher" | "admin";
 
@@ -200,18 +201,44 @@ export async function canAccessLearner(
   }
 
   if (userRole === "teacher") {
-    // Teachers can access learners in their organization
-    // This is a simplified check - in a full implementation,
-    // you'd check class membership via a classes/enrollments table
+    // SECURITY: Teachers can ONLY access learners enrolled in their classes
+    // This enforces proper teacher-student boundaries
     if (!organizationId) return false;
 
-    const learner = await db.query.learners.findFirst({
-      where: and(
-        eq(learners.id, learnerId),
-        eq(learners.organizationId, organizationId)
-      ),
-    });
-    return !!learner;
+    // Get all class IDs where this teacher is the owner
+    const teacherClasses = await db
+      .select({ id: classes.id })
+      .from(classes)
+      .where(
+        and(
+          eq(classes.teacherId, userId),
+          eq(classes.organizationId, organizationId),
+          eq(classes.isActive, true)
+        )
+      );
+
+    if (teacherClasses.length === 0) {
+      return false; // No classes = no access to any learners
+    }
+
+    const classIds = teacherClasses.map((c) => c.id);
+
+    // Check if learner is enrolled in any of the teacher's classes
+    const enrollment = await db
+      .select({ id: classEnrollments.id })
+      .from(classEnrollments)
+      .innerJoin(learners, eq(classEnrollments.learnerId, learners.id))
+      .where(
+        and(
+          eq(classEnrollments.learnerId, learnerId),
+          inArray(classEnrollments.classId, classIds),
+          eq(classEnrollments.status, "active"),
+          eq(learners.organizationId, organizationId)
+        )
+      )
+      .limit(1);
+
+    return enrollment.length > 0;
   }
 
   return false;
@@ -274,4 +301,88 @@ export function createPermissionChecker(role: Role) {
     isAtLeast: (targetRole: Role) => isRoleAtLeast(role, targetRole),
     permissions: getPermissions(role),
   };
+}
+
+/**
+ * Get all learner IDs that a teacher has access to (enrolled in their classes)
+ * This is used for list queries to scope results properly
+ */
+export async function getTeacherAccessibleLearnerIds(
+  teacherId: string,
+  organizationId: string
+): Promise<string[]> {
+  // Get all active classes where this teacher is the owner
+  const teacherClasses = await db
+    .select({ id: classes.id })
+    .from(classes)
+    .where(
+      and(
+        eq(classes.teacherId, teacherId),
+        eq(classes.organizationId, organizationId),
+        eq(classes.isActive, true)
+      )
+    );
+
+  if (teacherClasses.length === 0) {
+    return [];
+  }
+
+  const classIds = teacherClasses.map((c) => c.id);
+
+  // Get all learners enrolled in these classes
+  const enrollments = await db
+    .select({ learnerId: classEnrollments.learnerId })
+    .from(classEnrollments)
+    .where(
+      and(
+        inArray(classEnrollments.classId, classIds),
+        eq(classEnrollments.status, "active")
+      )
+    );
+
+  // Return unique learner IDs
+  return [...new Set(enrollments.map((e) => e.learnerId))];
+}
+
+/**
+ * Verify a teacher has access to a specific learner
+ * This is a faster check than canAccessLearner when you know the role is teacher
+ */
+export async function verifyTeacherLearnerAccess(
+  teacherId: string,
+  learnerId: string,
+  organizationId: string
+): Promise<boolean> {
+  // Get teacher's classes
+  const teacherClasses = await db
+    .select({ id: classes.id })
+    .from(classes)
+    .where(
+      and(
+        eq(classes.teacherId, teacherId),
+        eq(classes.organizationId, organizationId),
+        eq(classes.isActive, true)
+      )
+    );
+
+  if (teacherClasses.length === 0) {
+    return false;
+  }
+
+  const classIds = teacherClasses.map((c) => c.id);
+
+  // Check enrollment
+  const enrollment = await db
+    .select({ id: classEnrollments.id })
+    .from(classEnrollments)
+    .where(
+      and(
+        eq(classEnrollments.learnerId, learnerId),
+        inArray(classEnrollments.classId, classIds),
+        eq(classEnrollments.status, "active")
+      )
+    )
+    .limit(1);
+
+  return enrollment.length > 0;
 }

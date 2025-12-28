@@ -24,3 +24,6 @@ export * from "./classroom";
 
 // Marketing & Notifications
 export * from "./marketing";
+
+// COPPA Consent Records
+export * from "./consent";

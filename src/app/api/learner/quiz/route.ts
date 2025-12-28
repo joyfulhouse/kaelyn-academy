@@ -10,6 +10,7 @@ import {
   generateQuizFeedback,
   formatFeedbackAsString,
 } from "@/lib/ai/quiz-feedback";
+import { enforceParentalControls } from "@/lib/api/parental-controls";
 
 /**
  * Schema for quiz submission
@@ -55,6 +56,12 @@ export async function POST(request: NextRequest) {
         { error: "Learner profile not found" },
         { status: 404 }
       );
+    }
+
+    // COPPA: Enforce parental controls (screen time limits, allowed subjects, etc.)
+    const controlsBlock = await enforceParentalControls(learner.id);
+    if (controlsBlock) {
+      return controlsBlock;
     }
 
     // Get quiz configuration

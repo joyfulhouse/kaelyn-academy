@@ -5,6 +5,7 @@
 
 import { generateText } from "ai";
 import { getModelForCapability, getDefaultProvider } from "./providers";
+import { sanitizeLearnerName } from "./pii-sanitizer";
 
 export interface ChildProgressData {
   childName: string;
@@ -45,6 +46,9 @@ export interface ParentRecommendations {
 function buildRecommendationPrompt(progress: ChildProgressData): string {
   const { childName, gradeLevel, overallProgress, subjects, weeklyActivity, recentAchievements, streakDays } = progress;
 
+  // SECURITY: Pseudonymize child name for COPPA/privacy compliance
+  const displayName = sanitizeLearnerName(childName);
+
   // Find strongest and weakest subjects
   const sortedSubjects = [...subjects].sort((a, b) => b.masteryLevel - a.masteryLevel);
   const strongest = sortedSubjects[0];
@@ -57,7 +61,7 @@ function buildRecommendationPrompt(progress: ChildProgressData): string {
   return `You are an educational advisor helping parents support their child's learning journey.
 
 CHILD PROFILE:
-- Name: ${childName}
+- Name: ${displayName}
 - Grade Level: ${gradeLevel}
 - Overall Progress: ${overallProgress}%
 - Current Streak: ${streakDays || 0} days

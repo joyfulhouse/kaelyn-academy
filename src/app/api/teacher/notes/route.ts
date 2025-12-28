@@ -4,6 +4,7 @@ import { teacherStudentNotes } from "@/lib/db/schema/classroom";
 import { users, learners } from "@/lib/db/schema/users";
 import { eq, and, isNull, desc, or } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { verifyTeacherLearnerAccess } from "@/lib/auth/rbac";
 import { z } from "zod";
 
 const noteSchema = z.object({
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 
   // Verify user is a teacher
   const [currentUser] = await db
-    .select({ role: users.role })
+    .select({ role: users.role, organizationId: users.organizationId })
     .from(users)
     .where(eq(users.id, session.user.id));
 
@@ -49,6 +50,24 @@ export async function GET(request: NextRequest) {
 
     if (!learnerId) {
       return NextResponse.json({ error: "learnerId is required" }, { status: 400 });
+    }
+
+    // SECURITY: Verify teacher has access to this learner (must be in their class)
+    if (!currentUser.organizationId) {
+      return NextResponse.json({ error: "Organization required" }, { status: 400 });
+    }
+
+    const hasAccess = await verifyTeacherLearnerAccess(
+      session.user.id,
+      learnerId,
+      currentUser.organizationId
+    );
+
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: "Access denied - learner is not in your class" },
+        { status: 403 }
+      );
     }
 
     // Get notes - either teacher's own notes or shared notes from other teachers
@@ -112,7 +131,7 @@ export async function POST(request: NextRequest) {
 
   // Verify user is a teacher
   const [currentUser] = await db
-    .select({ role: users.role })
+    .select({ role: users.role, organizationId: users.organizationId })
     .from(users)
     .where(eq(users.id, session.user.id));
 
@@ -132,6 +151,24 @@ export async function POST(request: NextRequest) {
 
     if (!learner) {
       return NextResponse.json({ error: "Learner not found" }, { status: 404 });
+    }
+
+    // SECURITY: Verify teacher has access to this learner (must be in their class)
+    if (!currentUser.organizationId) {
+      return NextResponse.json({ error: "Organization required" }, { status: 400 });
+    }
+
+    const hasAccess = await verifyTeacherLearnerAccess(
+      session.user.id,
+      data.learnerId,
+      currentUser.organizationId
+    );
+
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: "Access denied - learner is not in your class" },
+        { status: 403 }
+      );
     }
 
     const [newNote] = await db

@@ -1,31 +1,48 @@
 import { NextResponse } from "next/server";
+import { isDevOAuthEnabled, verifyDevToken, signDevToken } from "../authorize/route";
 
 /**
  * Dev OAuth Token Endpoint
- * Exchanges authorization code for tokens - only available in development
- * Uses simple opaque tokens (not JWTs) for OAuth2 compatibility
+ * Exchanges authorization code for tokens - only available in development with explicit opt-in
+ * Uses HMAC-signed tokens for security
  */
 export async function POST(request: Request) {
-  if (process.env.NODE_ENV !== "development") {
+  // SECURITY: Require both development mode AND explicit opt-in
+  if (!isDevOAuthEnabled()) {
     return NextResponse.json({ error: "Not available" }, { status: 404 });
   }
 
-  // Parse the authorization code to extract the role
+  // Parse the authorization code
   const body = await request.text();
   const params = new URLSearchParams(body);
   const code = params.get("code") || "";
 
-  // Extract role from code format: dev_auth_code_{role}_{timestamp}
-  const roleMatch = code.match(/^dev_auth_code_(\w+)_\d+$/);
-  const role = roleMatch ? roleMatch[1] : "learner";
+  // SECURITY: Verify the authorization code signature and expiration
+  const verified = verifyDevToken(code);
+  if (!verified) {
+    return NextResponse.json(
+      { error: "Invalid or expired authorization code" },
+      { status: 400 }
+    );
+  }
 
-  // Generate access token that includes the role
-  const accessToken = `dev_access_token_${role}_${Date.now()}`;
+  // Extract role from verified code data (format: "code:{role}")
+  const roleMatch = verified.data.match(/^code:(\w+)$/);
+  if (!roleMatch) {
+    return NextResponse.json(
+      { error: "Invalid authorization code format" },
+      { status: 400 }
+    );
+  }
+  const role = roleMatch[1];
+
+  // Generate a cryptographically signed access token
+  const accessToken = signDevToken(`token:${role}`);
 
   return NextResponse.json({
     access_token: accessToken,
     token_type: "Bearer",
-    expires_in: 3600,
+    expires_in: 300, // 5 minutes - matches token verification window
     scope: "openid profile email",
   });
 }
