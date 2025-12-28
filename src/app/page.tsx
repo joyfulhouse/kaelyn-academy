@@ -148,15 +148,15 @@ export default function LandingPage() {
             </div>
             <div className="mt-12 flex flex-wrap justify-center items-center gap-6 text-muted-foreground text-sm">
               <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-success" />
                 Free for families
               </div>
               <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-success" />
                 No credit card required
               </div>
               <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-success" />
                 COPPA compliant
               </div>
             </div>

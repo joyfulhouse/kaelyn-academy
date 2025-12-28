@@ -358,8 +358,8 @@ export default async function ChildProfilePage({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-orange-500/10">
-                <Trophy className="h-5 w-5 text-orange-500" />
+              <div className="p-2 rounded-full bg-warning/10">
+                <Trophy className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{child.progress.streak}</div>
@@ -371,8 +371,8 @@ export default async function ChildProfilePage({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-blue-500/10">
-                <BookOpen className="h-5 w-5 text-blue-500" />
+              <div className="p-2 rounded-full bg-info/10">
+                <BookOpen className="h-5 w-5 text-info" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{child.progress.totalLessons}</div>
@@ -384,8 +384,8 @@ export default async function ChildProfilePage({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-green-500/10">
-                <Clock className="h-5 w-5 text-green-500" />
+              <div className="p-2 rounded-full bg-success/10">
+                <Clock className="h-5 w-5 text-success" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{formatMinutes(child.progress.totalTime)}</div>
@@ -397,8 +397,8 @@ export default async function ChildProfilePage({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-purple-500/10">
-                <Award className="h-5 w-5 text-purple-500" />
+              <div className="p-2 rounded-full bg-primary/10">
+                <Award className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{child.progress.achievements}</div>
@@ -463,11 +463,11 @@ export default async function ChildProfilePage({
                   child.recentActivity.map((activity, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <div className={`p-2 rounded-full ${
-                        activity.type === "lesson" ? "bg-blue-500/10" :
-                        "bg-yellow-500/10"
+                        activity.type === "lesson" ? "bg-info/10" :
+                        "bg-warning/10"
                       }`}>
-                        {activity.type === "lesson" && <BookOpen className="h-4 w-4 text-blue-500" />}
-                        {activity.type === "achievement" && <Award className="h-4 w-4 text-yellow-500" />}
+                        {activity.type === "lesson" && <BookOpen className="h-4 w-4 text-info" />}
+                        {activity.type === "achievement" && <Award className="h-4 w-4 text-warning" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{activity.title}</p>
@@ -532,11 +532,11 @@ export default async function ChildProfilePage({
                 child.recentActivity.map((activity, i) => (
                   <div key={i} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
                     <div className={`p-2 rounded-full ${
-                      activity.type === "lesson" ? "bg-blue-500/10" :
-                      "bg-yellow-500/10"
+                      activity.type === "lesson" ? "bg-info/10" :
+                      "bg-warning/10"
                     }`}>
-                      {activity.type === "lesson" && <BookOpen className="h-4 w-4 text-blue-500" />}
-                      {activity.type === "achievement" && <Award className="h-4 w-4 text-yellow-500" />}
+                      {activity.type === "lesson" && <BookOpen className="h-4 w-4 text-info" />}
+                      {activity.type === "achievement" && <Award className="h-4 w-4 text-warning" />}
                     </div>
                     <div className="flex-1">
                       <p className="font-medium">{activity.title}</p>

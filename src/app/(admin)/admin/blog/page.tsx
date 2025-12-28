@@ -169,11 +169,11 @@ export default function AdminBlogPage() {
   function getStatusBadge(status: string) {
     switch (status) {
       case "published":
-        return <Badge className="bg-green-500/10 text-green-600 border-green-200">Published</Badge>;
+        return <Badge className="bg-success/10 text-success border-success/30">Published</Badge>;
       case "draft":
         return <Badge variant="secondary">Draft</Badge>;
       case "archived":
-        return <Badge variant="outline" className="text-gray-500">Archived</Badge>;
+        return <Badge variant="outline" className="text-muted-foreground">Archived</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -182,7 +182,7 @@ export default function AdminBlogPage() {
   if (loading && posts.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
@@ -190,7 +190,7 @@ export default function AdminBlogPage() {
   if (error && posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <p className="text-red-600">{error}</p>
+        <p className="text-destructive">{error}</p>
         <Button onClick={fetchPosts}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Retry
@@ -228,7 +228,7 @@ export default function AdminBlogPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Published</CardDescription>
-            <CardTitle className="text-3xl text-green-600">
+            <CardTitle className="text-3xl text-success">
               {stats.published}
             </CardTitle>
           </CardHeader>

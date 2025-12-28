@@ -184,7 +184,7 @@ export default function AddChildPage() {
                   required
                 />
                 {hasDuplicateFirstName && (
-                  <p className="text-xs text-amber-600">
+                  <p className="text-xs text-warning">
                     Another child has this first name. A middle name is required.
                   </p>
                 )}
@@ -249,11 +249,11 @@ export default function AddChildPage() {
               </div>
             </div>
 
-            <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+            <div className="p-4 bg-info/10 rounded-lg border border-info/20">
               <div className="flex items-start gap-2">
-                <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5" />
+                <CheckCircle className="h-5 w-5 text-info mt-0.5" />
                 <div>
-                  <h4 className="font-medium text-blue-700 dark:text-blue-300">
+                  <h4 className="font-medium text-info">
                     COPPA Compliance
                   </h4>
                   <p className="text-sm text-muted-foreground mt-1">

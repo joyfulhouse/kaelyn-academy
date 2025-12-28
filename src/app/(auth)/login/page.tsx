@@ -221,7 +221,7 @@ function LoginContent() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-muted-foreground">Development Login</span>
-                    <Badge variant="outline" className="text-amber-600 border-amber-300 text-xs">
+                    <Badge variant="outline" className="text-warning border-warning/30 text-xs">
                       DEV ONLY
                     </Badge>
                   </div>

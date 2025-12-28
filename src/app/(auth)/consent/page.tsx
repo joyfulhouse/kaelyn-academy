@@ -88,13 +88,13 @@ function ConsentContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-success/5 to-background py-12 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-4">👨‍👩‍👧</div>
-          <h1 className="text-3xl font-bold text-gray-900">Parental Consent</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-foreground">Parental Consent</h1>
+          <p className="text-muted-foreground mt-2">
             COPPA-compliant consent for your child&apos;s account
           </p>
         </div>
@@ -106,18 +106,18 @@ function ConsentContent() {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   s < step
-                    ? "bg-green-500 text-white"
+                    ? "bg-success text-success-foreground"
                     : s === step
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-500"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
                 {s < step ? "✓" : s}
               </div>
-              <span className={`text-sm ${s === step ? "font-medium" : "text-gray-500"}`}>
+              <span className={`text-sm ${s === step ? "font-medium" : "text-muted-foreground"}`}>
                 {s === 1 ? "Information" : s === 2 ? "Agreements" : "Signature"}
               </span>
-              {s < 3 && <div className="w-12 h-0.5 bg-gray-200" />}
+              {s < 3 && <div className="w-12 h-0.5 bg-muted" />}
             </div>
           ))}
         </div>
@@ -191,7 +191,7 @@ function ConsentContent() {
               </div>
 
               {token && (
-                <p className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
                   Consent request token: {token.substring(0, 8)}...
                 </p>
               )}
@@ -240,8 +240,8 @@ function ConsentContent() {
                   key={agreement.key}
                   className={`p-4 rounded-lg border ${
                     form.agreements[agreement.key]
-                      ? "border-green-300 bg-green-50"
-                      : "border-gray-200"
+                      ? "border-success/50 bg-success/10"
+                      : "border-border"
                   }`}
                 >
                   <label className="flex items-start gap-3 cursor-pointer">
@@ -257,14 +257,14 @@ function ConsentContent() {
                       className="mt-1 h-4 w-4"
                     />
                     <div>
-                      <div className="font-medium text-gray-900">{agreement.title}</div>
-                      <div className="text-sm text-gray-600 mt-1">{agreement.description}</div>
+                      <div className="font-medium text-foreground">{agreement.title}</div>
+                      <div className="text-sm text-muted-foreground mt-1">{agreement.description}</div>
                     </div>
                   </label>
                 </div>
               ))}
 
-              <div className="flex gap-4 text-sm text-blue-600">
+              <div className="flex gap-4 text-sm text-primary">
                 <a href="/terms" target="_blank" className="hover:underline">
                   View Terms of Service
                 </a>
@@ -289,9 +289,9 @@ function ConsentContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-gray-50 p-4 rounded-lg text-sm">
-                <p className="font-medium text-gray-900 mb-2">Consent Summary:</p>
-                <ul className="space-y-1 text-gray-600">
+              <div className="bg-muted/50 p-4 rounded-lg text-sm">
+                <p className="font-medium text-foreground mb-2">Consent Summary:</p>
+                <ul className="space-y-1 text-muted-foreground">
                   <li>• Parent: {form.parentName}</li>
                   <li>• Child: {form.childName}</li>
                   <li>• Relationship: {form.relationship}</li>
@@ -310,7 +310,7 @@ function ConsentContent() {
                   placeholder="Type your full name"
                   className="font-serif text-lg"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   By typing your name, you are providing an electronic signature
                 </p>
               </div>
@@ -321,12 +321,12 @@ function ConsentContent() {
                   type="date"
                   value={form.signatureDate}
                   disabled
-                  className="bg-gray-50"
+                  className="bg-muted/50"
                 />
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-                <p className="text-sm text-yellow-800">
+              <div className="bg-warning/10 border border-warning/30 p-4 rounded-lg">
+                <p className="text-sm text-warning-foreground">
                   <strong>Important:</strong> Under COPPA regulations, this consent is required for children under 13.
                   You may revoke consent at any time by contacting us at privacy@kaelyns.academy.
                 </p>
@@ -347,7 +347,7 @@ function ConsentContent() {
           <Button
             onClick={handleSubmit}
             disabled={!canProceed || loading}
-            className="bg-green-600 hover:bg-green-700"
+            className="bg-success hover:bg-success/90"
           >
             {loading ? "Submitting..." : step === 3 ? "Submit Consent" : "Continue"}
           </Button>

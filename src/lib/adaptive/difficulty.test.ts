@@ -143,10 +143,10 @@ describe("Adaptive Difficulty System", () => {
   });
 
   describe("getDifficultyColor", () => {
-    it("returns correct colors", () => {
-      expect(getDifficultyColor(1)).toBe("bg-green-500");
-      expect(getDifficultyColor(3)).toBe("bg-yellow-500");
-      expect(getDifficultyColor(5)).toBe("bg-red-500");
+    it("returns correct semantic colors", () => {
+      expect(getDifficultyColor(1)).toBe("bg-success");
+      expect(getDifficultyColor(3)).toBe("bg-warning");
+      expect(getDifficultyColor(5)).toBe("bg-destructive");
     });
   });
 

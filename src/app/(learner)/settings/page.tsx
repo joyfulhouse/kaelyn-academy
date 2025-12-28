@@ -300,7 +300,7 @@ export default function SettingsPage() {
                       {theme === "light" && (
                         <Check className="absolute top-2 right-2 h-4 w-4 text-primary" />
                       )}
-                      <Sun className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                      <Sun className="h-8 w-8 mx-auto mb-2 text-warning" />
                       <p className="text-sm font-medium">Light</p>
                     </button>
                     <button
@@ -315,7 +315,7 @@ export default function SettingsPage() {
                       {theme === "dark" && (
                         <Check className="absolute top-2 right-2 h-4 w-4 text-primary" />
                       )}
-                      <Moon className="h-8 w-8 mx-auto mb-2 text-blue-500" />
+                      <Moon className="h-8 w-8 mx-auto mb-2 text-info" />
                       <p className="text-sm font-medium">Dark</p>
                     </button>
                     <button

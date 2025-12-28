@@ -145,15 +145,15 @@ export function getDifficultyLabel(level: DifficultyLevel): string {
 }
 
 /**
- * Get difficulty color for UI
+ * Get difficulty color for UI (uses semantic tokens for dark mode support)
  */
 export function getDifficultyColor(level: DifficultyLevel): string {
   const colors: Record<DifficultyLevel, string> = {
-    1: "bg-green-500",
-    2: "bg-blue-500",
-    3: "bg-yellow-500",
-    4: "bg-orange-500",
-    5: "bg-red-500",
+    1: "bg-success",
+    2: "bg-info",
+    3: "bg-warning",
+    4: "bg-warning",
+    5: "bg-destructive",
   };
   return colors[level];
 }

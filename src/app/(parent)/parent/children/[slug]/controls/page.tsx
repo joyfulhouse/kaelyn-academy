@@ -164,12 +164,12 @@ export default function ChildControlsPage({
         </div>
         <div className="flex items-center gap-3">
           {saveStatus === "success" && (
-            <span className="text-sm text-green-600 flex items-center gap-1">
+            <span className="text-sm text-success flex items-center gap-1">
               <Check className="h-4 w-4" /> Saved
             </span>
           )}
           {saveStatus === "error" && (
-            <span className="text-sm text-red-600">Failed to save</span>
+            <span className="text-sm text-destructive">Failed to save</span>
           )}
           <Button
             onClick={handleSave}
@@ -333,19 +333,19 @@ export default function ChildControlsPage({
                   <SelectContent>
                     <SelectItem value="strict">
                       <div className="flex items-center gap-2">
-                        <Badge className="bg-green-500">Strict</Badge>
+                        <Badge className="bg-success">Strict</Badge>
                         <span>Most restrictive - K-5 appropriate only</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="moderate">
                       <div className="flex items-center gap-2">
-                        <Badge className="bg-yellow-500">Moderate</Badge>
+                        <Badge className="bg-warning">Moderate</Badge>
                         <span>Balanced - Age-appropriate content</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="minimal">
                       <div className="flex items-center gap-2">
-                        <Badge className="bg-orange-500">Minimal</Badge>
+                        <Badge className="bg-warning">Minimal</Badge>
                         <span>Least restrictive - All educational content</span>
                       </div>
                     </SelectItem>
@@ -477,11 +477,11 @@ export default function ChildControlsPage({
                 />
               </div>
 
-              <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+              <div className="p-4 bg-info/10 rounded-lg border border-info/20">
                 <div className="flex items-start gap-2">
-                  <Shield className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <Shield className="h-5 w-5 text-info mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-blue-700 dark:text-blue-300">COPPA Compliant</h4>
+                    <h4 className="font-medium text-info">COPPA Compliant</h4>
                     <p className="text-sm text-muted-foreground mt-1">
                       All data handling complies with the Children&apos;s Online Privacy Protection Act.
                       Your child&apos;s personal information is never sold or shared with third parties.
