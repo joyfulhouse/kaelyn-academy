@@ -271,7 +271,7 @@ export const technologyCurriculum: Subject = {
   slug: "technology",
   description: "Comprehensive K-12 computer science and technology curriculum aligned with CSTA Standards",
   icon: "💻",
-  color: "from-pink-500 to-rose-500",
+  color: "from-info to-info/80",
   grades: {
     0: kindergartenUnits,
     1: grade1Units,

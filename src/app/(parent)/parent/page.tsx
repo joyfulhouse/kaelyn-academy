@@ -12,6 +12,7 @@ import {
 } from "@/components/dashboard/progress-charts";
 import { Download, Loader2, Lightbulb, Target, Trophy, Heart, Clock, RefreshCw } from "lucide-react";
 import { generateProgressReportPDF } from "@/lib/reports/pdf-generator";
+import { colors } from "@/lib/colors";
 
 interface SubjectProgress {
   subjectName: string;
@@ -320,7 +321,7 @@ export default function ParentDashboard() {
                 <CircularProgress
                   value={currentChild.overallProgress}
                   label="Overall"
-                  color="#10b981"
+                  color={colors.chart.green}
                 />
                 <div className="w-full space-y-3">
                   {currentChild.subjects.map((subject) => (

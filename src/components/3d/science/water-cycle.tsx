@@ -9,6 +9,7 @@ import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text, Plane, Line } from "@react-three/drei";
 import * as THREE from "three";
+import { colors } from "@/lib/colors";
 
 interface WaterCycleProps {
   animate?: boolean;
@@ -22,35 +23,35 @@ function Terrain() {
       {/* Ground */}
       <mesh position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[10, 8]} />
-        <meshStandardMaterial color="#8b5a2b" />
+        <meshStandardMaterial color={colors.accent.orange} />
       </mesh>
 
       {/* Mountain */}
       <mesh position={[3, 0, 0]}>
         <coneGeometry args={[2, 3, 8]} />
-        <meshStandardMaterial color="#6b7280" />
+        <meshStandardMaterial color={colors.three.textMuted} />
       </mesh>
       <mesh position={[3, 1.5, 0]}>
         <coneGeometry args={[0.8, 1, 8]} />
-        <meshStandardMaterial color="#ffffff" />
+        <meshStandardMaterial color={colors.neutral[50]} />
       </mesh>
 
       {/* Ocean */}
       <mesh position={[-2.5, -0.9, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[5, 6]} />
-        <meshStandardMaterial color="#0ea5e9" transparent opacity={0.8} />
+        <meshStandardMaterial color={colors.accent.cyan} transparent opacity={0.8} />
       </mesh>
 
       {/* Lake */}
       <mesh position={[2, -0.85, 2]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.8, 32]} />
-        <meshStandardMaterial color="#38bdf8" transparent opacity={0.8} />
+        <meshStandardMaterial color={colors.info.light} transparent opacity={0.8} />
       </mesh>
 
       {/* River */}
       <mesh position={[1, -0.88, 1]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[0.3, 3]} />
-        <meshStandardMaterial color="#38bdf8" transparent opacity={0.8} />
+        <meshStandardMaterial color={colors.info.light} transparent opacity={0.8} />
       </mesh>
     </group>
   );
@@ -75,19 +76,19 @@ function Cloud({
     <group ref={groupRef} position={position}>
       <mesh position={[0, 0, 0]}>
         <sphereGeometry args={[0.4 * size, 16, 16]} />
-        <meshStandardMaterial color="#ffffff" transparent opacity={0.9} />
+        <meshStandardMaterial color={colors.neutral[50]} transparent opacity={0.9} />
       </mesh>
       <mesh position={[0.3 * size, 0.1, 0]}>
         <sphereGeometry args={[0.3 * size, 16, 16]} />
-        <meshStandardMaterial color="#ffffff" transparent opacity={0.9} />
+        <meshStandardMaterial color={colors.neutral[50]} transparent opacity={0.9} />
       </mesh>
       <mesh position={[-0.3 * size, 0.05, 0]}>
         <sphereGeometry args={[0.35 * size, 16, 16]} />
-        <meshStandardMaterial color="#ffffff" transparent opacity={0.9} />
+        <meshStandardMaterial color={colors.neutral[50]} transparent opacity={0.9} />
       </mesh>
       <mesh position={[0, -0.15, 0.2 * size]}>
         <sphereGeometry args={[0.25 * size, 16, 16]} />
-        <meshStandardMaterial color="#ffffff" transparent opacity={0.9} />
+        <meshStandardMaterial color={colors.neutral[50]} transparent opacity={0.9} />
       </mesh>
     </group>
   );
@@ -158,7 +159,7 @@ function WaterDroplets({
         >
           <sphereGeometry args={[type === "evaporation" ? 0.03 : 0.05, 8, 8]} />
           <meshStandardMaterial
-            color={type === "evaporation" ? "#93c5fd" : "#3b82f6"}
+            color={type === "evaporation" ? colors.primary.muted : colors.primary.DEFAULT}
             transparent
             opacity={type === "evaporation" ? 0.6 : 0.8}
           />
@@ -246,7 +247,7 @@ export function WaterCycle({
       {/* Sun */}
       <mesh position={[-4, 3.5, 0]}>
         <sphereGeometry args={[0.5, 32, 32]} />
-        <meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={0.5} />
+        <meshStandardMaterial color={colors.warning.light} emissive={colors.warning.DEFAULT} emissiveIntensity={0.5} />
         <pointLight intensity={1} distance={10} />
       </mesh>
 
@@ -260,7 +261,7 @@ export function WaterCycle({
           {isActive("evaporation") && (
             <ArrowPath
               points={evaporationPath}
-              color="#0ea5e9"
+              color={colors.accent.cyan}
               label="Evaporation"
               labelPosition={[-2.5, 1.5, 0.5]}
             />
@@ -268,7 +269,7 @@ export function WaterCycle({
           {isActive("condensation") && (
             <ArrowPath
               points={condensationPath}
-              color="#8b5cf6"
+              color={colors.accent.purple}
               label="Condensation"
               labelPosition={[0, 3.3, 0]}
             />
@@ -276,7 +277,7 @@ export function WaterCycle({
           {isActive("precipitation") && (
             <ArrowPath
               points={precipitationPath}
-              color="#3b82f6"
+              color={colors.primary.DEFAULT}
               label="Precipitation"
               labelPosition={[2.2, 1.5, 0.5]}
             />
@@ -284,7 +285,7 @@ export function WaterCycle({
           {isActive("collection") && (
             <ArrowPath
               points={collectionPath}
-              color="#06b6d4"
+              color={colors.accent.cyan}
               label="Collection"
               labelPosition={[0, -1.3, 0]}
             />
@@ -295,13 +296,13 @@ export function WaterCycle({
       {/* Stage labels */}
       {showLabels && (
         <>
-          <Text position={[-2.5, -1.5, 2]} fontSize={0.15} color="#0ea5e9" anchorX="center">
+          <Text position={[-2.5, -1.5, 2]} fontSize={0.15} color={colors.accent.cyan} anchorX="center">
             Ocean
           </Text>
-          <Text position={[3, 2, 0]} fontSize={0.15} color="#6b7280" anchorX="center">
+          <Text position={[3, 2, 0]} fontSize={0.15} color={colors.three.textMuted} anchorX="center">
             Mountain
           </Text>
-          <Text position={[2, -1.3, 2]} fontSize={0.12} color="#38bdf8" anchorX="center">
+          <Text position={[2, -1.3, 2]} fontSize={0.12} color={colors.info.light} anchorX="center">
             Lake
           </Text>
         </>

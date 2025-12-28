@@ -23,6 +23,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { colors } from "@/lib/colors";
 
 // Subject Dialog
 interface SubjectDialogProps {
@@ -354,7 +355,7 @@ export function UnitDialog({
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded"
-                            style={{ backgroundColor: subject.color || "#6b7280" }}
+                            style={{ backgroundColor: subject.color || colors.neutral[500] }}
                           />
                           {subject.name}
                         </div>

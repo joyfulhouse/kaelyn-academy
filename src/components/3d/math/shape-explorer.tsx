@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text, RoundedBox, Sphere, Cylinder, Cone, Torus } from "@react-three/drei";
 import type { Mesh } from "three";
+import { colors } from "@/lib/colors";
 
 type ShapeType = "cube" | "sphere" | "cylinder" | "cone" | "pyramid" | "torus";
 
@@ -28,7 +29,7 @@ const shapeInfo: Record<ShapeType, { name: string; faces: number; edges: number;
 
 export function ShapeExplorer({
   shape,
-  color = "#3b82f6",
+  color = colors.three.default,
   size = 1,
   showProperties = true,
   wireframe = false,
@@ -60,7 +61,7 @@ export function ShapeExplorer({
 
     const material = (
       <meshStandardMaterial
-        color={hovered ? "#60a5fa" : color}
+        color={hovered ? colors.three.hover : color}
         wireframe={wireframe}
         metalness={0.1}
         roughness={0.5}
@@ -115,7 +116,7 @@ export function ShapeExplorer({
         <group position={[0, -size - 0.5, 0]}>
           <Text
             fontSize={0.2}
-            color="#1f2937"
+            color={colors.three.text}
             anchorX="center"
             anchorY="top"
             fontWeight="bold"
@@ -126,7 +127,7 @@ export function ShapeExplorer({
             <Text
               position={[0, -0.3, 0]}
               fontSize={0.12}
-              color="#6b7280"
+              color={colors.three.textMuted}
               anchorX="center"
               anchorY="top"
             >
@@ -167,7 +168,7 @@ export function ShapeGallery({
             <ShapeExplorer
               shape={shape}
               size={0.8}
-              color={selectedShape === shape ? "#22c55e" : "#3b82f6"}
+              color={selectedShape === shape ? colors.three.selected : colors.three.default}
               onShapeClick={onSelect}
               showProperties={true}
             />

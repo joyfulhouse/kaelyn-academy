@@ -8,6 +8,7 @@
 import { useMemo } from "react";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
+import { colors } from "@/lib/colors";
 
 interface FractionVisualizerProps {
   numerator: number;
@@ -80,7 +81,7 @@ function CircleFraction({
       {/* Outline ring */}
       <mesh>
         <ringGeometry args={[size - 0.02, size + 0.02, 64]} />
-        <meshBasicMaterial color="#333333" side={THREE.DoubleSide} />
+        <meshBasicMaterial color={colors.three.text} side={THREE.DoubleSide} />
       </mesh>
       {/* Dividing lines */}
       {Array.from({ length: denominator }).map((_, i) => {
@@ -90,7 +91,7 @@ function CircleFraction({
         return (
           <mesh key={i} position={[x / 2, y / 2, 0.15]}>
             <boxGeometry args={[0.02, size, 0.22]} />
-            <meshBasicMaterial color="#333333" />
+            <meshBasicMaterial color={colors.three.text} />
             <group rotation={[0, 0, angle]} />
           </mesh>
         );
@@ -137,7 +138,7 @@ function BarFraction({
       {/* Outer frame */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[barWidth + 0.1, barHeight + 0.1, 0.25]} />
-        <meshStandardMaterial color="#333333" wireframe />
+        <meshStandardMaterial color={colors.three.text} wireframe />
       </mesh>
     </group>
   );
@@ -191,8 +192,8 @@ export function FractionVisualizer({
   denominator,
   shape = "circle",
   size = 1.5,
-  activeColor = "#22c55e",
-  inactiveColor = "#e5e7eb",
+  activeColor = colors.three.selected,
+  inactiveColor = colors.neutral[200],
   showLabels = true,
 }: FractionVisualizerProps) {
   // Clamp numerator to be within valid range
@@ -244,7 +245,7 @@ export function FractionVisualizer({
           <Text
             position={[0, -size - 0.8, 0]}
             fontSize={0.5}
-            color="#333333"
+            color={colors.three.text}
             anchorX="center"
             anchorY="middle"
           >
@@ -253,7 +254,7 @@ export function FractionVisualizer({
           <Text
             position={[0, -size - 1.3, 0]}
             fontSize={0.25}
-            color="#666666"
+            color={colors.three.textMuted}
             anchorX="center"
             anchorY="middle"
           >

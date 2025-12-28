@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { colors } from "@/lib/colors";
 import { learners } from "@/lib/db/schema/users";
 import { learnerSubjectProgress, lessonProgress, learnerAchievements } from "@/lib/db/schema/progress";
 import { subjects } from "@/lib/db/schema/curriculum";
@@ -241,7 +242,7 @@ async function getChildData(slug: string, parentUserId: string): Promise<ChildDa
       mastery: Math.round(sp.masteryLevel ?? 0),
       lessonsCompleted: sp.completedLessons ?? 0,
       totalLessons: sp.totalLessons ?? 0,
-      color: sp.subjectColor ?? "#6b7280",
+      color: sp.subjectColor ?? colors.neutral[500],
     })),
     recentActivity,
     weeklyProgress,

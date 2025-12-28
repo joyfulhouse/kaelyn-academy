@@ -9,6 +9,7 @@ import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text, Line } from "@react-three/drei";
 import * as THREE from "three";
+import { colors } from "@/lib/colors";
 
 interface PlanetConfig {
   name: string;
@@ -22,14 +23,14 @@ interface PlanetConfig {
 }
 
 const PLANETS: PlanetConfig[] = [
-  { name: "Mercury", size: 0.08, distance: 1.5, color: "#b5b5b5", orbitSpeed: 4.15, rotationSpeed: 0.5 },
-  { name: "Venus", size: 0.12, distance: 2.0, color: "#e6c229", orbitSpeed: 1.62, rotationSpeed: -0.1 },
-  { name: "Earth", size: 0.13, distance: 2.6, color: "#3b82f6", orbitSpeed: 1.0, rotationSpeed: 1.0, moons: 1 },
-  { name: "Mars", size: 0.1, distance: 3.2, color: "#ef4444", orbitSpeed: 0.53, rotationSpeed: 0.97, moons: 2 },
-  { name: "Jupiter", size: 0.35, distance: 4.2, color: "#f59e0b", orbitSpeed: 0.084, rotationSpeed: 2.4, moons: 4 },
-  { name: "Saturn", size: 0.3, distance: 5.4, color: "#eab308", orbitSpeed: 0.034, rotationSpeed: 2.2, rings: true, moons: 3 },
-  { name: "Uranus", size: 0.2, distance: 6.4, color: "#06b6d4", orbitSpeed: 0.012, rotationSpeed: -1.4, rings: true },
-  { name: "Neptune", size: 0.19, distance: 7.2, color: "#2563eb", orbitSpeed: 0.006, rotationSpeed: 1.5, moons: 1 },
+  { name: "Mercury", size: 0.08, distance: 1.5, color: colors.neutral[400], orbitSpeed: 4.15, rotationSpeed: 0.5 },
+  { name: "Venus", size: 0.12, distance: 2.0, color: colors.warning.light, orbitSpeed: 1.62, rotationSpeed: -0.1 },
+  { name: "Earth", size: 0.13, distance: 2.6, color: colors.primary.DEFAULT, orbitSpeed: 1.0, rotationSpeed: 1.0, moons: 1 },
+  { name: "Mars", size: 0.1, distance: 3.2, color: colors.destructive.DEFAULT, orbitSpeed: 0.53, rotationSpeed: 0.97, moons: 2 },
+  { name: "Jupiter", size: 0.35, distance: 4.2, color: colors.warning.DEFAULT, orbitSpeed: 0.084, rotationSpeed: 2.4, moons: 4 },
+  { name: "Saturn", size: 0.3, distance: 5.4, color: colors.warning.light, orbitSpeed: 0.034, rotationSpeed: 2.2, rings: true, moons: 3 },
+  { name: "Uranus", size: 0.2, distance: 6.4, color: colors.accent.cyan, orbitSpeed: 0.012, rotationSpeed: -1.4, rings: true },
+  { name: "Neptune", size: 0.19, distance: 7.2, color: colors.primary.dark, orbitSpeed: 0.006, rotationSpeed: 1.5, moons: 1 },
 ];
 
 interface SolarSystemProps {
@@ -53,8 +54,8 @@ function Sun({ size }: { size: number }) {
     <mesh ref={meshRef}>
       <sphereGeometry args={[size, 32, 32]} />
       <meshStandardMaterial
-        color="#fbbf24"
-        emissive="#f59e0b"
+        color={colors.warning.light}
+        emissive={colors.warning.DEFAULT}
         emissiveIntensity={0.8}
       />
       {/* Sun glow */}
@@ -123,7 +124,7 @@ function Planet({
         <Text
           position={[0, config.size + 0.15, 0]}
           fontSize={0.1}
-          color="#666666"
+          color={colors.three.textMuted}
           anchorX="center"
         >
           {config.name}
@@ -171,7 +172,7 @@ function MoonSystem({
         >
           <mesh>
             <sphereGeometry args={[planetSize * 0.15, 16, 16]} />
-            <meshStandardMaterial color="#9ca3af" />
+            <meshStandardMaterial color={colors.neutral[400]} />
           </mesh>
         </group>
       ))}
@@ -196,7 +197,7 @@ function OrbitPath({ distance }: { distance: number }) {
   return (
     <Line
       points={points}
-      color="#444444"
+      color={colors.neutral[700]}
       lineWidth={0.5}
       opacity={0.3}
       transparent
@@ -239,7 +240,7 @@ export function SolarSystem({
 
       {/* Sun label */}
       {showLabels && (
-        <Text position={[0, 0.7, 0]} fontSize={0.15} color="#666666" anchorX="center">
+        <Text position={[0, 0.7, 0]} fontSize={0.15} color={colors.three.textMuted} anchorX="center">
           Sun
         </Text>
       )}

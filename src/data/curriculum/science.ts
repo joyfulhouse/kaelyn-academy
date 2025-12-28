@@ -371,7 +371,7 @@ export const scienceCurriculum: Subject = {
   slug: "science",
   description: "Comprehensive K-12 science curriculum aligned with Next Generation Science Standards (NGSS)",
   icon: "🔬",
-  color: "from-purple-500 to-violet-500",
+  color: "from-primary/90 to-primary",
   grades: {
     0: kindergartenUnits,
     1: grade1Units,

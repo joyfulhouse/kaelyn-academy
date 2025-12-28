@@ -14,35 +14,35 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Collection of fun avatar options
+// Collection of fun avatar options with semantic color tokens
 const AVATAR_COLLECTION = [
   // Animals
-  { id: "bear", emoji: "🐻", label: "Bear", color: "bg-amber-100" },
-  { id: "cat", emoji: "🐱", label: "Cat", color: "bg-orange-100" },
-  { id: "dog", emoji: "🐶", label: "Dog", color: "bg-yellow-100" },
-  { id: "fox", emoji: "🦊", label: "Fox", color: "bg-orange-100" },
-  { id: "lion", emoji: "🦁", label: "Lion", color: "bg-amber-100" },
-  { id: "panda", emoji: "🐼", label: "Panda", color: "bg-gray-100" },
-  { id: "rabbit", emoji: "🐰", label: "Rabbit", color: "bg-pink-100" },
-  { id: "koala", emoji: "🐨", label: "Koala", color: "bg-gray-100" },
-  { id: "unicorn", emoji: "🦄", label: "Unicorn", color: "bg-purple-100" },
-  { id: "owl", emoji: "🦉", label: "Owl", color: "bg-amber-100" },
-  { id: "penguin", emoji: "🐧", label: "Penguin", color: "bg-slate-100" },
-  { id: "frog", emoji: "🐸", label: "Frog", color: "bg-green-100" },
+  { id: "bear", emoji: "🐻", label: "Bear", color: "bg-warning/20" },
+  { id: "cat", emoji: "🐱", label: "Cat", color: "bg-warning/30" },
+  { id: "dog", emoji: "🐶", label: "Dog", color: "bg-warning/15" },
+  { id: "fox", emoji: "🦊", label: "Fox", color: "bg-warning/30" },
+  { id: "lion", emoji: "🦁", label: "Lion", color: "bg-warning/20" },
+  { id: "panda", emoji: "🐼", label: "Panda", color: "bg-muted" },
+  { id: "rabbit", emoji: "🐰", label: "Rabbit", color: "bg-destructive/10" },
+  { id: "koala", emoji: "🐨", label: "Koala", color: "bg-muted" },
+  { id: "unicorn", emoji: "🦄", label: "Unicorn", color: "bg-primary/20" },
+  { id: "owl", emoji: "🦉", label: "Owl", color: "bg-warning/20" },
+  { id: "penguin", emoji: "🐧", label: "Penguin", color: "bg-muted" },
+  { id: "frog", emoji: "🐸", label: "Frog", color: "bg-success/20" },
   // Space & Nature
-  { id: "star", emoji: "⭐", label: "Star", color: "bg-yellow-100" },
-  { id: "rocket", emoji: "🚀", label: "Rocket", color: "bg-blue-100" },
-  { id: "planet", emoji: "🪐", label: "Planet", color: "bg-purple-100" },
-  { id: "rainbow", emoji: "🌈", label: "Rainbow", color: "bg-gradient-to-r from-red-100 via-yellow-100 to-blue-100" },
-  { id: "sun", emoji: "☀️", label: "Sun", color: "bg-yellow-100" },
-  { id: "moon", emoji: "🌙", label: "Moon", color: "bg-indigo-100" },
-  { id: "flower", emoji: "🌸", label: "Flower", color: "bg-pink-100" },
-  { id: "tree", emoji: "🌳", label: "Tree", color: "bg-green-100" },
+  { id: "star", emoji: "⭐", label: "Star", color: "bg-warning/15" },
+  { id: "rocket", emoji: "🚀", label: "Rocket", color: "bg-info/20" },
+  { id: "planet", emoji: "🪐", label: "Planet", color: "bg-primary/20" },
+  { id: "rainbow", emoji: "🌈", label: "Rainbow", color: "bg-gradient-to-r from-destructive/10 via-warning/10 to-info/10" },
+  { id: "sun", emoji: "☀️", label: "Sun", color: "bg-warning/15" },
+  { id: "moon", emoji: "🌙", label: "Moon", color: "bg-info/30" },
+  { id: "flower", emoji: "🌸", label: "Flower", color: "bg-destructive/10" },
+  { id: "tree", emoji: "🌳", label: "Tree", color: "bg-success/20" },
   // Fun
-  { id: "robot", emoji: "🤖", label: "Robot", color: "bg-slate-100" },
-  { id: "alien", emoji: "👽", label: "Alien", color: "bg-green-100" },
-  { id: "superhero", emoji: "🦸", label: "Hero", color: "bg-red-100" },
-  { id: "wizard", emoji: "🧙", label: "Wizard", color: "bg-purple-100" },
+  { id: "robot", emoji: "🤖", label: "Robot", color: "bg-muted" },
+  { id: "alien", emoji: "👽", label: "Alien", color: "bg-success/20" },
+  { id: "superhero", emoji: "🦸", label: "Hero", color: "bg-destructive/20" },
+  { id: "wizard", emoji: "🧙", label: "Wizard", color: "bg-primary/20" },
 ];
 
 interface AvatarPickerProps {

@@ -16,6 +16,7 @@ import {
   Area,
   AreaChart,
 } from "recharts";
+import { colors } from "@/lib/colors";
 
 interface SubjectProgress {
   subjectName: string;
@@ -47,7 +48,7 @@ export function SubjectProgressChart({ data }: { data: SubjectProgress[] }) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={chartData} layout="vertical">
-        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+        <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
         <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12 }} />
         <YAxis
           dataKey="name"
@@ -58,7 +59,7 @@ export function SubjectProgressChart({ data }: { data: SubjectProgress[] }) {
         <Tooltip
           contentStyle={{
             backgroundColor: "#fff",
-            border: "1px solid #e5e7eb",
+            border: `1px solid ${colors.chart.grid}`,
             borderRadius: "8px",
           }}
           formatter={(value, name) => [
@@ -66,8 +67,8 @@ export function SubjectProgressChart({ data }: { data: SubjectProgress[] }) {
             name === "mastery" ? "Mastery" : "Progress",
           ]}
         />
-        <Bar dataKey="progress" fill="#93c5fd" radius={[0, 4, 4, 0]} name="Progress" />
-        <Bar dataKey="mastery" fill="#3b82f6" radius={[0, 4, 4, 0]} name="Mastery" />
+        <Bar dataKey="progress" fill={colors.primary.muted} radius={[0, 4, 4, 0]} name="Progress" />
+        <Bar dataKey="mastery" fill={colors.chart.blue} radius={[0, 4, 4, 0]} name="Mastery" />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -79,17 +80,17 @@ export function WeeklyActivityChart({ data }: { data: ActivityData[] }) {
       <AreaChart data={data}>
         <defs>
           <linearGradient id="colorMinutes" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+            <stop offset="5%" stopColor={colors.chart.purple} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={colors.chart.purple} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+        <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
         <XAxis dataKey="day" tick={{ fontSize: 12 }} />
         <YAxis tick={{ fontSize: 12 }} />
         <Tooltip
           contentStyle={{
             backgroundColor: "#fff",
-            border: "1px solid #e5e7eb",
+            border: `1px solid ${colors.chart.grid}`,
             borderRadius: "8px",
           }}
           formatter={(value, name) => [
@@ -100,14 +101,14 @@ export function WeeklyActivityChart({ data }: { data: ActivityData[] }) {
         <Area
           type="monotone"
           dataKey="minutes"
-          stroke="#8b5cf6"
+          stroke={colors.chart.purple}
           fillOpacity={1}
           fill="url(#colorMinutes)"
         />
         <Line
           type="monotone"
           dataKey="lessons"
-          stroke="#10b981"
+          stroke={colors.chart.green}
           strokeWidth={2}
           dot={{ r: 4 }}
         />
@@ -136,7 +137,7 @@ export function MasteryPieChart({ data }: { data: MasteryBreakdown[] }) {
         <Tooltip
           contentStyle={{
             backgroundColor: "#fff",
-            border: "1px solid #e5e7eb",
+            border: `1px solid ${colors.chart.grid}`,
             borderRadius: "8px",
           }}
           formatter={(value) => [`${value ?? 0} concepts`, "Count"]}
@@ -183,7 +184,7 @@ export function CircularProgress({ value, label, color }: { value: number; label
             cx="50"
             cy="50"
             r={radius}
-            stroke="#e5e7eb"
+            stroke={colors.chart.grid}
             strokeWidth="8"
             fill="none"
           />

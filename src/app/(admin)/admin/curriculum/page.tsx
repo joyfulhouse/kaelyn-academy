@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Pencil, Trash2, Eye } from "lucide-react";
+import { colors } from "@/lib/colors";
 import {
   SubjectDialog,
   UnitDialog,
@@ -380,7 +381,7 @@ export default function AdminCurriculumPage() {
                     <div className="flex items-start justify-between mb-3">
                       <div
                         className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl"
-                        style={{ backgroundColor: subject.color || "#6b7280" }}
+                        style={{ backgroundColor: subject.color || colors.neutral[500] }}
                       >
                         {subject.name[0]}
                       </div>
@@ -485,7 +486,7 @@ export default function AdminCurriculumPage() {
                           <td className="py-4">
                             <span
                               className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                              style={{ backgroundColor: subject?.color || "#6b7280" }}
+                              style={{ backgroundColor: subject?.color || colors.neutral[500] }}
                             >
                               {subject?.name || "Unknown"}
                             </span>

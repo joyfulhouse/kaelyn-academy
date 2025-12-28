@@ -9,6 +9,7 @@ import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text, Line } from "@react-three/drei";
 import * as THREE from "three";
+import { colors } from "@/lib/colors";
 
 export interface AtomConfig {
   name: string;
@@ -116,8 +117,8 @@ function Nucleus({
         <mesh key={i} position={particle.position}>
           <sphereGeometry args={[particles.particleSize, 16, 16]} />
           <meshStandardMaterial
-            color={particle.isProton ? "#ef4444" : "#3b82f6"}
-            emissive={particle.isProton ? "#ef4444" : "#3b82f6"}
+            color={particle.isProton ? colors.three.axisX : colors.three.axisZ}
+            emissive={particle.isProton ? colors.three.axisX : colors.three.axisZ}
             emissiveIntensity={0.2}
           />
         </mesh>
@@ -181,7 +182,7 @@ function ElectronShell({
       {showOrbits && (
         <Line
           points={orbitPoints}
-          color="#666666"
+          color={colors.three.textMuted}
           lineWidth={1}
           opacity={0.5}
           transparent
@@ -204,8 +205,8 @@ function ElectronShell({
           >
             <sphereGeometry args={[size * 0.08, 16, 16]} />
             <meshStandardMaterial
-              color="#22c55e"
-              emissive="#22c55e"
+              color={colors.three.axisY}
+              emissive={colors.three.axisY}
               emissiveIntensity={0.5}
             />
           </mesh>
@@ -251,7 +252,7 @@ export function AtomModel({
           <Text
             position={[0, -size * 1.5, 0]}
             fontSize={0.4}
-            color="#333333"
+            color={colors.three.text}
             anchorX="center"
           >
             {atomConfig.name} ({atomConfig.symbol})
@@ -259,7 +260,7 @@ export function AtomModel({
           <Text
             position={[0, -size * 1.9, 0]}
             fontSize={0.25}
-            color="#666666"
+            color={colors.three.textMuted}
             anchorX="center"
           >
             {`Protons: ${atomConfig.protons} | Neutrons: ${atomConfig.neutrons}`}
@@ -267,7 +268,7 @@ export function AtomModel({
           <Text
             position={[0, -size * 2.2, 0]}
             fontSize={0.25}
-            color="#666666"
+            color={colors.three.textMuted}
             anchorX="center"
           >
             {`Electrons: ${atomConfig.electrons.reduce((a, b) => a + b, 0)} (${atomConfig.electrons.join(", ")})`}

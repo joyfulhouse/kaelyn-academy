@@ -462,7 +462,7 @@ export const mathCurriculum: Subject = {
   slug: "math",
   description: "Comprehensive K-12 mathematics curriculum aligned with Common Core State Standards",
   icon: "🔢",
-  color: "from-blue-500 to-cyan-500",
+  color: "from-primary to-info",
   grades: {
     0: kindergartenUnits,
     1: grade1Units,

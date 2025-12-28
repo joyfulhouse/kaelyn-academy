@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text, Edges } from "@react-three/drei";
 import * as THREE from "three";
+import { colors } from "@/lib/colors";
 
 export type ShapeType = "cube" | "sphere" | "cylinder" | "cone" | "pyramid" | "torus";
 
@@ -151,7 +152,7 @@ function ShapeMesh({
 export function GeometricShapes({
   shape = "cube",
   size = 2,
-  color = "#3b82f6",
+  color = colors.three.default,
   wireframe = false,
   showDimensions = true,
   animate = false,
@@ -169,7 +170,7 @@ export function GeometricShapes({
         <ShapeMesh
           shape={shape}
           size={size}
-          color={hovered ? "#ef4444" : color}
+          color={hovered ? colors.three.axisX : color}
           wireframe={wireframe}
           showEdges={showEdges}
           animate={animate}
@@ -182,7 +183,7 @@ export function GeometricShapes({
           <Text
             position={[0, -size - 0.5, 0]}
             fontSize={0.25}
-            color="#666666"
+            color={colors.three.textMuted}
             anchorX="center"
             anchorY="top"
           >
@@ -191,7 +192,7 @@ export function GeometricShapes({
           <Text
             position={[0, -size - 0.9, 0]}
             fontSize={0.2}
-            color="#888888"
+            color={colors.three.floor}
             anchorX="center"
             anchorY="top"
           >

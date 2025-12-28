@@ -390,7 +390,7 @@ export const readingCurriculum: Subject = {
   slug: "reading",
   description: "Comprehensive K-12 English Language Arts curriculum aligned with Common Core ELA Standards",
   icon: "📚",
-  color: "from-green-500 to-emerald-500",
+  color: "from-success to-success/80",
   grades: {
     0: kindergartenUnits,
     1: grade1Units,

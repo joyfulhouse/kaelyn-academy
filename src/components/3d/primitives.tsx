@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text, RoundedBox, Sphere, Cylinder, Cone, Torus } from "@react-three/drei";
 import type { Mesh, Group } from "three";
+import { colors } from "@/lib/colors";
 
 // Animated box that responds to hover/click
 interface InteractiveBoxProps {
@@ -19,8 +20,8 @@ interface InteractiveBoxProps {
 export function InteractiveBox({
   position = [0, 0, 0],
   size = [1, 1, 1],
-  color = "#3b82f6",
-  hoverColor = "#60a5fa",
+  color = colors.three.default,
+  hoverColor = colors.three.hover,
   onClick,
   animate = true,
   label,
@@ -78,8 +79,8 @@ interface InteractiveSphereProps {
 export function InteractiveSphere({
   position = [0, 0, 0],
   radius = 0.5,
-  color = "#10b981",
-  hoverColor = "#34d399",
+  color = colors.success.DEFAULT,
+  hoverColor = colors.success.light,
   onClick,
   animate = true,
   segments = 32,
@@ -148,7 +149,7 @@ interface CountingObjectsProps {
 export function CountingObjects({
   count,
   type = "sphere",
-  color = "#f59e0b",
+  color = colors.warning.DEFAULT,
   spacing = 0.8,
   position = [0, 0, 0],
 }: CountingObjectsProps) {
@@ -210,8 +211,8 @@ export function FractionVisualizer({
   numerator,
   denominator,
   position = [0, 0, 0],
-  filledColor = "#3b82f6",
-  emptyColor = "#e5e7eb",
+  filledColor = colors.three.default,
+  emptyColor = colors.three.disabled,
 }: FractionVisualizerProps) {
   const pieces = Array.from({ length: denominator }).map((_, i) => ({
     filled: i < numerator,
@@ -255,35 +256,35 @@ export function AxisHelper({ size = 3, showLabels = true }: AxisHelperProps) {
     <group>
       {/* X axis - Red */}
       <Cylinder args={[0.02, 0.02, size, 8]} position={[size / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <meshBasicMaterial color="#ef4444" />
+        <meshBasicMaterial color={colors.three.axisX} />
       </Cylinder>
       <Cone args={[0.08, 0.2, 8]} position={[size, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
-        <meshBasicMaterial color="#ef4444" />
+        <meshBasicMaterial color={colors.three.axisX} />
       </Cone>
       {showLabels && (
-        <Text position={[size + 0.3, 0, 0]} fontSize={0.2} color="#ef4444">X</Text>
+        <Text position={[size + 0.3, 0, 0]} fontSize={0.2} color={colors.three.axisX}>X</Text>
       )}
 
       {/* Y axis - Green */}
       <Cylinder args={[0.02, 0.02, size, 8]} position={[0, size / 2, 0]}>
-        <meshBasicMaterial color="#22c55e" />
+        <meshBasicMaterial color={colors.three.axisY} />
       </Cylinder>
       <Cone args={[0.08, 0.2, 8]} position={[0, size, 0]}>
-        <meshBasicMaterial color="#22c55e" />
+        <meshBasicMaterial color={colors.three.axisY} />
       </Cone>
       {showLabels && (
-        <Text position={[0, size + 0.3, 0]} fontSize={0.2} color="#22c55e">Y</Text>
+        <Text position={[0, size + 0.3, 0]} fontSize={0.2} color={colors.three.axisY}>Y</Text>
       )}
 
       {/* Z axis - Blue */}
       <Cylinder args={[0.02, 0.02, size, 8]} position={[0, 0, size / 2]} rotation={[Math.PI / 2, 0, 0]}>
-        <meshBasicMaterial color="#3b82f6" />
+        <meshBasicMaterial color={colors.three.axisZ} />
       </Cylinder>
       <Cone args={[0.08, 0.2, 8]} position={[0, 0, size]} rotation={[Math.PI / 2, 0, 0]}>
-        <meshBasicMaterial color="#3b82f6" />
+        <meshBasicMaterial color={colors.three.axisZ} />
       </Cone>
       {showLabels && (
-        <Text position={[0, 0, size + 0.3]} fontSize={0.2} color="#3b82f6">Z</Text>
+        <Text position={[0, 0, size + 0.3]} fontSize={0.2} color={colors.three.axisZ}>Z</Text>
       )}
     </group>
   );
@@ -296,7 +297,7 @@ interface GridFloorProps {
   color?: string;
 }
 
-export function GridFloor({ size = 10, divisions = 10, color = "#888888" }: GridFloorProps) {
+export function GridFloor({ size = 10, divisions = 10, color = colors.three.floor }: GridFloorProps) {
   return (
     <gridHelper args={[size, divisions, color, color]} position={[0, -0.01, 0]} />
   );
@@ -311,7 +312,7 @@ interface HighlightRingProps {
 
 export function HighlightRing({
   position = [0, 0, 0],
-  color = "#fbbf24",
+  color = colors.three.highlight,
   radius = 1,
 }: HighlightRingProps) {
   const meshRef = useRef<Mesh>(null);

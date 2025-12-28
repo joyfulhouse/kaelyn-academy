@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text, Cylinder, Sphere, Line } from "@react-three/drei";
 import type { Group } from "three";
+import { colors } from "@/lib/colors";
 
 interface NumberLineProps {
   min?: number;
@@ -45,18 +46,18 @@ export function NumberLine({
           [min * unitScale - 0.5, 0, 0],
           [max * unitScale + 0.5, 0, 0],
         ]}
-        color="#374151"
+        color={colors.neutral[700]}
         lineWidth={3}
       />
 
       {/* Arrows at ends */}
       <mesh position={[max * unitScale + 0.5, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
         <coneGeometry args={[0.1, 0.3, 8]} />
-        <meshBasicMaterial color="#374151" />
+        <meshBasicMaterial color={colors.neutral[700]} />
       </mesh>
       <mesh position={[min * unitScale - 0.5, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
         <coneGeometry args={[0.1, 0.3, 8]} />
-        <meshBasicMaterial color="#374151" />
+        <meshBasicMaterial color={colors.neutral[700]} />
       </mesh>
 
       {/* Number markers */}
@@ -74,14 +75,14 @@ export function NumberLine({
               rotation={[0, 0, 0]}
               position={[0, isZero ? 0 : -0.1, 0]}
             >
-              <meshBasicMaterial color={isZero ? "#ef4444" : "#6b7280"} />
+              <meshBasicMaterial color={isZero ? colors.three.axisX : colors.three.textMuted} />
             </Cylinder>
 
             {/* Number label */}
             <Text
               position={[0, -0.5, 0]}
               fontSize={isZero ? 0.25 : 0.2}
-              color={isZero ? "#ef4444" : isHighlighted ? "#3b82f6" : "#374151"}
+              color={isZero ? colors.three.axisX : isHighlighted ? colors.three.default : colors.neutral[700]}
               anchorX="center"
               anchorY="top"
               fontWeight={isZero || isHighlighted ? "bold" : "normal"}
@@ -101,12 +102,12 @@ export function NumberLine({
                 <meshStandardMaterial
                   color={
                     isHighlighted
-                      ? "#3b82f6"
+                      ? colors.three.default
                       : isHovered
-                      ? "#60a5fa"
-                      : "#d1d5db"
+                      ? colors.three.hover
+                      : colors.three.disabled
                   }
-                  emissive={isHighlighted ? "#3b82f6" : "#000000"}
+                  emissive={isHighlighted ? colors.three.default : "#000000"}
                   emissiveIntensity={isHighlighted ? 0.3 : 0}
                 />
               </Sphere>
@@ -116,7 +117,7 @@ export function NumberLine({
             {isHighlighted && (
               <mesh position={[0, 0.3, 0]} rotation={[Math.PI / 2, 0, 0]}>
                 <torusGeometry args={[0.25, 0.03, 8, 32]} />
-                <meshBasicMaterial color="#fbbf24" transparent opacity={0.8} />
+                <meshBasicMaterial color={colors.three.highlight} transparent opacity={0.8} />
               </mesh>
             )}
           </group>

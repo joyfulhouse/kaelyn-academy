@@ -348,7 +348,7 @@ export const historyCurriculum: Subject = {
   slug: "history",
   description: "Comprehensive K-12 history and social studies curriculum aligned with C3 Framework",
   icon: "🏛️",
-  color: "from-orange-500 to-amber-500",
+  color: "from-warning to-warning/80",
   grades: {
     0: kindergartenUnits,
     1: grade1Units,

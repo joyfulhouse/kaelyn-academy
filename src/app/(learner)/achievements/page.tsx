@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { colors } from "@/lib/colors";
 
 // Achievement icon mapping
 const achievementIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -87,7 +88,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   // Map iconUrl to icon component, fallback to type-based icon
   const iconName = achievement.iconUrl?.replace("icon:", "") || "award";
   const IconComponent = achievementIcons[iconName] || Award;
-  const color = typeColors[achievement.type] || "#6b7280";
+  const color = typeColors[achievement.type] || colors.neutral[500];
 
   return (
     <Card className={`relative ${achievement.earned ? "" : "opacity-60"}`}>
@@ -501,13 +502,13 @@ export default function AchievementsPage() {
             <div className="flex items-center gap-4">
               <div
                 className="p-3 rounded-xl"
-                style={{ backgroundColor: `${typeColors[nextAchievement.type] || "#6b7280"}20` }}
+                style={{ backgroundColor: `${typeColors[nextAchievement.type] || colors.neutral[500]}20` }}
               >
                 {(() => {
                   const iconName = nextAchievement.iconUrl?.replace("icon:", "") || "award";
                   const Icon = achievementIcons[iconName] || Award;
                   return (
-                    <div style={{ color: typeColors[nextAchievement.type] || "#6b7280" }}>
+                    <div style={{ color: typeColors[nextAchievement.type] || colors.neutral[500] }}>
                       <Icon className="h-8 w-8" />
                     </div>
                   );

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text, RoundedBox } from "@react-three/drei";
 import type { Group } from "three";
+import { colors } from "@/lib/colors";
 
 interface MultiplicationGridProps {
   factor1: number;
@@ -21,8 +22,8 @@ export function MultiplicationGrid({
   showProduct = true,
   animated = true,
   cellSize = 0.4,
-  cellColor = "#3b82f6",
-  highlightColor = "#22c55e",
+  cellColor = colors.three.default,
+  highlightColor = colors.three.selected,
 }: MultiplicationGridProps) {
   const groupRef = useRef<Group>(null);
   const [animatedCount, setAnimatedCount] = useState(animated ? 0 : factor1 * factor2);
@@ -61,7 +62,7 @@ export function MultiplicationGrid({
               castShadow
             >
               <meshStandardMaterial
-                color={isVisible ? cellColor : "#d1d5db"}
+                color={isVisible ? cellColor : colors.three.disabled}
                 transparent={!isVisible}
                 opacity={isVisible ? 1 : 0}
               />
@@ -74,7 +75,7 @@ export function MultiplicationGrid({
       <Text
         position={[-offsetX - spacing, 0, 0]}
         fontSize={0.3}
-        color="#1f2937"
+        color={colors.three.text}
         anchorX="right"
         anchorY="middle"
       >
@@ -85,7 +86,7 @@ export function MultiplicationGrid({
       <Text
         position={[0, 0, offsetZ + spacing]}
         fontSize={0.3}
-        color="#1f2937"
+        color={colors.three.text}
         anchorX="center"
         anchorY="middle"
         rotation={[-Math.PI / 2, 0, 0]}
@@ -97,7 +98,7 @@ export function MultiplicationGrid({
       <Text
         position={[-offsetX - spacing * 1.5, 0, offsetZ + spacing]}
         fontSize={0.25}
-        color="#6b7280"
+        color={colors.three.textMuted}
         anchorX="center"
         anchorY="middle"
       >
@@ -109,7 +110,7 @@ export function MultiplicationGrid({
         <group position={[0, cellSize + 0.5, 0]}>
           <Text
             fontSize={0.4}
-            color={animatedCount >= product ? highlightColor : "#9ca3af"}
+            color={animatedCount >= product ? highlightColor : colors.neutral[400]}
             anchorX="center"
             anchorY="middle"
             fontWeight="bold"
@@ -147,7 +148,7 @@ export function MultiplicationTable({
           key={`header-${i + 1}`}
           position={[(i + 1) * spacing - (maxFactor * spacing) / 2, 0, -spacing]}
           fontSize={0.25}
-          color="#6b7280"
+          color={colors.three.textMuted}
           anchorX="center"
           anchorY="middle"
           fontWeight="bold"
@@ -162,7 +163,7 @@ export function MultiplicationTable({
           key={`col-header-${i + 1}`}
           position={[-spacing, 0, i * spacing - ((maxFactor - 1) * spacing) / 2]}
           fontSize={0.25}
-          color="#6b7280"
+          color={colors.three.textMuted}
           anchorX="center"
           anchorY="middle"
           fontWeight="bold"
@@ -195,17 +196,17 @@ export function MultiplicationTable({
                 <meshStandardMaterial
                   color={
                     isHighlighted
-                      ? "#22c55e"
+                      ? colors.three.selected
                       : isHovered
-                      ? "#60a5fa"
-                      : "#e5e7eb"
+                      ? colors.three.hover
+                      : colors.neutral[200]
                   }
                 />
               </RoundedBox>
               <Text
                 position={[0, 0.1, 0]}
                 fontSize={0.18}
-                color={isHighlighted || isHovered ? "#ffffff" : "#374151"}
+                color={isHighlighted || isHovered ? "#ffffff" : colors.neutral[700]}
                 anchorX="center"
                 anchorY="middle"
               >

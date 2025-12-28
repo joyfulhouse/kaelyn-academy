@@ -19,6 +19,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { colors } from "@/lib/colors";
 
 interface PlatformStats {
   totalUsers: number;
@@ -265,28 +266,28 @@ export default function AdminAnalytics() {
               <AreaChart data={userGrowth}>
                 <defs>
                   <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    <stop offset="5%" stopColor={colors.chart.blue} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={colors.chart.blue} stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    <stop offset="5%" stopColor={colors.chart.green} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={colors.chart.green} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#fff",
-                    border: "1px solid #e5e7eb",
+                    border: `1px solid ${colors.chart.grid}`,
                     borderRadius: "8px",
                   }}
                 />
                 <Area
                   type="monotone"
                   dataKey="users"
-                  stroke="#3b82f6"
+                  stroke={colors.chart.blue}
                   fillOpacity={1}
                   fill="url(#colorUsers)"
                   name="Total Users"
@@ -294,7 +295,7 @@ export default function AdminAnalytics() {
                 <Area
                   type="monotone"
                   dataKey="active"
-                  stroke="#10b981"
+                  stroke={colors.chart.green}
                   fillOpacity={1}
                   fill="url(#colorActive)"
                   name="Active Users"
@@ -329,7 +330,7 @@ export default function AdminAnalytics() {
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#fff",
-                    border: "1px solid #e5e7eb",
+                    border: `1px solid ${colors.chart.grid}`,
                     borderRadius: "8px",
                   }}
                   formatter={(value) => [formatNumber(Number(value ?? 0)), "Users"]}
@@ -364,14 +365,14 @@ export default function AdminAnalytics() {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dailyActivity}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
                 <XAxis dataKey="day" tick={{ fontSize: 12 }} />
                 <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#fff",
-                    border: "1px solid #e5e7eb",
+                    border: `1px solid ${colors.chart.grid}`,
                     borderRadius: "8px",
                   }}
                   formatter={(value, name) => {
@@ -386,7 +387,7 @@ export default function AdminAnalytics() {
                   yAxisId="left"
                   type="monotone"
                   dataKey="lessons"
-                  stroke="#3b82f6"
+                  stroke={colors.chart.blue}
                   strokeWidth={2}
                   dot={false}
                   name="lessons"
@@ -395,7 +396,7 @@ export default function AdminAnalytics() {
                   yAxisId="right"
                   type="monotone"
                   dataKey="time"
-                  stroke="#10b981"
+                  stroke={colors.chart.green}
                   strokeWidth={2}
                   dot={false}
                   name="time"
@@ -416,7 +417,7 @@ export default function AdminAnalytics() {
           {organizationPerformance.length > 0 && organizationPerformance[0].students > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={organizationPerformance} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12 }} />
                 <YAxis
                   dataKey="name"
@@ -427,7 +428,7 @@ export default function AdminAnalytics() {
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#fff",
-                    border: "1px solid #e5e7eb",
+                    border: `1px solid ${colors.chart.grid}`,
                     borderRadius: "8px",
                   }}
                   formatter={(value, name) => [
@@ -435,7 +436,7 @@ export default function AdminAnalytics() {
                     name === "mastery" ? "Mastery" : "Students",
                   ]}
                 />
-                <Bar dataKey="mastery" fill="#8b5cf6" radius={[0, 4, 4, 0]} name="mastery" />
+                <Bar dataKey="mastery" fill={colors.chart.purple} radius={[0, 4, 4, 0]} name="mastery" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
