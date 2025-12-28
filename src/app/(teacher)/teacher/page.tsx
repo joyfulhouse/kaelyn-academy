@@ -128,10 +128,10 @@ export default function TeacherDashboard() {
   const displaySubjectDistribution = subjectDistribution.length > 0
     ? subjectDistribution
     : [
-        { name: "Math", value: 0, color: "#3b82f6" },
-        { name: "Reading", value: 0, color: "#10b981" },
-        { name: "Science", value: 0, color: "#8b5cf6" },
-        { name: "History", value: 0, color: "#f59e0b" },
+        { name: "Math", value: 0, color: "hsl(var(--info))" },
+        { name: "Reading", value: 0, color: "hsl(var(--success))" },
+        { name: "Science", value: 0, color: "hsl(var(--primary))" },
+        { name: "History", value: 0, color: "hsl(var(--warning))" },
       ];
 
   if (loading) {
@@ -166,38 +166,38 @@ export default function TeacherDashboard() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+        <Card className="border-0 shadow-md bg-role-teacher text-white">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Users className="h-4 w-4" />
-              <span className="text-indigo-100 text-sm">Total Students</span>
+              <span className="text-white/80 text-sm">Total Students</span>
             </div>
             <div className="text-3xl font-bold">{summary.totalStudents}</div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-violet-500 to-violet-600 text-white">
+        <Card className="border-0 shadow-md bg-info text-white">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="h-4 w-4" />
-              <span className="text-violet-100 text-sm">Classes</span>
+              <span className="text-white/80 text-sm">Classes</span>
             </div>
             <div className="text-3xl font-bold">{summary.totalClasses}</div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+        <Card className="border-0 shadow-md bg-success text-white">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="h-4 w-4" />
-              <span className="text-purple-100 text-sm">Avg. Progress</span>
+              <span className="text-white/80 text-sm">Avg. Progress</span>
             </div>
             <div className="text-3xl font-bold">{summary.averageProgress}%</div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 text-white">
+        <Card className="border-0 shadow-md bg-warning text-white">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <AlertTriangle className="h-4 w-4" />
-              <span className="text-fuchsia-100 text-sm">Need Attention</span>
+              <span className="text-white/80 text-sm">Need Attention</span>
             </div>
             <div className="text-3xl font-bold">{summary.needAttention}</div>
           </CardContent>
@@ -246,8 +246,8 @@ export default function TeacherDashboard() {
                       name === "progress" ? "Progress" : "Mastery",
                     ]}
                   />
-                  <Bar dataKey="progress" fill="#818cf8" radius={[4, 4, 0, 0]} name="Progress" />
-                  <Bar dataKey="mastery" fill="#6366f1" radius={[4, 4, 0, 0]} name="Mastery" />
+                  <Bar dataKey="progress" fill="hsl(var(--role-teacher))" radius={[4, 4, 0, 0]} name="Progress" />
+                  <Bar dataKey="mastery" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Mastery" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -334,8 +334,8 @@ export default function TeacherDashboard() {
                     alert.type === "struggling"
                       ? "bg-destructive/5 border-destructive/20"
                       : alert.type === "inactive"
-                      ? "bg-yellow-500/5 border-yellow-500/20"
-                      : "bg-green-500/5 border-green-500/20"
+                      ? "bg-warning/5 border-warning/20"
+                      : "bg-success/5 border-success/20"
                   }`}
                 >
                   <div className="flex items-center gap-4">
@@ -344,8 +344,8 @@ export default function TeacherDashboard() {
                         alert.type === "struggling"
                           ? "bg-destructive/10 text-destructive"
                           : alert.type === "inactive"
-                          ? "bg-yellow-500/10 text-yellow-600"
-                          : "bg-green-500/10 text-green-600"
+                          ? "bg-warning/10 text-warning"
+                          : "bg-success/10 text-success"
                       }`}
                     >
                       {alert.type === "struggling" ? (
@@ -371,8 +371,8 @@ export default function TeacherDashboard() {
                       alert.type === "struggling"
                         ? "border-destructive/30 text-destructive hover:bg-destructive/10"
                         : alert.type === "inactive"
-                        ? "border-yellow-500/30 text-yellow-600 hover:bg-yellow-500/10"
-                        : "border-green-500/30 text-green-600 hover:bg-green-500/10"
+                        ? "border-warning/30 text-warning hover:bg-warning/10"
+                        : "border-success/30 text-success hover:bg-success/10"
                     }
                   >
                     <Link href={`/teacher/students?id=${alert.learnerId}`}>
@@ -428,7 +428,7 @@ export default function TeacherDashboard() {
                       </div>
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-indigo-400 to-violet-500 rounded-full"
+                          className="h-full bg-role-teacher rounded-full"
                           style={{ width: `${cls.averageProgress}%` }}
                         />
                       </div>
@@ -440,7 +440,7 @@ export default function TeacherDashboard() {
                       </div>
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-purple-400 to-fuchsia-500 rounded-full"
+                          className="h-full bg-primary rounded-full"
                           style={{ width: `${cls.averageMastery}%` }}
                         />
                       </div>

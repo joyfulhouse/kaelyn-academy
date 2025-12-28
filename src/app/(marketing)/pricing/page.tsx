@@ -157,7 +157,7 @@ export default function PricingPage() {
                   {familyFeatures.map((feature) => (
                     <li key={feature.name} className="flex items-center gap-3">
                       {feature.included ? (
-                        <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                        <Check className="h-5 w-5 text-success flex-shrink-0" />
                       ) : (
                         <X className="h-5 w-5 text-muted-foreground/50 flex-shrink-0" />
                       )}
@@ -211,7 +211,7 @@ export default function PricingPage() {
                 <ul className="space-y-3">
                   {schoolFeatures.slice(0, 11).map((feature) => (
                     <li key={feature.name} className="flex items-center gap-3">
-                      <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <Check className="h-5 w-5 text-success flex-shrink-0" />
                       <span className="text-foreground">{feature.name}</span>
                     </li>
                   ))}

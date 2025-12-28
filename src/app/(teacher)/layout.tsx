@@ -28,9 +28,9 @@ export default async function TeacherLayout({
     .toUpperCase() || "?";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-violet-50">
+    <div className="min-h-screen bg-muted/30">
       {/* Teacher Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-indigo-100 sticky top-0 z-50">
+      <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-6">
@@ -42,38 +42,38 @@ export default async function TeacherLayout({
                   height={36}
                   className="rounded-lg"
                 />
-                <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                <span className="text-xl font-bold text-role-teacher">
                   Teacher Dashboard
                 </span>
               </Link>
               <nav className="hidden md:flex gap-4">
                 <Link
                   href="/teacher"
-                  className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-role-teacher transition-colors"
                 >
                   Overview
                 </Link>
                 <Link
                   href="/teacher/classes"
-                  className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-role-teacher transition-colors"
                 >
                   My Classes
                 </Link>
                 <Link
                   href="/teacher/students"
-                  className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-role-teacher transition-colors"
                 >
                   Students
                 </Link>
                 <Link
                   href="/teacher/assignments"
-                  className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-role-teacher transition-colors"
                 >
                   Assignments
                 </Link>
                 <Link
                   href="/teacher/reports"
-                  className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-role-teacher transition-colors"
                 >
                   Reports
                 </Link>
@@ -81,14 +81,14 @@ export default async function TeacherLayout({
             </div>
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex flex-col items-end">
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-foreground">
                   {session.user.name}
                 </span>
-                <span className="text-xs text-gray-500">Teacher</span>
+                <span className="text-xs text-muted-foreground">Teacher</span>
               </div>
-              <Avatar className="h-10 w-10 border-2 border-indigo-200">
+              <Avatar className="h-10 w-10 border-2 border-role-teacher/30">
                 <AvatarImage src={session.user.image || undefined} />
-                <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
+                <AvatarFallback className="bg-role-teacher text-role-teacher-foreground">
                   {initials}
                 </AvatarFallback>
               </Avatar>

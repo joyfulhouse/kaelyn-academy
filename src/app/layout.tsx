@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider, ThemeInitScript } from "@/components/theme";
 import { SkipLink } from "@/components/a11y/skip-link";
 import { LiveRegionProvider } from "@/components/a11y/live-region";
 import { SessionProvider } from "@/components/providers/session-provider";
@@ -58,12 +58,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeInitScript />
+        <ThemeProvider>
           <SessionProvider>
             <LiveRegionProvider>
               <SkipLink href="#main-content">Skip to main content</SkipLink>

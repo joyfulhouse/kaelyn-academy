@@ -273,7 +273,7 @@ export function QuizComponent({
               <div
                 className={cn(
                   "flex items-center gap-1 text-sm",
-                  timeRemaining < 60 && "text-red-500 animate-pulse"
+                  timeRemaining < 60 && "text-destructive animate-pulse"
                 )}
               >
                 <Clock className="h-4 w-4" />
@@ -335,12 +335,12 @@ export function QuizComponent({
           <CardTitle className="flex items-center gap-2">
             {result.passed ? (
               <>
-                <Trophy className="h-6 w-6 text-yellow-500" />
+                <Trophy className="h-6 w-6 text-warning" />
                 Congratulations!
               </>
             ) : (
               <>
-                <AlertCircle className="h-6 w-6 text-orange-500" />
+                <AlertCircle className="h-6 w-6 text-warning" />
                 Keep Practicing!
               </>
             )}
@@ -353,7 +353,7 @@ export function QuizComponent({
             <div
               className={cn(
                 "text-5xl font-bold mb-2",
-                result.passed ? "text-green-600" : "text-orange-600"
+                result.passed ? "text-success" : "text-warning"
               )}
             >
               {result.percentage}%
@@ -595,21 +595,21 @@ function QuestionResultCard({
       className={cn(
         "p-4 rounded-lg border",
         result.correct
-          ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20"
-          : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20"
+          ? "border-success/30 bg-success/10"
+          : "border-destructive/30 bg-destructive/10"
       )}
     >
       <div className="flex items-start gap-3">
         <div
           className={cn(
             "w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5",
-            result.correct ? "bg-green-500" : "bg-red-500"
+            result.correct ? "bg-success" : "bg-destructive"
           )}
         >
           {result.correct ? (
-            <Check className="h-4 w-4 text-white" />
+            <Check className="h-4 w-4 text-success-foreground" />
           ) : (
-            <X className="h-4 w-4 text-white" />
+            <X className="h-4 w-4 text-destructive-foreground" />
           )}
         </div>
         <div className="flex-1">
@@ -619,7 +619,7 @@ function QuestionResultCard({
           <div className="mt-2 text-sm space-y-1">
             <p>
               <span className="text-muted-foreground">Your answer:</span>{" "}
-              <span className={result.correct ? "text-green-600" : "text-red-600"}>
+              <span className={result.correct ? "text-success" : "text-destructive"}>
                 {Array.isArray(result.answer)
                   ? result.answer.join(", ")
                   : result.answer || "(no answer)"}
@@ -628,7 +628,7 @@ function QuestionResultCard({
             {!result.correct && (
               <p>
                 <span className="text-muted-foreground">Correct answer:</span>{" "}
-                <span className="text-green-600">
+                <span className="text-success">
                   {Array.isArray(result.correctAnswer)
                     ? result.correctAnswer.join(", ")
                     : result.correctAnswer}

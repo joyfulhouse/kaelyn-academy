@@ -33,7 +33,7 @@ export default function COPPACompliancePage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10 text-success">
               <Baby className="h-8 w-8" />
             </div>
           </div>
@@ -45,7 +45,7 @@ export default function COPPACompliancePage() {
           </p>
           <Badge
             variant="outline"
-            className="text-green-600 border-green-300 dark:text-green-400 dark:border-green-800"
+            className="text-success border-success/30"
           >
             Updated for 2025 COPPA Rule Amendments
           </Badge>
@@ -55,9 +55,9 @@ export default function COPPACompliancePage() {
         </div>
 
         {/* What is COPPA */}
-        <Card className="mb-8 border-green-200 dark:border-green-900">
+        <Card className="mb-8 border-success/30">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
+            <CardTitle className="flex items-center gap-2 text-success">
               <Shield className="h-5 w-5" />
               What is COPPA?
             </CardTitle>
@@ -346,13 +346,13 @@ export default function COPPACompliancePage() {
               amendments:
             </p>
 
-            <Card className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
+            <Card className="mb-6 border-warning/30 bg-warning/10">
               <CardContent className="p-6">
-                <h4 className="font-semibold text-amber-800 dark:text-amber-200 mb-3 flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5" />
+                <h4 className="font-semibold text-warning-foreground mb-3 flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-warning" />
                   School Consent Limitations
                 </h4>
-                <ul className="list-disc pl-6 text-amber-700 dark:text-amber-300 space-y-2 text-sm">
+                <ul className="list-disc pl-6 text-warning-foreground space-y-2 text-sm">
                   <li>
                     School consent applies ONLY to data used for educational
                     purposes within the school context

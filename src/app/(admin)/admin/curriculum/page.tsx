@@ -232,7 +232,7 @@ export default function AdminCurriculumPage() {
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
@@ -240,10 +240,10 @@ export default function AdminCurriculumPage() {
   if (error && !data) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Curriculum Management</h1>
+        <h1 className="text-3xl font-bold text-foreground">Curriculum Management</h1>
         <Card className="border-0 shadow-md">
           <CardContent className="pt-6 text-center">
-            <p className="text-red-600">{error}</p>
+            <p className="text-destructive">{error}</p>
             <Button onClick={fetchData} className="mt-4">
               Try Again
             </Button>
@@ -273,12 +273,12 @@ export default function AdminCurriculumPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Curriculum Management</h1>
-          <p className="text-gray-600 mt-1">Manage subjects, units, and lessons</p>
+          <h1 className="text-3xl font-bold text-foreground">Curriculum Management</h1>
+          <p className="text-muted-foreground mt-1">Manage subjects, units, and lessons</p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button>
               <Plus className="h-4 w-4 mr-2" />
               Create Content
             </Button>
@@ -303,26 +303,26 @@ export default function AdminCurriculumPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">{stats.totalSubjects}</div>
-            <div className="text-sm text-gray-500">Subjects</div>
+            <div className="text-2xl font-bold text-foreground">{stats.totalSubjects}</div>
+            <div className="text-sm text-muted-foreground">Subjects</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.totalUnits}</div>
-            <div className="text-sm text-gray-500">Units</div>
+            <div className="text-2xl font-bold text-primary">{stats.totalUnits}</div>
+            <div className="text-sm text-muted-foreground">Units</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.totalLessons}</div>
-            <div className="text-sm text-gray-500">Total Lessons</div>
+            <div className="text-2xl font-bold text-success">{stats.totalLessons}</div>
+            <div className="text-sm text-muted-foreground">Total Lessons</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{publishedSubjects}/{stats.totalSubjects}</div>
-            <div className="text-sm text-gray-500">Published</div>
+            <div className="text-2xl font-bold text-info">{publishedSubjects}/{stats.totalSubjects}</div>
+            <div className="text-sm text-muted-foreground">Published</div>
           </CardContent>
         </Card>
       </div>
@@ -363,7 +363,7 @@ export default function AdminCurriculumPage() {
           </CardHeader>
           <CardContent>
             {filteredSubjects.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-muted-foreground">
                 <p>No subjects found</p>
               </div>
             ) : (
@@ -371,7 +371,7 @@ export default function AdminCurriculumPage() {
                 {filteredSubjects.map((subject) => (
                   <div
                     key={subject.id}
-                    className="p-4 rounded-lg border hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+                    className="p-4 rounded-lg border border-border hover:border-primary/50 hover:shadow-md transition-all cursor-pointer"
                     onClick={() => {
                       setSelectedSubject(subject.id);
                       setActiveTab("units");
@@ -386,14 +386,14 @@ export default function AdminCurriculumPage() {
                       </div>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         subject.isPublished
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-600"
+                          ? "bg-success/20 text-success"
+                          : "bg-muted text-muted-foreground"
                       }`}>
                         {subject.isPublished ? "Published" : "Draft"}
                       </span>
                     </div>
-                    <h3 className="font-semibold text-gray-900">{subject.name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <h3 className="font-semibold text-foreground">{subject.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
                       {subject.unitsCount} units • {subject.lessonsCount} lessons
                     </p>
                     <div className="flex gap-2 mt-3">
@@ -412,7 +412,7 @@ export default function AdminCurriculumPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete("subject", subject.id, subject.name);
@@ -428,7 +428,7 @@ export default function AdminCurriculumPage() {
                 <button
                   type="button"
                   onClick={handleCreateSubject}
-                  className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-blue-300 transition-colors cursor-pointer flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 min-h-[180px]"
+                  className="p-4 rounded-lg border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer flex flex-col items-center justify-center text-muted-foreground hover:text-primary min-h-[180px]"
                 >
                   <Plus className="h-8 w-8 mb-2" />
                   <div className="font-medium">Add Subject</div>
@@ -460,28 +460,28 @@ export default function AdminCurriculumPage() {
           </CardHeader>
           <CardContent>
             {filteredUnits.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-muted-foreground">
                 <p>No units found</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b text-left">
-                      <th className="pb-3 font-medium text-gray-500 text-sm">Unit</th>
-                      <th className="pb-3 font-medium text-gray-500 text-sm">Subject</th>
-                      <th className="pb-3 font-medium text-gray-500 text-sm">Grade</th>
-                      <th className="pb-3 font-medium text-gray-500 text-sm">Lessons</th>
-                      <th className="pb-3 font-medium text-gray-500 text-sm">Status</th>
-                      <th className="pb-3 font-medium text-gray-500 text-sm">Actions</th>
+                    <tr className="border-b border-border text-left">
+                      <th className="pb-3 font-medium text-muted-foreground text-sm">Unit</th>
+                      <th className="pb-3 font-medium text-muted-foreground text-sm">Subject</th>
+                      <th className="pb-3 font-medium text-muted-foreground text-sm">Grade</th>
+                      <th className="pb-3 font-medium text-muted-foreground text-sm">Lessons</th>
+                      <th className="pb-3 font-medium text-muted-foreground text-sm">Status</th>
+                      <th className="pb-3 font-medium text-muted-foreground text-sm">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredUnits.map((unit) => {
                       const subject = subjects.find((s) => s.id === unit.subjectId);
                       return (
-                        <tr key={unit.id} className="border-b last:border-0 hover:bg-gray-50">
-                          <td className="py-4 font-medium">{unit.title}</td>
+                        <tr key={unit.id} className="border-b border-border last:border-0 hover:bg-muted/50">
+                          <td className="py-4 font-medium text-foreground">{unit.title}</td>
                           <td className="py-4">
                             <span
                               className="px-2 py-1 rounded-full text-xs font-medium text-white"
@@ -490,15 +490,15 @@ export default function AdminCurriculumPage() {
                               {subject?.name || "Unknown"}
                             </span>
                           </td>
-                          <td className="py-4 text-gray-600">
+                          <td className="py-4 text-muted-foreground">
                             {unit.gradeLevel === 0 ? "K" : `Grade ${unit.gradeLevel}`}
                           </td>
-                          <td className="py-4 text-gray-600">{unit.lessonsCount}</td>
+                          <td className="py-4 text-muted-foreground">{unit.lessonsCount}</td>
                           <td className="py-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               unit.isPublished
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-600"
+                                ? "bg-success/20 text-success"
+                                : "bg-muted text-muted-foreground"
                             }`}>
                               {unit.isPublished ? "Published" : "Draft"}
                             </span>
@@ -527,7 +527,7 @@ export default function AdminCurriculumPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                 onClick={() => handleDelete("unit", unit.id, unit.title)}
                               >
                                 <Trash2 className="h-3 w-3" />
@@ -572,7 +572,7 @@ export default function AdminCurriculumPage() {
           </CardHeader>
           <CardContent>
             {!selectedUnit ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-muted-foreground">
                 <div className="text-4xl mb-4">📚</div>
                 <p>Select a unit to view its lessons</p>
                 <Button variant="outline" className="mt-4" onClick={() => setActiveTab("units")}>
@@ -581,10 +581,10 @@ export default function AdminCurriculumPage() {
               </div>
             ) : lessonsLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : lessons.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-muted-foreground">
                 <div className="text-4xl mb-4">📝</div>
                 <p>No lessons in this unit yet</p>
                 <Button className="mt-4" onClick={handleCreateLesson}>
@@ -597,15 +597,15 @@ export default function AdminCurriculumPage() {
                 {lessons.map((lesson, index) => (
                   <div
                     key={lesson.id}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:border-blue-300 hover:shadow-sm transition-all"
+                    className="flex items-center justify-between p-4 rounded-lg border border-border hover:border-primary/50 hover:shadow-sm transition-all"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 font-semibold">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-semibold">
                         {index + 1}
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-900">{lesson.title}</h4>
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                        <h4 className="font-medium text-foreground">{lesson.title}</h4>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           {lesson.estimatedMinutes && (
                             <span>{lesson.estimatedMinutes} min</span>
                           )}
@@ -614,8 +614,8 @@ export default function AdminCurriculumPage() {
                           )}
                           <span className={`px-2 py-0.5 rounded-full text-xs ${
                             lesson.isPublished
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-600"
+                              ? "bg-success/20 text-success"
+                              : "bg-muted text-muted-foreground"
                           }`}>
                             {lesson.isPublished ? "Published" : "Draft"}
                           </span>
@@ -633,7 +633,7 @@ export default function AdminCurriculumPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleDelete("lesson", lesson.id, lesson.title)}
                       >
                         <Trash2 className="h-4 w-4" />

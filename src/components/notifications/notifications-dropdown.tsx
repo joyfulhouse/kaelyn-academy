@@ -45,11 +45,11 @@ const notificationIcons: Record<string, React.ComponentType<{ className?: string
 };
 
 const notificationColors: Record<string, string> = {
-  achievement: "text-amber-500 bg-amber-500/10",
-  lesson: "text-blue-500 bg-blue-500/10",
-  message: "text-green-500 bg-green-500/10",
-  streak: "text-orange-500 bg-orange-500/10",
-  reminder: "text-purple-500 bg-purple-500/10",
+  achievement: "text-warning bg-warning/10",
+  lesson: "text-info bg-info/10",
+  message: "text-success bg-success/10",
+  streak: "text-warning bg-warning/10",
+  reminder: "text-primary bg-primary/10",
 };
 
 function formatTimeAgo(dateString: string): string {
@@ -201,7 +201,7 @@ export function NotificationsDropdown() {
           <ScrollArea className="h-[300px]">
             {notifications.map((notification) => {
               const IconComponent = notificationIcons[notification.type] || Bell;
-              const colorClass = notificationColors[notification.type] || "text-gray-500 bg-gray-500/10";
+              const colorClass = notificationColors[notification.type] || "text-muted-foreground bg-muted";
 
               const content = (
                 <div

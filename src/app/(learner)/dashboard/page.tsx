@@ -194,7 +194,7 @@ export default function LearnerDashboard() {
             Welcome back{learnerName ? `, ${learnerName}` : ""}!
           </h1>
           <p className="text-muted-foreground mt-1 flex items-center gap-2">
-            <Flame className="h-4 w-4 text-orange-500" />
+            <Flame className="h-4 w-4 text-warning" />
             You&apos;re on a {currentStreak}-day streak. Keep it going!
           </p>
         </div>
@@ -225,7 +225,7 @@ export default function LearnerDashboard() {
         <Card className="relative overflow-hidden">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10 text-green-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10 text-success">
                 <Target className="h-5 w-5" />
               </div>
               <div>
@@ -239,7 +239,7 @@ export default function LearnerDashboard() {
         <Card className="relative overflow-hidden">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 text-warning">
                 <Flame className="h-5 w-5" />
               </div>
               <div>
@@ -253,7 +253,7 @@ export default function LearnerDashboard() {
         <Card className="relative overflow-hidden">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500/10 text-yellow-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 text-warning">
                 <Trophy className="h-5 w-5" />
               </div>
               <div>
@@ -363,7 +363,7 @@ export default function LearnerDashboard() {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Flame className="h-5 w-5 text-orange-500" />
+              <Flame className="h-5 w-5 text-warning" />
               Study Streak
             </CardTitle>
             <Badge variant="secondary">Keep it going!</Badge>
@@ -373,7 +373,7 @@ export default function LearnerDashboard() {
           <StreakChart currentStreak={currentStreak} longestStreak={longestStreak} />
           <div className="mt-4 flex gap-8">
             <div>
-              <p className="text-2xl font-bold text-green-600">{currentStreak}</p>
+              <p className="text-2xl font-bold text-success">{currentStreak}</p>
               <p className="text-sm text-muted-foreground">Current Streak</p>
             </div>
             <div>
@@ -415,8 +415,8 @@ export default function LearnerDashboard() {
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full ${
                       activity.passed
-                        ? "bg-green-500/10 text-green-600"
-                        : "bg-red-500/10 text-red-600"
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
                     }`}
                   >
                     {activity.passed ? (

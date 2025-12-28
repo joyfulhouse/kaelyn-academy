@@ -253,7 +253,7 @@ export default function ParentSettingsPage() {
           {saving ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : saveSuccess ? (
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-success" />
           ) : (
             <Save className="h-4 w-4" />
           )}
@@ -554,7 +554,7 @@ export default function ParentSettingsPage() {
                 </div>
               )}
               {passwordSuccess && (
-                <div className="p-3 bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2 text-green-800 dark:text-green-200">
+                <div className="p-3 bg-success/10 border border-success/20 rounded-lg flex items-center gap-2 text-success">
                   <CheckCircle2 className="h-4 w-4" />
                   <span className="text-sm">Password updated successfully!</span>
                 </div>

@@ -139,9 +139,9 @@ export function DemoRequestForm() {
 
   if (isSuccess) {
     return (
-      <Alert className="bg-green-50 border-green-200">
-        <CheckCircle className="h-5 w-5 text-green-600" />
-        <AlertDescription className="text-green-800">
+      <Alert className="bg-success/10 border-success/30">
+        <CheckCircle className="h-5 w-5 text-success" />
+        <AlertDescription className="text-success-foreground">
           <strong>Thank you for your interest!</strong>
           <br />
           We've received your demo request and a member of our team will contact

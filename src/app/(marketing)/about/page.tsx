@@ -190,8 +190,8 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
-                <div className="p-3 bg-blue-500/10 rounded-lg w-fit">
-                  <BookOpen className="h-6 w-6 text-blue-500" />
+                <div className="p-3 bg-role-learner/10 rounded-lg w-fit">
+                  <BookOpen className="h-6 w-6 text-role-learner" />
                 </div>
                 <CardTitle>For Students</CardTitle>
               </CardHeader>
@@ -207,8 +207,8 @@ export default function AboutPage() {
             </Card>
             <Card>
               <CardHeader>
-                <div className="p-3 bg-green-500/10 rounded-lg w-fit">
-                  <Users className="h-6 w-6 text-green-500" />
+                <div className="p-3 bg-role-parent/10 rounded-lg w-fit">
+                  <Users className="h-6 w-6 text-role-parent" />
                 </div>
                 <CardTitle>For Parents</CardTitle>
               </CardHeader>
@@ -224,8 +224,8 @@ export default function AboutPage() {
             </Card>
             <Card>
               <CardHeader>
-                <div className="p-3 bg-purple-500/10 rounded-lg w-fit">
-                  <GraduationCap className="h-6 w-6 text-purple-500" />
+                <div className="p-3 bg-role-teacher/10 rounded-lg w-fit">
+                  <GraduationCap className="h-6 w-6 text-role-teacher" />
                 </div>
                 <CardTitle>For Schools</CardTitle>
               </CardHeader>

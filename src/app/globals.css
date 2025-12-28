@@ -25,6 +25,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -41,6 +42,22 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* Status colors */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  /* Role colors */
+  --color-role-admin: var(--role-admin);
+  --color-role-admin-foreground: var(--role-admin-foreground);
+  --color-role-teacher: var(--role-teacher);
+  --color-role-teacher-foreground: var(--role-teacher-foreground);
+  --color-role-parent: var(--role-parent);
+  --color-role-parent-foreground: var(--role-parent-foreground);
+  --color-role-learner: var(--role-learner);
+  --color-role-learner-foreground: var(--role-learner-foreground);
 }
 
 :root {
@@ -60,14 +77,24 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+  /* Status colors - light mode */
+  --success: oklch(0.627 0.194 145);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.769 0.188 70);
+  --warning-foreground: oklch(0.205 0 0);
+  --info: oklch(0.6 0.18 245);
+  --info-foreground: oklch(0.985 0 0);
+  /* Chart colors */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+  /* Sidebar */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -76,6 +103,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* Role colors - light mode */
+  --role-admin: oklch(0.55 0.15 260);
+  --role-admin-foreground: oklch(0.985 0 0);
+  --role-teacher: oklch(0.55 0.18 280);
+  --role-teacher-foreground: oklch(0.985 0 0);
+  --role-parent: oklch(0.55 0.17 165);
+  --role-parent-foreground: oklch(0.985 0 0);
+  --role-learner: oklch(0.55 0.2 240);
+  --role-learner-foreground: oklch(0.985 0 0);
 }
 
 .dark {
@@ -110,6 +146,22 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  /* Status colors - dark mode */
+  --success: oklch(0.696 0.17 145);
+  --success-foreground: oklch(0.205 0 0);
+  --warning: oklch(0.828 0.189 84);
+  --warning-foreground: oklch(0.205 0 0);
+  --info: oklch(0.7 0.15 245);
+  --info-foreground: oklch(0.205 0 0);
+  /* Role colors - dark mode */
+  --role-admin: oklch(0.7 0.15 260);
+  --role-admin-foreground: oklch(0.145 0 0);
+  --role-teacher: oklch(0.7 0.18 280);
+  --role-teacher-foreground: oklch(0.145 0 0);
+  --role-parent: oklch(0.7 0.17 165);
+  --role-parent-foreground: oklch(0.145 0 0);
+  --role-learner: oklch(0.7 0.2 240);
+  --role-learner-foreground: oklch(0.145 0 0);
 }
 
 @layer base {

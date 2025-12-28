@@ -96,9 +96,9 @@ function formatTimeAgo(dateStr: string): string {
 }
 
 function getStatusBadge(mastery: number) {
-  if (mastery >= 85) return <Badge className="bg-green-500">Excelling</Badge>;
+  if (mastery >= 85) return <Badge className="bg-success">Excelling</Badge>;
   if (mastery < 50) return <Badge variant="destructive">Struggling</Badge>;
-  if (mastery < 65) return <Badge className="bg-amber-500">Needs Attention</Badge>;
+  if (mastery < 65) return <Badge className="bg-warning">Needs Attention</Badge>;
   return <Badge variant="secondary">Active</Badge>;
 }
 
@@ -219,7 +219,7 @@ export default function ClassDetailPage() {
                 Grade {classData.gradeLevel === 0 ? "K" : classData.gradeLevel}
               </Badge>
               {classData.isActive && (
-                <Badge className="bg-green-500">Active</Badge>
+                <Badge className="bg-success">Active</Badge>
               )}
             </div>
             <p className="text-muted-foreground">{classData.description || "No description"}</p>
@@ -255,7 +255,7 @@ export default function ClassDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+              <TrendingUp className="h-5 w-5 text-info" />
               <div>
                 <div className="text-2xl font-bold">{classData.averageProgress}%</div>
                 <div className="text-xs text-muted-foreground">Avg Progress</div>
@@ -266,7 +266,7 @@ export default function ClassDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <Award className="h-5 w-5 text-green-500" />
+              <Award className="h-5 w-5 text-success" />
               <div>
                 <div className="text-2xl font-bold">{classData.averageMastery}%</div>
                 <div className="text-xs text-muted-foreground">Avg Mastery</div>
@@ -277,7 +277,7 @@ export default function ClassDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <ClipboardList className="h-5 w-5 text-purple-500" />
+              <ClipboardList className="h-5 w-5 text-role-teacher" />
               <div>
                 <div className="text-2xl font-bold">{assignments.length}</div>
                 <div className="text-xs text-muted-foreground">Assignments</div>
@@ -288,7 +288,7 @@ export default function ClassDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               <div>
                 <div className="text-2xl font-bold">{strugglingCount + needsAttentionCount}</div>
                 <div className="text-xs text-muted-foreground">Need Help</div>
@@ -490,7 +490,7 @@ export default function ClassDetailPage() {
                           </TableCell>
                           <TableCell>
                             {isComplete ? (
-                              <Badge className="bg-green-500">Complete</Badge>
+                              <Badge className="bg-success">Complete</Badge>
                             ) : isPastDue ? (
                               <Badge variant="destructive">Past Due</Badge>
                             ) : (

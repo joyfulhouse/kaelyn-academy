@@ -108,8 +108,8 @@ export default function AdminSettingsPage() {
   return (
     <main id="main-content" className="p-6 max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-foreground">System Settings</h1>
+        <p className="text-muted-foreground mt-2">
           Configure platform-wide settings and preferences.
         </p>
       </div>
@@ -124,8 +124,8 @@ export default function AdminSettingsPage() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${
                   activeTab === tab.key
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-muted-foreground hover:bg-muted/50"
                 }`}
                 aria-current={activeTab === tab.key ? "page" : undefined}
               >
@@ -168,14 +168,14 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Maintenance Mode</Label>
-                    <p className="text-sm text-gray-500">Disable access for non-admin users</p>
+                    <p className="text-sm text-muted-foreground">Disable access for non-admin users</p>
                   </div>
                   <button
                     onClick={() =>
                       updateSetting("general", "maintenanceMode", !settings.general.maintenanceMode)
                     }
                     className={`relative w-14 h-8 rounded-full transition-colors ${
-                      settings.general.maintenanceMode ? "bg-blue-600" : "bg-gray-300"
+                      settings.general.maintenanceMode ? "bg-primary" : "bg-muted"
                     }`}
                     role="switch"
                     aria-checked={settings.general.maintenanceMode}
@@ -190,14 +190,14 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Open Registration</Label>
-                    <p className="text-sm text-gray-500">Allow new users to register</p>
+                    <p className="text-sm text-muted-foreground">Allow new users to register</p>
                   </div>
                   <button
                     onClick={() =>
                       updateSetting("general", "registrationOpen", !settings.general.registrationOpen)
                     }
                     className={`relative w-14 h-8 rounded-full transition-colors ${
-                      settings.general.registrationOpen ? "bg-blue-600" : "bg-gray-300"
+                      settings.general.registrationOpen ? "bg-primary" : "bg-muted"
                     }`}
                     role="switch"
                     aria-checked={settings.general.registrationOpen}
@@ -240,7 +240,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Adaptive Difficulty</Label>
-                    <p className="text-sm text-gray-500">Auto-adjust difficulty based on performance</p>
+                    <p className="text-sm text-muted-foreground">Auto-adjust difficulty based on performance</p>
                   </div>
                   <button
                     onClick={() =>
@@ -251,7 +251,7 @@ export default function AdminSettingsPage() {
                       )
                     }
                     className={`relative w-14 h-8 rounded-full transition-colors ${
-                      settings.learning.adaptiveDifficultyEnabled ? "bg-blue-600" : "bg-gray-300"
+                      settings.learning.adaptiveDifficultyEnabled ? "bg-primary" : "bg-muted"
                     }`}
                     role="switch"
                     aria-checked={settings.learning.adaptiveDifficultyEnabled}
@@ -305,7 +305,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Email Notifications</Label>
-                    <p className="text-sm text-gray-500">Send email notifications to users</p>
+                    <p className="text-sm text-muted-foreground">Send email notifications to users</p>
                   </div>
                   <button
                     onClick={() =>
@@ -316,7 +316,7 @@ export default function AdminSettingsPage() {
                       )
                     }
                     className={`relative w-14 h-8 rounded-full transition-colors ${
-                      settings.notifications.emailNotifications ? "bg-blue-600" : "bg-gray-300"
+                      settings.notifications.emailNotifications ? "bg-primary" : "bg-muted"
                     }`}
                     role="switch"
                     aria-checked={settings.notifications.emailNotifications}
@@ -331,7 +331,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Push Notifications</Label>
-                    <p className="text-sm text-gray-500">Send push notifications to devices</p>
+                    <p className="text-sm text-muted-foreground">Send push notifications to devices</p>
                   </div>
                   <button
                     onClick={() =>
@@ -342,7 +342,7 @@ export default function AdminSettingsPage() {
                       )
                     }
                     className={`relative w-14 h-8 rounded-full transition-colors ${
-                      settings.notifications.pushNotifications ? "bg-blue-600" : "bg-gray-300"
+                      settings.notifications.pushNotifications ? "bg-primary" : "bg-muted"
                     }`}
                     role="switch"
                     aria-checked={settings.notifications.pushNotifications}
@@ -415,7 +415,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Require Strong Passwords</Label>
-                    <p className="text-sm text-gray-500">Enforce password complexity rules</p>
+                    <p className="text-sm text-muted-foreground">Enforce password complexity rules</p>
                   </div>
                   <button
                     onClick={() =>
@@ -426,7 +426,7 @@ export default function AdminSettingsPage() {
                       )
                     }
                     className={`relative w-14 h-8 rounded-full transition-colors ${
-                      settings.security.requireStrongPasswords ? "bg-blue-600" : "bg-gray-300"
+                      settings.security.requireStrongPasswords ? "bg-primary" : "bg-muted"
                     }`}
                     role="switch"
                     aria-checked={settings.security.requireStrongPasswords}
@@ -452,14 +452,14 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>AI Tutoring</Label>
-                    <p className="text-sm text-gray-500">Enable AI-powered tutoring features</p>
+                    <p className="text-sm text-muted-foreground">Enable AI-powered tutoring features</p>
                   </div>
                   <button
                     onClick={() =>
                       updateSetting("ai", "aiTutoringEnabled", !settings.ai.aiTutoringEnabled)
                     }
                     className={`relative w-14 h-8 rounded-full transition-colors ${
-                      settings.ai.aiTutoringEnabled ? "bg-blue-600" : "bg-gray-300"
+                      settings.ai.aiTutoringEnabled ? "bg-primary" : "bg-muted"
                     }`}
                     role="switch"
                     aria-checked={settings.ai.aiTutoringEnabled}
@@ -513,7 +513,6 @@ export default function AdminSettingsPage() {
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="bg-gradient-to-r from-blue-600 to-purple-600"
             >
               {isSaving ? "Saving..." : "Save Changes"}
             </Button>

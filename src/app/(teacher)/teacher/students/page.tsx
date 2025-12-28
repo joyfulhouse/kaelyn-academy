@@ -136,11 +136,11 @@ function StudentsSkeleton() {
 function getStatusBadge(status: string) {
   switch (status) {
     case "excelling":
-      return <Badge className="bg-green-500">Excelling</Badge>;
+      return <Badge className="bg-success">Excelling</Badge>;
     case "struggling":
       return <Badge variant="destructive">Struggling</Badge>;
     case "needs-attention":
-      return <Badge className="bg-amber-500">Needs Attention</Badge>;
+      return <Badge className="bg-warning">Needs Attention</Badge>;
     default:
       return <Badge variant="secondary">On Track</Badge>;
   }
@@ -149,9 +149,9 @@ function getStatusBadge(status: string) {
 function getTrendIcon(trend: string) {
   switch (trend) {
     case "up":
-      return <TrendingUp className="h-4 w-4 text-green-500" />;
+      return <TrendingUp className="h-4 w-4 text-success" />;
     case "down":
-      return <TrendingDown className="h-4 w-4 text-red-500" />;
+      return <TrendingDown className="h-4 w-4 text-destructive" />;
     default:
       return <span className="text-muted-foreground">—</span>;
   }
@@ -376,15 +376,15 @@ export default function TeacherStudentsPage() {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case "academic":
-        return "bg-blue-500";
+        return "bg-info";
       case "behavioral":
-        return "bg-orange-500";
+        return "bg-warning";
       case "communication":
-        return "bg-green-500";
+        return "bg-success";
       case "goals":
-        return "bg-purple-500";
+        return "bg-primary";
       default:
-        return "bg-gray-500";
+        return "bg-muted-foreground";
     }
   };
 
@@ -423,8 +423,8 @@ export default function TeacherStudentsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-blue-500/10">
-                <Users className="h-5 w-5 text-blue-500" />
+              <div className="p-2 rounded-full bg-info/10">
+                <Users className="h-5 w-5 text-info" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.total}</div>
@@ -436,8 +436,8 @@ export default function TeacherStudentsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-green-500/10">
-                <TrendingUp className="h-5 w-5 text-green-500" />
+              <div className="p-2 rounded-full bg-success/10">
+                <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.excelling}</div>
@@ -449,8 +449,8 @@ export default function TeacherStudentsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-red-500/10">
-                <TrendingDown className="h-5 w-5 text-red-500" />
+              <div className="p-2 rounded-full bg-destructive/10">
+                <TrendingDown className="h-5 w-5 text-destructive" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.struggling}</div>
@@ -595,7 +595,7 @@ export default function TeacherStudentsPage() {
                     <TableCell>{student.mastery}%</TableCell>
                     <TableCell>
                       {student.streak > 0 ? (
-                        <span className="text-orange-500">{student.streak}d</span>
+                        <span className="text-warning">{student.streak}d</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
@@ -766,7 +766,7 @@ export default function TeacherStudentsPage() {
                 <div
                   key={note.id}
                   className={`p-4 rounded-lg border ${
-                    note.isPinned ? "border-amber-300 bg-amber-50 dark:bg-amber-950/20" : "bg-muted/50"
+                    note.isPinned ? "border-warning bg-warning/10" : "bg-muted/50"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -778,7 +778,7 @@ export default function TeacherStudentsPage() {
                         {note.category}
                       </span>
                       {note.isPinned && (
-                        <Pin className="h-3 w-3 text-amber-500" />
+                        <Pin className="h-3 w-3 text-warning" />
                       )}
                       {!note.isOwner && (
                         <Badge variant="outline" className="text-xs">
@@ -794,12 +794,12 @@ export default function TeacherStudentsPage() {
                           className="h-7 w-7"
                           onClick={() => handleTogglePin(note.id, note.isPinned)}
                         >
-                          <Pin className={`h-4 w-4 ${note.isPinned ? "text-amber-500" : ""}`} />
+                          <Pin className={`h-4 w-4 ${note.isPinned ? "text-warning" : ""}`} />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-red-500 hover:text-red-600"
+                          className="h-7 w-7 text-destructive hover:text-destructive"
                           onClick={() => handleDeleteNote(note.id)}
                         >
                           <Trash2 className="h-4 w-4" />

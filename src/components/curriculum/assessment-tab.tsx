@@ -269,7 +269,7 @@ export function AssessmentTab({
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           {quizState.hasPassed ? (
-            <Trophy className="h-5 w-5 text-yellow-500" />
+            <Trophy className="h-5 w-5 text-warning" />
           ) : (
             <Target className="h-5 w-5 text-primary" />
           )}
@@ -313,8 +313,8 @@ export function AssessmentTab({
               <Alert
                 className={
                   quizResult.passed
-                    ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20"
-                    : "border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/20"
+                    ? "border-success/30 bg-success/10"
+                    : "border-warning/30 bg-warning/10"
                 }
               >
                 <AlertDescription>
@@ -358,7 +358,7 @@ export function AssessmentTab({
                       <span
                         className={`font-medium ${
                           attempt.passed
-                            ? "text-green-600"
+                            ? "text-success"
                             : "text-muted-foreground"
                         }`}
                       >

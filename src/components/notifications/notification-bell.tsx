@@ -16,14 +16,14 @@ interface NotificationBellProps {
 }
 
 const typeStyles: Record<NotificationType, { bg: string; icon: string }> = {
-  info: { bg: "bg-blue-100 text-blue-800", icon: "ℹ️" },
-  success: { bg: "bg-green-100 text-green-800", icon: "✓" },
-  warning: { bg: "bg-yellow-100 text-yellow-800", icon: "⚠️" },
-  error: { bg: "bg-red-100 text-red-800", icon: "✕" },
-  achievement: { bg: "bg-purple-100 text-purple-800", icon: "🏆" },
-  reminder: { bg: "bg-orange-100 text-orange-800", icon: "⏰" },
-  message: { bg: "bg-gray-100 text-gray-800", icon: "💬" },
-  system: { bg: "bg-gray-100 text-gray-800", icon: "⚙️" },
+  info: { bg: "bg-info/20 text-info", icon: "ℹ️" },
+  success: { bg: "bg-success/20 text-success", icon: "✓" },
+  warning: { bg: "bg-warning/20 text-warning", icon: "⚠️" },
+  error: { bg: "bg-destructive/20 text-destructive", icon: "✕" },
+  achievement: { bg: "bg-primary/20 text-primary", icon: "🏆" },
+  reminder: { bg: "bg-warning/20 text-warning", icon: "⏰" },
+  message: { bg: "bg-muted text-muted-foreground", icon: "💬" },
+  system: { bg: "bg-muted text-muted-foreground", icon: "⚙️" },
 };
 
 function NotificationItem({
@@ -41,8 +41,8 @@ function NotificationItem({
   return (
     <div
       className={cn(
-        "p-3 border-b last:border-b-0 hover:bg-gray-50 transition-colors",
-        !notification.read && "bg-blue-50/50"
+        "p-3 border-b last:border-b-0 hover:bg-muted/50 transition-colors",
+        !notification.read && "bg-info/10"
       )}
     >
       <div className="flex items-start gap-3">
@@ -59,9 +59,9 @@ function NotificationItem({
             <h4 className={cn("text-sm font-medium", !notification.read && "font-semibold")}>
               {notification.title}
             </h4>
-            <span className="text-xs text-gray-500 flex-shrink-0">{timeAgo}</span>
+            <span className="text-xs text-muted-foreground flex-shrink-0">{timeAgo}</span>
           </div>
-          <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
+          <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{notification.message}</p>
           {notification.actionUrl && (
             <a
               href={notification.actionUrl}
@@ -75,7 +75,7 @@ function NotificationItem({
           {!notification.read && (
             <button
               onClick={() => onRead(notification.id)}
-              className="p-1 hover:bg-gray-200 rounded text-gray-500"
+              className="p-1 hover:bg-muted rounded text-muted-foreground"
               title="Mark as read"
             >
               <Check className="w-4 h-4" />
@@ -83,7 +83,7 @@ function NotificationItem({
           )}
           <button
             onClick={() => onDismiss(notification.id)}
-            className="p-1 hover:bg-gray-200 rounded text-gray-500"
+            className="p-1 hover:bg-muted rounded text-muted-foreground"
             title="Dismiss"
           >
             <X className="w-4 h-4" />
@@ -130,8 +130,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "relative p-2 rounded-full hover:bg-gray-100 transition-colors",
-          isOpen && "bg-gray-100"
+          "relative p-2 rounded-full hover:bg-muted transition-colors",
+          isOpen && "bg-muted"
         )}
         aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ""}`}
         aria-expanded={isOpen}
@@ -140,7 +140,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
           <span
-            className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
+            className="absolute top-0 right-0 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center"
             aria-hidden="true"
           >
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -150,12 +150,12 @@ export function NotificationBell({ className }: NotificationBellProps) {
 
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-80 max-h-96 bg-white rounded-lg shadow-lg border overflow-hidden z-50"
+          className="absolute right-0 mt-2 w-80 max-h-96 bg-background rounded-lg shadow-lg border overflow-hidden z-50"
           role="menu"
           aria-orientation="vertical"
         >
           {/* Header */}
-          <div className="px-4 py-3 border-b flex items-center justify-between bg-gray-50">
+          <div className="px-4 py-3 border-b flex items-center justify-between bg-muted/50">
             <h3 className="font-semibold text-sm">Notifications</h3>
             {unreadCount > 0 && (
               <button
@@ -170,7 +170,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
           {/* Notification list */}
           <div className="overflow-y-auto max-h-72">
             {notifications.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-muted-foreground">
                 <Bell className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No notifications</p>
               </div>
@@ -188,7 +188,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="px-4 py-2 border-t bg-gray-50 text-center">
+            <div className="px-4 py-2 border-t bg-muted/50 text-center">
               <a href="/notifications" className="text-xs text-primary hover:underline">
                 View all notifications
               </a>

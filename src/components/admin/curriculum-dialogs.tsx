@@ -189,7 +189,7 @@ export function SubjectDialog({
               </div>
             </div>
             {error && (
-              <p className="text-sm text-red-500">{error}</p>
+              <p className="text-sm text-destructive">{error}</p>
             )}
           </div>
           <DialogFooter>
@@ -404,7 +404,7 @@ export function UnitDialog({
               </div>
             </div>
             {error && (
-              <p className="text-sm text-red-500">{error}</p>
+              <p className="text-sm text-destructive">{error}</p>
             )}
           </div>
           <DialogFooter>

@@ -100,7 +100,7 @@ function LessonStatusIcon({
   isLocked: boolean;
 }) {
   if (isCompleted) {
-    return <CheckCircle className="h-4 w-4 text-green-500" />;
+    return <CheckCircle className="h-4 w-4 text-success" />;
   }
   if (isLocked) {
     return <Lock className="h-4 w-4 text-muted-foreground" />;

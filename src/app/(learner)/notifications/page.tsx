@@ -49,18 +49,18 @@ interface Notification {
 function getNotificationIcon(type: NotificationType) {
   switch (type) {
     case "achievement":
-      return <Trophy className="h-5 w-5 text-yellow-500" />;
+      return <Trophy className="h-5 w-5 text-warning" />;
     case "lesson":
-      return <BookOpen className="h-5 w-5 text-blue-500" />;
+      return <BookOpen className="h-5 w-5 text-info" />;
     case "message":
-      return <MessageCircle className="h-5 w-5 text-green-500" />;
+      return <MessageCircle className="h-5 w-5 text-success" />;
     case "streak":
-      return <Flame className="h-5 w-5 text-orange-500" />;
+      return <Flame className="h-5 w-5 text-warning" />;
     case "reminder":
     case "assignment_due":
-      return <Clock className="h-5 w-5 text-purple-500" />;
+      return <Clock className="h-5 w-5 text-primary" />;
     case "progress_report":
-      return <AlertCircle className="h-5 w-5 text-blue-500" />;
+      return <AlertCircle className="h-5 w-5 text-info" />;
     case "system":
     case "announcement":
       return <Bell className="h-5 w-5 text-primary" />;

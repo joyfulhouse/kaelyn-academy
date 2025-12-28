@@ -168,12 +168,12 @@ export default function SettingsPage() {
         </div>
         <div className="flex items-center gap-3">
           {saveStatus === "success" && (
-            <span className="text-sm text-green-600 flex items-center gap-1">
+            <span className="text-sm text-success flex items-center gap-1">
               <Check className="h-4 w-4" /> Saved
             </span>
           )}
           {saveStatus === "error" && (
-            <span className="text-sm text-red-600">Failed to save</span>
+            <span className="text-sm text-destructive">Failed to save</span>
           )}
           <Button
             className="gap-2"

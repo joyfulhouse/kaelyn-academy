@@ -368,7 +368,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                   <div
                     className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
                       completedObjectives.has(objective.id)
-                        ? "bg-green-500 text-white"
+                        ? "bg-success text-white"
                         : "bg-muted"
                     }`}
                   >

@@ -207,10 +207,10 @@ export default function AdminUsersPage() {
   };
 
   const roleColors: Record<string, string> = {
-    parent: "bg-green-100 text-green-700",
-    teacher: "bg-purple-100 text-purple-700",
-    school_admin: "bg-orange-100 text-orange-700",
-    platform_admin: "bg-red-100 text-red-700",
+    parent: "bg-role-parent/20 text-role-parent",
+    teacher: "bg-role-teacher/20 text-role-teacher",
+    school_admin: "bg-warning/20 text-warning",
+    platform_admin: "bg-role-admin/20 text-role-admin",
   };
 
   const roleLabels: Record<string, string> = {
@@ -223,7 +223,7 @@ export default function AdminUsersPage() {
   if (loading && users.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
@@ -231,7 +231,7 @@ export default function AdminUsersPage() {
   if (error && users.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <p className="text-red-600">{error}</p>
+        <p className="text-destructive">{error}</p>
         <Button onClick={fetchUsers}>Retry</Button>
       </div>
     );
@@ -242,11 +242,10 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-1">Manage users across your organization</p>
+          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
+          <p className="text-muted-foreground mt-1">Manage users across your organization</p>
         </div>
         <Button
-          className="bg-blue-600 hover:bg-blue-700"
           onClick={() => {
             setFormData({ name: "", email: "", role: "parent" });
             setCreateDialogOpen(true);
@@ -261,32 +260,32 @@ export default function AdminUsersPage() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-            <div className="text-sm text-gray-500">Total Users</div>
+            <div className="text-2xl font-bold text-foreground">{stats.total}</div>
+            <div className="text-sm text-muted-foreground">Total Users</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.learners}</div>
-            <div className="text-sm text-gray-500">Learners</div>
+            <div className="text-2xl font-bold text-role-learner">{stats.learners}</div>
+            <div className="text-sm text-muted-foreground">Learners</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.parents}</div>
-            <div className="text-sm text-gray-500">Parents</div>
+            <div className="text-2xl font-bold text-role-parent">{stats.parents}</div>
+            <div className="text-sm text-muted-foreground">Parents</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{stats.teachers}</div>
-            <div className="text-sm text-gray-500">Teachers</div>
+            <div className="text-2xl font-bold text-role-teacher">{stats.teachers}</div>
+            <div className="text-sm text-muted-foreground">Teachers</div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{stats.admins}</div>
-            <div className="text-sm text-gray-500">Admins</div>
+            <div className="text-2xl font-bold text-role-admin">{stats.admins}</div>
+            <div className="text-sm text-muted-foreground">Admins</div>
           </CardContent>
         </Card>
       </div>
@@ -338,52 +337,52 @@ export default function AdminUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b text-left">
-                  <th className="pb-3 font-medium text-gray-500 text-sm">User</th>
-                  <th className="pb-3 font-medium text-gray-500 text-sm">Role</th>
-                  <th className="pb-3 font-medium text-gray-500 text-sm">Organization</th>
-                  <th className="pb-3 font-medium text-gray-500 text-sm">Joined</th>
-                  <th className="pb-3 font-medium text-gray-500 text-sm">Last Active</th>
-                  <th className="pb-3 font-medium text-gray-500 text-sm">Status</th>
-                  <th className="pb-3 font-medium text-gray-500 text-sm">Actions</th>
+                <tr className="border-b border-border text-left">
+                  <th className="pb-3 font-medium text-muted-foreground text-sm">User</th>
+                  <th className="pb-3 font-medium text-muted-foreground text-sm">Role</th>
+                  <th className="pb-3 font-medium text-muted-foreground text-sm">Organization</th>
+                  <th className="pb-3 font-medium text-muted-foreground text-sm">Joined</th>
+                  <th className="pb-3 font-medium text-muted-foreground text-sm">Last Active</th>
+                  <th className="pb-3 font-medium text-muted-foreground text-sm">Status</th>
+                  <th className="pb-3 font-medium text-muted-foreground text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b last:border-0 hover:bg-gray-50">
+                  <tr key={user.id} className="border-b border-border last:border-0 hover:bg-muted/50">
                     <td className="py-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={user.image || undefined} />
-                          <AvatarFallback className="bg-gray-200">
+                          <AvatarFallback className="bg-muted">
                             {(user.name || user.email).split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium text-gray-900">{user.name || "No Name"}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="font-medium text-foreground">{user.name || "No Name"}</div>
+                          <div className="text-sm text-muted-foreground">{user.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[user.role] || "bg-gray-100 text-gray-700"}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[user.role] || "bg-muted text-muted-foreground"}`}>
                         {roleLabels[user.role] || user.role}
                       </span>
                     </td>
-                    <td className="py-4 text-sm text-gray-600">
+                    <td className="py-4 text-sm text-muted-foreground">
                       {user.organizationName || "—"}
                     </td>
-                    <td className="py-4 text-sm text-gray-600">
+                    <td className="py-4 text-sm text-muted-foreground">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="py-4 text-sm text-gray-600">
+                    <td className="py-4 text-sm text-muted-foreground">
                       {user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleDateString() : "Never"}
                     </td>
                     <td className="py-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         user.isActive
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-700"
+                          ? "bg-success/20 text-success"
+                          : "bg-muted text-muted-foreground"
                       }`}>
                         {user.isActive ? "Active" : "Inactive"}
                       </span>
@@ -419,7 +418,7 @@ export default function AdminUsersPage() {
                             )}
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-red-600"
+                            className="text-destructive"
                             onClick={() => openDeleteDialog(user)}
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
@@ -435,7 +434,7 @@ export default function AdminUsersPage() {
           </div>
 
           {users.length === 0 && !loading && (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-muted-foreground">
               No users found matching your filters
             </div>
           )}

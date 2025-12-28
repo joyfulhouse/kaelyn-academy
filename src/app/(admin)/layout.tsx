@@ -20,13 +20,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       {/* Admin Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-8">
-              <Link href="/admin" className="flex items-center gap-3 text-xl font-bold text-gray-900">
+              <Link href="/admin" className="flex items-center gap-3 text-xl font-bold text-foreground">
                 <Image
                   src="/icons/icon.svg"
                   alt="Kaelyn's Academy"
@@ -39,35 +39,35 @@ export default async function AdminLayout({
               <nav className="hidden md:flex gap-6">
                 <Link
                   href="/admin/agents"
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   AI Agents
                 </Link>
                 <Link
                   href="/admin/users"
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Users
                 </Link>
                 <Link
                   href="/admin/curriculum"
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Curriculum
                 </Link>
                 <Link
                   href="/admin/analytics"
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Analytics
                 </Link>
               </nav>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{session.user.email}</span>
+              <span className="text-sm text-muted-foreground">{session.user.email}</span>
               <Link
                 href="/"
-                className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                className="text-sm font-medium text-role-admin hover:text-role-admin/80 transition-colors"
               >
                 Back to Site
               </Link>

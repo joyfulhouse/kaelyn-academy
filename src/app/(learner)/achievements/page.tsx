@@ -46,11 +46,11 @@ const achievementIcons: Record<string, React.ComponentType<{ className?: string 
 
 // Color mapping for achievement types
 const typeColors: Record<string, string> = {
-  streak: "#f59e0b",
-  completion: "#3b82f6",
-  mastery: "#10b981",
-  subject: "#ec4899",
-  special: "#f97316",
+  streak: "hsl(var(--warning))",
+  completion: "hsl(var(--info))",
+  mastery: "hsl(var(--success))",
+  subject: "hsl(var(--primary))",
+  special: "hsl(var(--warning))",
 };
 
 interface Achievement {
@@ -399,7 +399,7 @@ export default function AchievementsPage() {
           <Card className="col-span-2 md:col-span-1">
             <CardContent className="pt-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-amber-500">
+                <div className="text-3xl font-bold text-warning">
                   {stats.currentStreak}
                 </div>
                 <div className="text-sm text-muted-foreground">Day Streak</div>

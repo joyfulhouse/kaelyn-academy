@@ -29,43 +29,43 @@ const typeStyles: Record<
   { bg: string; border: string; icon: React.ReactNode }
 > = {
   info: {
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    icon: <Info className="w-5 h-5 text-blue-500" />,
+    bg: "bg-info/10",
+    border: "border-info/30",
+    icon: <Info className="w-5 h-5 text-info" />,
   },
   success: {
-    bg: "bg-green-50",
-    border: "border-green-200",
-    icon: <CheckCircle className="w-5 h-5 text-green-500" />,
+    bg: "bg-success/10",
+    border: "border-success/30",
+    icon: <CheckCircle className="w-5 h-5 text-success" />,
   },
   warning: {
-    bg: "bg-yellow-50",
-    border: "border-yellow-200",
-    icon: <AlertTriangle className="w-5 h-5 text-yellow-500" />,
+    bg: "bg-warning/10",
+    border: "border-warning/30",
+    icon: <AlertTriangle className="w-5 h-5 text-warning" />,
   },
   error: {
-    bg: "bg-red-50",
-    border: "border-red-200",
-    icon: <AlertCircle className="w-5 h-5 text-red-500" />,
+    bg: "bg-destructive/10",
+    border: "border-destructive/30",
+    icon: <AlertCircle className="w-5 h-5 text-destructive" />,
   },
   achievement: {
-    bg: "bg-purple-50",
-    border: "border-purple-200",
+    bg: "bg-primary/10",
+    border: "border-primary/30",
     icon: <span className="text-xl">🏆</span>,
   },
   reminder: {
-    bg: "bg-orange-50",
-    border: "border-orange-200",
+    bg: "bg-warning/10",
+    border: "border-warning/30",
     icon: <span className="text-xl">⏰</span>,
   },
   message: {
-    bg: "bg-gray-50",
-    border: "border-gray-200",
+    bg: "bg-muted",
+    border: "border-border",
     icon: <span className="text-xl">💬</span>,
   },
   system: {
-    bg: "bg-gray-50",
-    border: "border-gray-200",
+    bg: "bg-muted",
+    border: "border-border",
     icon: <span className="text-xl">⚙️</span>,
   },
 };
@@ -98,15 +98,15 @@ function ToastItem({ notification, onDismiss }: ToastItemProps) {
     >
       <div className="flex-shrink-0">{style.icon}</div>
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-sm text-gray-900">{notification.title}</h4>
-        <p className="text-sm text-gray-600 mt-0.5">{notification.message}</p>
+        <h4 className="font-medium text-sm text-foreground">{notification.title}</h4>
+        <p className="text-sm text-muted-foreground mt-0.5">{notification.message}</p>
       </div>
       <button
         onClick={handleDismiss}
-        className="flex-shrink-0 p-1 hover:bg-gray-200/50 rounded-full transition-colors"
+        className="flex-shrink-0 p-1 hover:bg-muted rounded-full transition-colors"
         aria-label="Dismiss notification"
       >
-        <X className="w-4 h-4 text-gray-500" />
+        <X className="w-4 h-4 text-muted-foreground" />
       </button>
     </div>
   );

@@ -58,7 +58,7 @@ export function NewsletterForm({
 
   if (status === "success") {
     return (
-      <div className={`flex items-center gap-2 text-emerald-600 ${className}`}>
+      <div className={`flex items-center gap-2 text-success ${className}`}>
         <CheckCircle className="h-5 w-5" />
         <span className="text-sm">{message}</span>
       </div>
@@ -85,7 +85,7 @@ export function NewsletterForm({
         </Button>
       </div>
       {status === "error" && (
-        <div className="flex items-center gap-2 text-red-600 text-sm">
+        <div className="flex items-center gap-2 text-destructive text-sm">
           <AlertCircle className="h-4 w-4" />
           <span>{message}</span>
         </div>

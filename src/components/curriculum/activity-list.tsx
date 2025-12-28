@@ -144,7 +144,7 @@ export function ActivityList({
           </div>
           <Progress value={progress.progressPercent} className="h-2" />
           {progress.isComplete && (
-            <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
+            <div className="mt-3 flex items-center gap-2 text-sm text-success">
               <Trophy className="h-4 w-4" />
               <span>All activities completed! Assessment unlocked.</span>
             </div>
@@ -164,7 +164,7 @@ export function ActivityList({
             key={activity.id}
             className={cn(
               "transition-all",
-              isCompleted && "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20",
+              isCompleted && "border-success/30 bg-success/10",
               isActive && "border-primary ring-1 ring-primary"
             )}
           >
@@ -175,7 +175,7 @@ export function ActivityList({
                     className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold",
                       isCompleted
-                        ? "bg-green-500 text-white"
+                        ? "bg-success text-success-foreground"
                         : isActive
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
@@ -215,7 +215,7 @@ export function ActivityList({
                     </Badge>
                   )}
                   {isCompleted && (
-                    <Badge variant="default" className="bg-green-500">
+                    <Badge variant="default" className="bg-success">
                       Completed
                     </Badge>
                   )}

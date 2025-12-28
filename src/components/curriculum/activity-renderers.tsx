@@ -169,8 +169,8 @@ function QuizRenderer({
             </div>
 
             {showHint && currentQ.hint && (
-              <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-900">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <div className="p-3 bg-warning/10 rounded-lg border border-warning/30">
+                <p className="text-sm text-warning-foreground">
                   <strong>Hint:</strong> {currentQ.hint}
                 </p>
               </div>
@@ -189,11 +189,11 @@ function QuizRenderer({
                       "flex items-center space-x-2 p-3 rounded-lg border transition-colors",
                       submitted &&
                         option.toLowerCase() === currentQ.correctAnswer.toLowerCase() &&
-                        "border-green-500 bg-green-50 dark:bg-green-950/30",
+                        "border-success bg-success/10",
                       submitted &&
                         answers[currentQ.id] === option &&
                         option.toLowerCase() !== currentQ.correctAnswer.toLowerCase() &&
-                        "border-red-500 bg-red-50 dark:bg-red-950/30",
+                        "border-destructive bg-destructive/10",
                       !submitted && answers[currentQ.id] === option && "border-primary bg-primary/5"
                     )}
                   >
@@ -205,12 +205,12 @@ function QuizRenderer({
                       {option}
                     </Label>
                     {submitted && option.toLowerCase() === currentQ.correctAnswer.toLowerCase() && (
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-success" />
                     )}
                     {submitted &&
                       answers[currentQ.id] === option &&
                       option.toLowerCase() !== currentQ.correctAnswer.toLowerCase() && (
-                        <X className="h-4 w-4 text-red-600" />
+                        <X className="h-4 w-4 text-destructive" />
                       )}
                   </div>
                 ))}
@@ -231,11 +231,11 @@ function QuizRenderer({
                       "flex items-center space-x-2 p-4 rounded-lg border flex-1 justify-center transition-colors",
                       submitted &&
                         option.toLowerCase() === currentQ.correctAnswer.toLowerCase() &&
-                        "border-green-500 bg-green-50 dark:bg-green-950/30",
+                        "border-success bg-success/10",
                       submitted &&
                         answers[currentQ.id] === option &&
                         option.toLowerCase() !== currentQ.correctAnswer.toLowerCase() &&
-                        "border-red-500 bg-red-50 dark:bg-red-950/30",
+                        "border-destructive bg-destructive/10",
                       !submitted && answers[currentQ.id] === option && "border-primary bg-primary/5"
                     )}
                   >
@@ -258,8 +258,8 @@ function QuizRenderer({
                 placeholder="Type your answer..."
                 disabled={submitted || readOnly}
                 className={cn(
-                  submitted && isCorrect && "border-green-500",
-                  submitted && !isCorrect && "border-red-500"
+                  submitted && isCorrect && "border-success",
+                  submitted && !isCorrect && "border-destructive"
                 )}
               />
             )}
@@ -270,8 +270,8 @@ function QuizRenderer({
                 className={cn(
                   "p-3 rounded-lg border",
                   isCorrect
-                    ? "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-900"
-                    : "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900"
+                    ? "bg-success/10 border-success/30"
+                    : "bg-info/10 border-info/30"
                 )}
               >
                 <p className="text-sm">
@@ -326,7 +326,7 @@ function QuizRenderer({
 
       {/* Score display after submit */}
       {submitted && (
-        <Card className={cn(score >= passingScore ? "bg-green-50 dark:bg-green-950/30" : "bg-yellow-50 dark:bg-yellow-950/30")}>
+        <Card className={cn(score >= passingScore ? "bg-success/10" : "bg-warning/10")}>
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
@@ -576,9 +576,9 @@ function PracticeRenderer({
               {problem.hints.slice(0, showHint[problem.id]).map((hint, idx) => (
                 <div
                   key={idx}
-                  className="p-2 bg-yellow-50 dark:bg-yellow-950/30 rounded border border-yellow-200 dark:border-yellow-900"
+                  className="p-2 bg-warning/10 rounded border border-warning/30"
                 >
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <p className="text-sm text-warning-foreground">
                     <Lightbulb className="h-4 w-4 inline mr-1" />
                     Hint {idx + 1}: {hint}
                   </p>
@@ -598,8 +598,8 @@ function PracticeRenderer({
               placeholder="Enter your answer..."
               disabled={hasResult || readOnly}
               className={cn(
-                hasResult && results[problem.id] && "border-green-500",
-                hasResult && !results[problem.id] && "border-red-500"
+                hasResult && results[problem.id] && "border-success",
+                hasResult && !results[problem.id] && "border-destructive"
               )}
             />
             {!hasResult && !readOnly && (
@@ -615,18 +615,18 @@ function PracticeRenderer({
               className={cn(
                 "p-3 rounded-lg",
                 results[problem.id]
-                  ? "bg-green-50 dark:bg-green-950/30"
-                  : "bg-red-50 dark:bg-red-950/30"
+                  ? "bg-success/10"
+                  : "bg-destructive/10"
               )}
             >
               <p className="text-sm font-medium">
                 {results[problem.id] ? (
-                  <span className="text-green-700 dark:text-green-300">
+                  <span className="text-success">
                     <Check className="h-4 w-4 inline mr-1" />
                     Correct!
                   </span>
                 ) : (
-                  <span className="text-red-700 dark:text-red-300">
+                  <span className="text-destructive">
                     <X className="h-4 w-4 inline mr-1" />
                     Not quite. {showSolution && `The answer is: ${problem.correctAnswer}`}
                   </span>
@@ -1008,7 +1008,7 @@ function DiscussionRenderer({
             {wordCount} words {minimumResponse && `(minimum: ${minimumResponse})`}
           </span>
           {!meetsMinimum && minimumResponse && (
-            <span className="text-yellow-600">
+            <span className="text-warning">
               {minimumResponse - wordCount} more words needed
             </span>
           )}

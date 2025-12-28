@@ -34,9 +34,9 @@ export default function TermsOfServicePage() {
         </div>
 
         {/* Important Notice */}
-        <Alert className="mb-12 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
-          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-          <AlertDescription className="text-amber-800 dark:text-amber-200">
+        <Alert className="mb-12 border-warning/30 bg-warning/10">
+          <AlertTriangle className="h-5 w-5 text-warning" />
+          <AlertDescription className="text-warning-foreground">
             <strong>Important:</strong> If you are under 18 years of age, please
             review these Terms with a parent or guardian. Children under 13 must
             have verifiable parental consent to use Kaelyn&apos;s Academy.

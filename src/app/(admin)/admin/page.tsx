@@ -4,8 +4,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+        <p className="mt-2 text-muted-foreground">
           Manage AI agents, users, curriculum, and platform settings.
         </p>
       </div>
@@ -14,12 +14,12 @@ export default function AdminDashboard() {
         {/* AI Agents Card */}
         <Link
           href="/admin/agents"
-          className="block p-6 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all"
+          className="block p-6 bg-card rounded-lg shadow-sm border border-border hover:border-primary/50 hover:shadow-md transition-all"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
+            <div className="p-3 bg-primary/10 rounded-lg">
               <svg
-                className="w-6 h-6 text-purple-600"
+                className="w-6 h-6 text-primary"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -33,8 +33,8 @@ export default function AdminDashboard() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">AI Agents</h3>
-              <p className="text-sm text-gray-500">Manage AI tutors and assistants</p>
+              <h3 className="font-semibold text-foreground">AI Agents</h3>
+              <p className="text-sm text-muted-foreground">Manage AI tutors and assistants</p>
             </div>
           </div>
         </Link>
@@ -42,12 +42,12 @@ export default function AdminDashboard() {
         {/* Users Card */}
         <Link
           href="/admin/users"
-          className="block p-6 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all"
+          className="block p-6 bg-card rounded-lg shadow-sm border border-border hover:border-primary/50 hover:shadow-md transition-all"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
+            <div className="p-3 bg-info/10 rounded-lg">
               <svg
-                className="w-6 h-6 text-blue-600"
+                className="w-6 h-6 text-info"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -61,8 +61,8 @@ export default function AdminDashboard() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Users</h3>
-              <p className="text-sm text-gray-500">Manage learners and parents</p>
+              <h3 className="font-semibold text-foreground">Users</h3>
+              <p className="text-sm text-muted-foreground">Manage learners and parents</p>
             </div>
           </div>
         </Link>
@@ -70,12 +70,12 @@ export default function AdminDashboard() {
         {/* Curriculum Card */}
         <Link
           href="/admin/curriculum"
-          className="block p-6 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all"
+          className="block p-6 bg-card rounded-lg shadow-sm border border-border hover:border-primary/50 hover:shadow-md transition-all"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-100 rounded-lg">
+            <div className="p-3 bg-success/10 rounded-lg">
               <svg
-                className="w-6 h-6 text-green-600"
+                className="w-6 h-6 text-success"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -89,8 +89,8 @@ export default function AdminDashboard() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Curriculum</h3>
-              <p className="text-sm text-gray-500">Edit subjects and concepts</p>
+              <h3 className="font-semibold text-foreground">Curriculum</h3>
+              <p className="text-sm text-muted-foreground">Edit subjects and concepts</p>
             </div>
           </div>
         </Link>
@@ -98,12 +98,12 @@ export default function AdminDashboard() {
         {/* Analytics Card */}
         <Link
           href="/admin/analytics"
-          className="block p-6 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all"
+          className="block p-6 bg-card rounded-lg shadow-sm border border-border hover:border-primary/50 hover:shadow-md transition-all"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-orange-100 rounded-lg">
+            <div className="p-3 bg-warning/10 rounded-lg">
               <svg
-                className="w-6 h-6 text-orange-600"
+                className="w-6 h-6 text-warning"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -117,8 +117,8 @@ export default function AdminDashboard() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Analytics</h3>
-              <p className="text-sm text-gray-500">View platform metrics</p>
+              <h3 className="font-semibold text-foreground">Analytics</h3>
+              <p className="text-sm text-muted-foreground">View platform metrics</p>
             </div>
           </div>
         </Link>

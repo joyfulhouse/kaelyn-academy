@@ -251,12 +251,12 @@ export default function ParentReportsPage() {
     ? getAvatarById(child.preferences.avatarId)
     : null;
 
-  const achievementColors: Record<string, string> = {
-    milestone: "yellow",
-    streak: "orange",
-    mastery: "blue",
-    completion: "green",
-    exploration: "purple",
+  const achievementIcons: Record<string, { icon: string; color: string }> = {
+    milestone: { icon: "yellow", color: "text-warning bg-warning/10" },
+    streak: { icon: "orange", color: "text-warning bg-warning/10" },
+    mastery: { icon: "blue", color: "text-info bg-info/10" },
+    completion: { icon: "green", color: "text-success bg-success/10" },
+    exploration: { icon: "purple", color: "text-primary bg-primary/10" },
   };
 
   return (
@@ -503,28 +503,22 @@ export default function ParentReportsPage() {
                   </div>
                 ) : (
                   progress.recentAchievements.map((achievement) => {
-                    const colorName =
-                      achievementColors[achievement.type] || "gray";
+                    const style =
+                      achievementIcons[achievement.type] || { icon: "gray", color: "text-muted-foreground bg-muted" };
                     return (
                       <div
                         key={achievement.id}
-                        className={`flex items-center gap-3 p-3 bg-${colorName}-500/10 rounded-lg`}
+                        className={`flex items-center gap-3 p-3 rounded-lg ${style.color}`}
                       >
                         {achievement.type === "streak" ? (
-                          <Flame
-                            className={`h-8 w-8 text-${colorName}-500`}
-                          />
+                          <Flame className="h-8 w-8" />
                         ) : achievement.type === "mastery" ? (
-                          <Target
-                            className={`h-8 w-8 text-${colorName}-500`}
-                          />
+                          <Target className="h-8 w-8" />
                         ) : (
-                          <Award
-                            className={`h-8 w-8 text-${colorName}-500`}
-                          />
+                          <Award className="h-8 w-8" />
                         )}
                         <div>
-                          <div className="font-medium">{achievement.name}</div>
+                          <div className="font-medium text-foreground">{achievement.name}</div>
                           <div className="text-sm text-muted-foreground">
                             {achievement.description}
                           </div>
@@ -547,8 +541,8 @@ export default function ParentReportsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {progress.subjects.length === 0 ? (
-                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-1">
+                <div className="p-4 bg-info/10 border border-info/20 rounded-lg">
+                  <h4 className="font-medium text-info mb-1">
                     Get Started
                   </h4>
                   <p className="text-sm text-muted-foreground">
@@ -564,9 +558,9 @@ export default function ParentReportsPage() {
                     .map((subject) => (
                       <div
                         key={subject.subjectId}
-                        className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg"
+                        className="p-4 bg-info/10 border border-info/20 rounded-lg"
                       >
-                        <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-1">
+                        <h4 className="font-medium text-info mb-1">
                           Focus on {subject.subjectName}
                         </h4>
                         <p className="text-sm text-muted-foreground">
@@ -582,9 +576,9 @@ export default function ParentReportsPage() {
                     .map((subject) => (
                       <div
                         key={subject.subjectId}
-                        className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg"
+                        className="p-4 bg-success/10 border border-success/20 rounded-lg"
                       >
-                        <h4 className="font-medium text-green-700 dark:text-green-300 mb-1">
+                        <h4 className="font-medium text-success mb-1">
                           Excellent Progress in {subject.subjectName}!
                         </h4>
                         <p className="text-sm text-muted-foreground">
@@ -595,8 +589,8 @@ export default function ParentReportsPage() {
                       </div>
                     ))}
                   {progress.currentStreak >= 7 && (
-                    <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                      <h4 className="font-medium text-orange-700 dark:text-orange-300 mb-1">
+                    <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
+                      <h4 className="font-medium text-warning mb-1">
                         Amazing Streak!
                       </h4>
                       <p className="text-sm text-muted-foreground">

@@ -369,8 +369,8 @@ export default function ClassesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-blue-500/10">
-                <Users className="h-5 w-5 text-blue-500" />
+              <div className="p-3 rounded-full bg-info/10">
+                <Users className="h-5 w-5 text-info" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.totalStudents}</div>
@@ -382,8 +382,8 @@ export default function ClassesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-green-500/10">
-                <TrendingUp className="h-5 w-5 text-green-500" />
+              <div className="p-3 rounded-full bg-success/10">
+                <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.averageProgress}%</div>
@@ -395,8 +395,8 @@ export default function ClassesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-purple-500/10">
-                <Calendar className="h-5 w-5 text-purple-500" />
+              <div className="p-3 rounded-full bg-role-teacher/10">
+                <Calendar className="h-5 w-5 text-role-teacher" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{new Date().getFullYear()}-{new Date().getFullYear() + 1}</div>

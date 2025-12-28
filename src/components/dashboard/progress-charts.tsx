@@ -160,8 +160,8 @@ export function StreakChart({ currentStreak, longestStreak }: { currentStreak: n
           key={i}
           className={`w-4 h-4 rounded-sm ${
             day.active
-              ? "bg-gradient-to-br from-green-400 to-green-600"
-              : "bg-gray-200"
+              ? "bg-gradient-to-br from-success/70 to-success"
+              : "bg-muted"
           }`}
           title={`Day ${day.day}`}
         />
@@ -204,7 +204,7 @@ export function CircularProgress({ value, label, color }: { value: number; label
           <span className="text-2xl font-bold">{value}%</span>
         </div>
       </div>
-      <span className="mt-2 text-sm text-gray-600">{label}</span>
+      <span className="mt-2 text-sm text-muted-foreground">{label}</span>
     </div>
   );
 }

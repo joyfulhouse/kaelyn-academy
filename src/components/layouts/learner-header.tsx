@@ -51,7 +51,7 @@ export function LearnerHeader({ user, currentStreak, totalStars }: LearnerHeader
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/50 text-accent-foreground">
-                  <Flame className="h-4 w-4 text-orange-500" />
+                  <Flame className="h-4 w-4 text-warning" />
                   <span className="text-sm font-medium">{currentStreak}</span>
                 </div>
               </TooltipTrigger>
@@ -64,7 +64,7 @@ export function LearnerHeader({ user, currentStreak, totalStars }: LearnerHeader
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/50 text-accent-foreground">
-                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                  <Star className="h-4 w-4 text-warning fill-warning" />
                   <span className="text-sm font-medium">{totalStars.toLocaleString()}</span>
                 </div>
               </TooltipTrigger>

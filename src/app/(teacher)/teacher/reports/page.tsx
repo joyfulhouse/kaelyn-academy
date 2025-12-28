@@ -111,9 +111,9 @@ interface ReportData {
 function getTrendIcon(trend: string) {
   switch (trend) {
     case "up":
-      return <TrendingUp className="h-4 w-4 text-green-500" />;
+      return <TrendingUp className="h-4 w-4 text-success" />;
     case "down":
-      return <TrendingDown className="h-4 w-4 text-red-500" />;
+      return <TrendingDown className="h-4 w-4 text-destructive" />;
     default:
       return <span className="text-muted-foreground">—</span>;
   }
@@ -122,11 +122,11 @@ function getTrendIcon(trend: string) {
 function getStatusBadge(status: string) {
   switch (status) {
     case "excelling":
-      return <Badge className="bg-green-500">Excelling</Badge>;
+      return <Badge className="bg-success">Excelling</Badge>;
     case "struggling":
       return <Badge variant="destructive">Struggling</Badge>;
     case "needs-attention":
-      return <Badge className="bg-amber-500">Needs Attention</Badge>;
+      return <Badge className="bg-warning">Needs Attention</Badge>;
     default:
       return <Badge variant="secondary">On Track</Badge>;
   }
@@ -261,7 +261,7 @@ export default function ReportsPage() {
         <h1 className="text-3xl font-bold text-foreground">Reports</h1>
         <Card>
           <CardContent className="pt-6 text-center">
-            <p className="text-red-600">{error}</p>
+            <p className="text-destructive">{error}</p>
             <Button onClick={fetchReports} className="mt-4">
               Try Again
             </Button>
@@ -278,9 +278,9 @@ export default function ReportsPage() {
   const { summary, weeklyProgress, subjectPerformance, studentPerformance, engagementData, assignmentCompletion, classes } = data;
 
   const assignmentCompletionData = [
-    { name: "Completed", value: assignmentCompletion.completed, color: "#10b981" },
-    { name: "In Progress", value: assignmentCompletion.inProgress, color: "#f59e0b" },
-    { name: "Not Started", value: assignmentCompletion.notStarted, color: "#ef4444" },
+    { name: "Completed", value: assignmentCompletion.completed, color: "hsl(var(--success))" },
+    { name: "In Progress", value: assignmentCompletion.inProgress, color: "hsl(var(--warning))" },
+    { name: "Not Started", value: assignmentCompletion.notStarted, color: "hsl(var(--destructive))" },
   ];
 
   return (
@@ -301,7 +301,7 @@ export default function ReportsPage() {
             disabled={!data || exportStatus === "exporting"}
           >
             {exportStatus === "success" ? (
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-success" />
             ) : exportStatus === "exporting" ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -373,8 +373,8 @@ export default function ReportsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-green-500/10">
-                <Target className="h-5 w-5 text-green-500" />
+              <div className="p-3 rounded-full bg-success/10">
+                <Target className="h-5 w-5 text-success" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.avgMastery}%</div>
@@ -386,8 +386,8 @@ export default function ReportsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-blue-500/10">
-                <Users className="h-5 w-5 text-blue-500" />
+              <div className="p-3 rounded-full bg-info/10">
+                <Users className="h-5 w-5 text-info" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.totalStudents}</div>
@@ -399,8 +399,8 @@ export default function ReportsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-amber-500/10">
-                <Calendar className="h-5 w-5 text-amber-500" />
+              <div className="p-3 rounded-full bg-warning/10">
+                <Calendar className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.activeToday}</div>
@@ -422,7 +422,7 @@ export default function ReportsPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={weeklyProgress}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="week" tick={{ fontSize: 12 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
                 <Tooltip
@@ -435,15 +435,15 @@ export default function ReportsPage() {
                 <Area
                   type="monotone"
                   dataKey="progress"
-                  stroke="#3b82f6"
-                  fill="#3b82f680"
+                  stroke="hsl(var(--info))"
+                  fill="hsl(var(--info) / 0.5)"
                   name="Progress"
                 />
                 <Area
                   type="monotone"
                   dataKey="mastery"
-                  stroke="#10b981"
-                  fill="#10b98180"
+                  stroke="hsl(var(--success))"
+                  fill="hsl(var(--success) / 0.5)"
                   name="Mastery"
                 />
               </AreaChart>
@@ -461,7 +461,7 @@ export default function ReportsPage() {
             {subjectPerformance.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={subjectPerformance} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12 }} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={80} />
                   <Tooltip
@@ -496,7 +496,7 @@ export default function ReportsPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={engagementData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="day" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip
@@ -506,7 +506,7 @@ export default function ReportsPage() {
                     borderRadius: "8px",
                   }}
                 />
-                <Bar dataKey="active" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Active Students" />
+                <Bar dataKey="active" fill="hsl(var(--role-teacher))" radius={[4, 4, 0, 0]} name="Active Students" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

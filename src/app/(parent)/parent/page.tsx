@@ -169,7 +169,7 @@ export default function ParentDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
+        <Loader2 className="h-12 w-12 animate-spin text-role-parent" />
       </div>
     );
   }
@@ -177,10 +177,10 @@ export default function ParentDashboard() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
+        <h1 className="text-3xl font-bold text-foreground">Parent Dashboard</h1>
         <Card className="border-0 shadow-md">
           <CardContent className="pt-6 text-center">
-            <p className="text-red-600">{error}</p>
+            <p className="text-destructive">{error}</p>
           </CardContent>
         </Card>
       </div>
@@ -190,10 +190,10 @@ export default function ParentDashboard() {
   if (children.length === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
+        <h1 className="text-3xl font-bold text-foreground">Parent Dashboard</h1>
         <Card className="border-0 shadow-md">
           <CardContent className="pt-6 text-center">
-            <p className="text-gray-600 mb-4">No children registered yet.</p>
+            <p className="text-muted-foreground mb-4">No children registered yet.</p>
             <Button asChild>
               <a href="/parent/children/add">Add a Child</a>
             </Button>
@@ -213,14 +213,14 @@ export default function ParentDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">Parent Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
             Track your children&apos;s learning progress
           </p>
         </div>
         <Button
           variant="outline"
-          className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 gap-2"
+          className="border-role-parent/30 text-role-parent hover:bg-role-parent/10 gap-2"
           onClick={handleDownloadReport}
           disabled={isGeneratingReport || !currentChild}
         >
@@ -247,20 +247,20 @@ export default function ParentDashboard() {
                 onClick={() => setSelectedChild(child.id)}
                 className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all min-w-[200px] ${
                   selectedChild === child.id
-                    ? "border-emerald-500 bg-emerald-50"
-                    : "border-gray-200 hover:border-emerald-200"
+                    ? "border-role-parent bg-role-parent/10"
+                    : "border-border hover:border-role-parent/50"
                 }`}
               >
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={child.avatarUrl} />
-                  <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-teal-500 text-white text-lg">
+                  <AvatarFallback className="bg-role-parent text-white text-lg">
                     {child.name[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-left">
-                  <div className="font-semibold">{child.name}</div>
-                  <div className="text-sm text-gray-500">Grade {child.gradeLevel}</div>
-                  <div className="text-xs text-emerald-600">
+                  <div className="font-semibold text-foreground">{child.name}</div>
+                  <div className="text-sm text-muted-foreground">Grade {child.gradeLevel}</div>
+                  <div className="text-xs text-role-parent">
                     {child.overallProgress}% complete
                   </div>
                 </div>
@@ -274,28 +274,28 @@ export default function ParentDashboard() {
         <>
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="border-0 shadow-md bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
+            <Card className="border-0 shadow-md bg-role-parent text-white">
               <CardContent className="p-4">
                 <div className="text-3xl font-bold">{currentChild.overallProgress}%</div>
-                <div className="text-emerald-100 text-sm">Overall Progress</div>
+                <div className="text-white/80 text-sm">Overall Progress</div>
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-md bg-gradient-to-br from-teal-500 to-teal-600 text-white">
+            <Card className="border-0 shadow-md bg-success text-white">
               <CardContent className="p-4">
                 <div className="text-3xl font-bold">{totalTimeThisWeek}</div>
-                <div className="text-teal-100 text-sm">Minutes This Week</div>
+                <div className="text-white/80 text-sm">Minutes This Week</div>
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-md bg-gradient-to-br from-cyan-500 to-cyan-600 text-white">
+            <Card className="border-0 shadow-md bg-info text-white">
               <CardContent className="p-4">
                 <div className="text-3xl font-bold">{totalLessonsThisWeek}</div>
-                <div className="text-cyan-100 text-sm">Lessons This Week</div>
+                <div className="text-white/80 text-sm">Lessons This Week</div>
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-md bg-gradient-to-br from-sky-500 to-sky-600 text-white">
+            <Card className="border-0 shadow-md bg-primary text-white">
               <CardContent className="p-4">
                 <div className="text-3xl font-bold">A</div>
-                <div className="text-sky-100 text-sm">Average Grade</div>
+                <div className="text-white/80 text-sm">Average Grade</div>
               </CardContent>
             </Card>
           </div>
@@ -326,12 +326,12 @@ export default function ParentDashboard() {
                   {currentChild.subjects.map((subject) => (
                     <div key={subject.subjectName}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span>{subject.subjectName}</span>
-                        <span className="font-medium">{subject.masteryLevel}%</span>
+                        <span className="text-foreground">{subject.subjectName}</span>
+                        <span className="font-medium text-foreground">{subject.masteryLevel}%</span>
                       </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all"
+                          className="h-full bg-role-parent rounded-full transition-all"
                           style={{ width: `${subject.masteryLevel}%` }}
                         />
                       </div>
@@ -354,11 +354,11 @@ export default function ParentDashboard() {
           </Card>
 
           {/* AI-Powered Recommendations */}
-          <Card className="border-0 shadow-md border-l-4 border-l-amber-400">
+          <Card className="border-0 shadow-md border-l-4 border-l-warning">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <Lightbulb className="h-5 w-5 text-amber-500" />
+                  <Lightbulb className="h-5 w-5 text-warning" />
                   Personalized Recommendations
                 </span>
                 <Button
@@ -366,7 +366,7 @@ export default function ParentDashboard() {
                   size="sm"
                   onClick={() => fetchRecommendations(currentChild.id)}
                   disabled={recommendationsLoading}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <RefreshCw className={`h-4 w-4 ${recommendationsLoading ? "animate-spin" : ""}`} />
                 </Button>
@@ -389,7 +389,7 @@ export default function ParentDashboard() {
                   ))}
                 </div>
               ) : recommendations.length === 0 ? (
-                <p className="text-gray-600 text-center py-4">
+                <p className="text-muted-foreground text-center py-4">
                   No recommendations available yet. Complete more activities to receive personalized guidance!
                 </p>
               ) : (
@@ -397,29 +397,29 @@ export default function ParentDashboard() {
                   {recommendations.map((rec, idx) => (
                     <li key={idx} className="flex items-start gap-3">
                       <span className="mt-0.5">
-                        {rec.type === "focus" && <Target className="h-5 w-5 text-amber-500" />}
-                        {rec.type === "celebrate" && <Trophy className="h-5 w-5 text-emerald-500" />}
-                        {rec.type === "encourage" && <Heart className="h-5 w-5 text-rose-500" />}
-                        {rec.type === "challenge" && <Lightbulb className="h-5 w-5 text-blue-500" />}
-                        {rec.type === "routine" && <Clock className="h-5 w-5 text-purple-500" />}
+                        {rec.type === "focus" && <Target className="h-5 w-5 text-warning" />}
+                        {rec.type === "celebrate" && <Trophy className="h-5 w-5 text-success" />}
+                        {rec.type === "encourage" && <Heart className="h-5 w-5 text-destructive" />}
+                        {rec.type === "challenge" && <Lightbulb className="h-5 w-5 text-info" />}
+                        {rec.type === "routine" && <Clock className="h-5 w-5 text-primary" />}
                       </span>
                       <div className="flex-1">
-                        <div className="font-medium flex items-center gap-2">
+                        <div className="font-medium flex items-center gap-2 text-foreground">
                           {rec.title}
                           {rec.priority === "high" && (
-                            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                            <span className="text-xs bg-warning/20 text-warning px-1.5 py-0.5 rounded">
                               Priority
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-600 mt-0.5">
+                        <div className="text-sm text-muted-foreground mt-0.5">
                           {rec.description}
                         </div>
                         {rec.actionItems && rec.actionItems.length > 0 && (
-                          <ul className="mt-2 text-sm text-gray-500 space-y-1">
+                          <ul className="mt-2 text-sm text-muted-foreground space-y-1">
                             {rec.actionItems.map((item, itemIdx) => (
                               <li key={itemIdx} className="flex items-center gap-1.5">
-                                <span className="h-1 w-1 bg-gray-400 rounded-full" />
+                                <span className="h-1 w-1 bg-muted-foreground rounded-full" />
                                 {item}
                               </li>
                             ))}

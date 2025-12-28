@@ -117,7 +117,7 @@ function getStatusBadge(status: string, dueDate: string | null, submitted: numbe
   const isComplete = submitted === total && total > 0 && status === "completed";
 
   if (isComplete) {
-    return <Badge className="bg-green-500">Completed</Badge>;
+    return <Badge className="bg-success">Completed</Badge>;
   }
   if (isPastDue) {
     return <Badge variant="destructive">Past Due</Badge>;
@@ -318,8 +318,8 @@ export default function AssignmentsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-amber-500/10">
-                <Clock className="h-5 w-5 text-amber-500" />
+              <div className="p-3 rounded-full bg-warning/10">
+                <Clock className="h-5 w-5 text-warning" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.needsGrading}</div>
@@ -331,8 +331,8 @@ export default function AssignmentsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-green-500/10">
-                <CheckCircle className="h-5 w-5 text-green-500" />
+              <div className="p-3 rounded-full bg-success/10">
+                <CheckCircle className="h-5 w-5 text-success" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.totalSubmissions}</div>
@@ -344,8 +344,8 @@ export default function AssignmentsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-blue-500/10">
-                <Users className="h-5 w-5 text-blue-500" />
+              <div className="p-3 rounded-full bg-info/10">
+                <Users className="h-5 w-5 text-info" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{summary.completionRate}%</div>

@@ -134,7 +134,7 @@ export default function AdminAnalytics() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
@@ -142,7 +142,7 @@ export default function AdminAnalytics() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <p className="text-red-600">{error}</p>
+        <p className="text-destructive">{error}</p>
         <Button onClick={fetchData}>Retry</Button>
       </div>
     );
@@ -151,7 +151,7 @@ export default function AdminAnalytics() {
   if (!data) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-gray-500">No analytics data available</p>
+        <p className="text-muted-foreground">No analytics data available</p>
       </div>
     );
   }
@@ -163,8 +163,8 @@ export default function AdminAnalytics() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Platform Analytics</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">Platform Analytics</h1>
+          <p className="text-muted-foreground mt-1">
             Platform-wide metrics and insights
           </p>
         </div>
@@ -175,7 +175,6 @@ export default function AdminAnalytics() {
               variant={dateRange === range ? "default" : "outline"}
               size="sm"
               onClick={() => setDateRange(range)}
-              className={dateRange === range ? "bg-blue-600" : ""}
             >
               {range === "7d" ? "7 Days" : range === "30d" ? "30 Days" : "90 Days"}
             </Button>
@@ -187,66 +186,66 @@ export default function AdminAnalytics() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card className="border-0 shadow-md">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-foreground">
               {formatNumber(stats.totalUsers)}
             </div>
-            <div className="text-sm text-gray-500">Total Users</div>
-            <div className={`text-xs mt-1 ${changes.users.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+            <div className="text-sm text-muted-foreground">Total Users</div>
+            <div className={`text-xs mt-1 ${changes.users.startsWith("+") ? "text-success" : "text-destructive"}`}>
               {changes.users} from last period
             </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-foreground">
               {formatNumber(stats.activeUsers)}
             </div>
-            <div className="text-sm text-gray-500">Active Users</div>
-            <div className={`text-xs mt-1 ${changes.activeUsers.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+            <div className="text-sm text-muted-foreground">Active Users</div>
+            <div className={`text-xs mt-1 ${changes.activeUsers.startsWith("+") ? "text-success" : "text-destructive"}`}>
               {changes.activeUsers} from last period
             </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-foreground">
               {stats.totalOrganizations}
             </div>
-            <div className="text-sm text-gray-500">Organizations</div>
-            <div className={`text-xs mt-1 ${changes.organizations.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+            <div className="text-sm text-muted-foreground">Organizations</div>
+            <div className={`text-xs mt-1 ${changes.organizations.startsWith("+") ? "text-success" : "text-destructive"}`}>
               {changes.organizations} this period
             </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-foreground">
               {formatNumber(stats.totalLessonsCompleted)}
             </div>
-            <div className="text-sm text-gray-500">Lessons Done</div>
-            <div className={`text-xs mt-1 ${changes.lessonsCompleted.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+            <div className="text-sm text-muted-foreground">Lessons Done</div>
+            <div className={`text-xs mt-1 ${changes.lessonsCompleted.startsWith("+") ? "text-success" : "text-destructive"}`}>
               {changes.lessonsCompleted} from last period
             </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-foreground">
               {stats.averageMastery}%
             </div>
-            <div className="text-sm text-gray-500">Avg. Mastery</div>
-            <div className={`text-xs mt-1 ${changes.averageMastery.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+            <div className="text-sm text-muted-foreground">Avg. Mastery</div>
+            <div className={`text-xs mt-1 ${changes.averageMastery.startsWith("+") ? "text-success" : "text-destructive"}`}>
               {changes.averageMastery} from last period
             </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-foreground">
               {formatNumber(Math.round(stats.totalTimeSpent / 60))}h
             </div>
-            <div className="text-sm text-gray-500">Total Study Time</div>
-            <div className={`text-xs mt-1 ${changes.totalTimeSpent.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+            <div className="text-sm text-muted-foreground">Total Study Time</div>
+            <div className={`text-xs mt-1 ${changes.totalTimeSpent.startsWith("+") ? "text-success" : "text-destructive"}`}>
               {changes.totalTimeSpent} from last period
             </div>
           </CardContent>
@@ -440,7 +439,7 @@ export default function AdminAnalytics() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className="flex items-center justify-center h-[300px] text-muted-foreground">
               No organization data available yet
             </div>
           )}
@@ -460,30 +459,30 @@ export default function AdminAnalytics() {
                 const maxSessions = Math.max(...subjectEngagement.map((s) => s.sessions), 1);
                 return (
                   <div key={subject.subject} className="flex items-center gap-4">
-                    <div className="w-20 font-medium">{subject.subject}</div>
+                    <div className="w-20 font-medium text-foreground">{subject.subject}</div>
                     <div className="flex-1">
-                      <div className="h-8 bg-gray-100 rounded-lg overflow-hidden relative">
+                      <div className="h-8 bg-muted rounded-lg overflow-hidden relative">
                         <div
-                          className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg"
+                          className="h-full bg-gradient-to-r from-primary/70 to-primary rounded-lg"
                           style={{ width: `${(subject.sessions / maxSessions) * 100}%` }}
                         />
                         <div className="absolute inset-0 flex items-center px-3">
-                          <span className="text-sm font-medium text-gray-700">
+                          <span className="text-sm font-medium text-foreground">
                             {formatNumber(subject.sessions)} sessions
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="w-24 text-right">
-                      <div className="text-sm font-medium">{formatTime(subject.avgTime)}</div>
-                      <div className="text-xs text-gray-500">avg. session</div>
+                      <div className="text-sm font-medium text-foreground">{formatTime(subject.avgTime)}</div>
+                      <div className="text-xs text-muted-foreground">avg. session</div>
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[200px] text-gray-500">
+            <div className="flex items-center justify-center h-[200px] text-muted-foreground">
               No subject engagement data available yet
             </div>
           )}
@@ -491,7 +490,7 @@ export default function AdminAnalytics() {
       </Card>
 
       {/* AI Usage Stats */}
-      <Card className="border-0 shadow-md border-l-4 border-l-purple-500">
+      <Card className="border-0 shadow-md border-l-4 border-l-primary">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             AI Agent Usage
@@ -501,28 +500,28 @@ export default function AdminAnalytics() {
         <CardContent>
           <div className="grid md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
+              <div className="text-3xl font-bold text-primary">
                 {formatNumber(aiUsage.tutorSessions)}
               </div>
-              <div className="text-sm text-gray-500">Tutor Sessions</div>
+              <div className="text-sm text-muted-foreground">Tutor Sessions</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
+              <div className="text-3xl font-bold text-primary">
                 {formatNumber(aiUsage.problemsGenerated)}
               </div>
-              <div className="text-sm text-gray-500">Practice Problems Generated</div>
+              <div className="text-sm text-muted-foreground">Practice Problems Generated</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
+              <div className="text-3xl font-bold text-primary">
                 {aiUsage.helpfulRating > 0 ? `${aiUsage.helpfulRating}%` : "N/A"}
               </div>
-              <div className="text-sm text-gray-500">Helpful Rating</div>
+              <div className="text-sm text-muted-foreground">Helpful Rating</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
+              <div className="text-3xl font-bold text-primary">
                 {aiUsage.avgSessionDuration > 0 ? `${aiUsage.avgSessionDuration}min` : "N/A"}
               </div>
-              <div className="text-sm text-gray-500">Avg. Session Duration</div>
+              <div className="text-sm text-muted-foreground">Avg. Session Duration</div>
             </div>
           </div>
         </CardContent>

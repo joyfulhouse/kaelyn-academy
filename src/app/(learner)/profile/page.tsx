@@ -239,11 +239,11 @@ export default function LearnerProfilePage() {
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Request Sent Success Message */}
       {requestSent && (
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-success/30 bg-success/10">
           <CardContent className="py-4">
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <p className="text-green-800">
+              <CheckCircle2 className="h-5 w-5 text-success" />
+              <p className="text-success-foreground">
                 {requestSent === "password"
                   ? "Password reset request sent to your parent. They will receive an email to approve the change."
                   : "Account deletion request sent to your parent. They will review and respond to your request."}
@@ -255,7 +255,7 @@ export default function LearnerProfilePage() {
 
       {/* Profile Header */}
       <Card className="border-0 shadow-md overflow-hidden">
-        <div className="h-32 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+        <div className="h-32 bg-role-learner" />
         <CardContent className="relative pt-0 pb-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 -mt-16">
             <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
@@ -264,7 +264,7 @@ export default function LearnerProfilePage() {
                   {avatarData.emoji}
                 </AvatarFallback>
               ) : (
-                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white text-3xl">
+                <AvatarFallback className="bg-role-learner text-white text-3xl">
                   {(editedLearner?.name || learner.name)
                     .split(" ")
                     .map((n) => n[0])
@@ -311,28 +311,28 @@ export default function LearnerProfilePage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+        <Card className="border-0 shadow-md bg-role-learner text-white">
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-bold">{stats.lessonsCompleted}</div>
-            <div className="text-blue-100 text-sm">Lessons Done</div>
+            <div className="text-white/80 text-sm">Lessons Done</div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-green-500 to-green-600 text-white">
+        <Card className="border-0 shadow-md bg-success text-white">
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-bold">{stats.hoursLearned}h</div>
-            <div className="text-green-100 text-sm">Hours Learned</div>
+            <div className="text-white/80 text-sm">Hours Learned</div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+        <Card className="border-0 shadow-md bg-warning text-white">
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-bold">{stats.longestStreak}</div>
-            <div className="text-orange-100 text-sm">Day Best Streak</div>
+            <div className="text-white/80 text-sm">Day Best Streak</div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+        <Card className="border-0 shadow-md bg-primary text-white">
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-bold">{stats.conceptsMastered}</div>
-            <div className="text-purple-100 text-sm">Concepts Mastered</div>
+            <div className="text-white/80 text-sm">Concepts Mastered</div>
           </CardContent>
         </Card>
       </div>
@@ -478,7 +478,7 @@ export default function LearnerProfilePage() {
               {achievements.slice(0, 5).map((achievement) => (
                 <div
                   key={achievement.id}
-                  className="flex flex-col items-center p-4 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800"
+                  className="flex flex-col items-center p-4 bg-warning/10 rounded-xl border border-warning/30"
                 >
                   <div className="text-4xl mb-2">
                     {achievement.iconUrl?.startsWith("icon:")
