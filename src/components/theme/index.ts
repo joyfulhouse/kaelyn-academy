@@ -17,6 +17,10 @@ export { ThemeInitScript } from "./theme-init-script";
 export { ThemeSwitcher, ThemeToggle } from "./theme-switcher";
 export type { ThemeSwitcherProps } from "./theme-switcher";
 
+// Accessibility components
+export { AccessibilityMenu, HighContrastToggle } from "./accessibility-menu";
+export type { AccessibilityMenuProps } from "./accessibility-menu";
+
 // Hooks
 export {
   useTheme,
