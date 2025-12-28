@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { openPositions } from "@/data/careers";
 
 export const metadata: Metadata = {
   title: "Careers | Kaelyn's Academy",
@@ -90,55 +91,6 @@ const benefits = [
     icon: GraduationCap,
     title: "Learning Budget",
     description: "$2,000/year for courses and conferences",
-  },
-];
-
-// Note: In a real implementation, these would come from the database
-const openPositions = [
-  {
-    id: "1",
-    title: "Senior Full-Stack Engineer",
-    department: "Engineering",
-    location: "Remote (US)",
-    type: "Full-time",
-    description:
-      "Build the next generation of interactive learning experiences using React, Next.js, and Three.js.",
-  },
-  {
-    id: "2",
-    title: "Curriculum Designer - Mathematics",
-    department: "Curriculum",
-    location: "Remote (US)",
-    type: "Full-time",
-    description:
-      "Design engaging, standards-aligned math curriculum for K-12 students with interactive visualizations.",
-  },
-  {
-    id: "3",
-    title: "Product Designer",
-    department: "Design",
-    location: "Remote (US)",
-    type: "Full-time",
-    description:
-      "Create delightful, accessible user experiences for students, teachers, and parents.",
-  },
-  {
-    id: "4",
-    title: "Machine Learning Engineer",
-    department: "Engineering",
-    location: "Remote (US)",
-    type: "Full-time",
-    description:
-      "Build adaptive learning systems and AI-powered tutoring features that personalize education.",
-  },
-  {
-    id: "5",
-    title: "Customer Success Manager - Schools",
-    department: "Customer Success",
-    location: "Remote (US)",
-    type: "Full-time",
-    description:
-      "Help schools successfully implement Kaelyn's Academy and achieve their learning goals.",
   },
 ];
 
