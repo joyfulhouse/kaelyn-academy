@@ -6,6 +6,7 @@ import { learnerSubjectProgress, activityAttempts } from "@/lib/db/schema/progre
 import { subjects } from "@/lib/db/schema/curriculum";
 import { eq, and, sql, isNull, gte, inArray, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { subjectColors, colors } from "@/lib/colors";
 
 // Helper to get date range based on filter
 function getDateRange(range: string): Date {
@@ -200,14 +201,6 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Subject performance
-    const subjectColors: Record<string, string> = {
-      Math: "#3b82f6",
-      Reading: "#10b981",
-      Science: "#8b5cf6",
-      History: "#f59e0b",
-      Technology: "#ec4899",
-    };
-
     const subjectPerformanceData = await db
       .select({
         name: subjects.name,
@@ -221,7 +214,7 @@ export async function GET(request: NextRequest) {
     const subjectPerformance = subjectPerformanceData.map((s) => ({
       name: s.name,
       value: s.avgMastery,
-      color: subjectColors[s.name] || "#6b7280",
+      color: subjectColors[s.name as keyof typeof subjectColors] || colors.neutral[500],
     }));
 
     // 4. Student performance

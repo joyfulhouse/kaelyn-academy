@@ -7,6 +7,7 @@ import { lessonProgress, learnerSubjectProgress, activityAttempts } from "@/lib/
 import { tutoringConversations, tutoringMessages, generatedProblems } from "@/lib/db/schema/ai";
 import { eq, sql, gte, isNull, and, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { roleHexColors, colors } from "@/lib/colors";
 
 // GET /api/admin/analytics - Get platform-wide analytics
 export async function GET(request: NextRequest) {
@@ -199,12 +200,6 @@ export async function GET(request: NextRequest) {
     }));
 
     // Process role distribution
-    const roleColors: Record<string, string> = {
-      parent: "#10b981",
-      teacher: "#8b5cf6",
-      school_admin: "#f59e0b",
-      platform_admin: "#ef4444",
-    };
     const roleLabels: Record<string, string> = {
       parent: "Parents",
       teacher: "Teachers",
@@ -214,7 +209,7 @@ export async function GET(request: NextRequest) {
     const roleDistribution = roleDistributionData.map((row) => ({
       name: roleLabels[row.role] || row.role,
       value: row.count,
-      color: roleColors[row.role] || "#6b7280",
+      color: roleHexColors[row.role as keyof typeof roleHexColors] || colors.neutral[500],
     }));
 
     // Add learner count to role distribution
@@ -225,7 +220,7 @@ export async function GET(request: NextRequest) {
     roleDistribution.unshift({
       name: "Learners",
       value: learnerCount?.count || 0,
-      color: "#3b82f6",
+      color: roleHexColors.learner,
     });
 
     // Process daily activity - fill in missing days

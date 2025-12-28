@@ -58,12 +58,12 @@ export default function LandingPage() {
   ];
 
   const subjects = [
-    { name: "Mathematics", icon: Calculator, color: "from-blue-500 to-cyan-500" },
-    { name: "Reading & ELA", icon: BookOpen, color: "from-green-500 to-emerald-500" },
-    { name: "Science", icon: Microscope, color: "from-purple-500 to-violet-500" },
-    { name: "History", icon: Landmark, color: "from-orange-500 to-amber-500" },
-    { name: "Technology", icon: Laptop, color: "from-pink-500 to-rose-500" },
-    { name: "Art & Music", icon: Palette, color: "from-teal-500 to-cyan-500" },
+    { name: "Mathematics", icon: Calculator, color: "from-primary to-info" },
+    { name: "Reading & ELA", icon: BookOpen, color: "from-success to-success/80" },
+    { name: "Science", icon: Microscope, color: "from-primary/90 to-primary" },
+    { name: "History", icon: Landmark, color: "from-warning to-warning/80" },
+    { name: "Technology", icon: Laptop, color: "from-info to-info/80" },
+    { name: "Art & Music", icon: Palette, color: "from-accent-teal to-accent-cyan" },
   ];
 
   return (

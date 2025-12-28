@@ -136,6 +136,28 @@ export const subjectGradients = {
   science: "from-accent-purple to-primary",
   history: "from-warning to-warning/70",
   technology: "from-info to-accent-cyan",
+  art: "from-accent-teal to-accent-cyan",
+} as const;
+
+// Subject hex colors for API routes and charts
+export const subjectColors = {
+  Mathematics: colors.primary.DEFAULT,
+  Math: colors.primary.DEFAULT,
+  "Reading & ELA": colors.success.DEFAULT,
+  Reading: colors.success.DEFAULT,
+  Science: colors.accent.purple,
+  History: colors.warning.DEFAULT,
+  Technology: colors.accent.pink,
+  "Art & Music": colors.accent.teal,
+} as const;
+
+// Role hex colors for analytics
+export const roleHexColors = {
+  learner: colors.primary.DEFAULT,
+  parent: colors.success.DEFAULT,
+  teacher: colors.accent.purple,
+  school_admin: colors.warning.DEFAULT,
+  platform_admin: colors.destructive.DEFAULT,
 } as const;
 
 // Role colors

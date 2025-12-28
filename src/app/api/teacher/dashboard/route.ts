@@ -6,6 +6,7 @@ import { learnerSubjectProgress, activityAttempts } from "@/lib/db/schema/progre
 import { subjects } from "@/lib/db/schema/curriculum";
 import { eq, and, sql, isNull, lt, gte, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { colors } from "@/lib/colors";
 
 interface StudentAlert {
   id: string;
@@ -261,12 +262,18 @@ export async function GET() {
       : [];
 
     const totalTime = subjectData.reduce((acc, s) => acc + (s.totalTime || 0), 0);
+    const chartColors = [
+      colors.chart.blue,
+      colors.chart.green,
+      colors.chart.purple,
+      colors.chart.orange,
+      colors.chart.pink,
+    ];
     const subjectDistribution = subjectData.map((s, index) => {
-      const colors = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899"];
       return {
         name: s.subjectName,
         value: totalTime > 0 ? Math.round(((s.totalTime || 0) / totalTime) * 100) : 0,
-        color: colors[index % colors.length],
+        color: chartColors[index % chartColors.length],
       };
     });
 
