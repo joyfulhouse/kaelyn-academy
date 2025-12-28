@@ -24,7 +24,7 @@ export const DEV_USERS = {
     sub: "dev-admin-id",
     email: "admin@kaelyns.academy",
     name: "Dev Admin",
-    role: "admin",
+    role: "platform_admin",
   },
 } as const;
 
