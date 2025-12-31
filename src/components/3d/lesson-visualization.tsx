@@ -37,6 +37,16 @@ const AtomModel = dynamic(() => import("./science/atom-model").then(mod => ({ de
 const SolarSystem = dynamic(() => import("./science/solar-system").then(mod => ({ default: mod.SolarSystem })), { ssr: false });
 const WaterCycle = dynamic(() => import("./science/water-cycle").then(mod => ({ default: mod.WaterCycle })), { ssr: false });
 
+// Reading visualizations
+const Book3D = dynamic(() => import("./reading/book-3d").then(mod => ({ default: mod.Book3D })), { ssr: false });
+const WordCloud3D = dynamic(() => import("./reading/word-cloud").then(mod => ({ default: mod.WordCloud3D })), { ssr: false });
+const StoryScene = dynamic(() => import("./reading/story-scene").then(mod => ({ default: mod.StoryScene })), { ssr: false });
+
+// History visualizations
+const Timeline3D = dynamic(() => import("./history/timeline-3d").then(mod => ({ default: mod.Timeline3D })), { ssr: false });
+const HistoricalMonument = dynamic(() => import("./history/historical-monument").then(mod => ({ default: mod.HistoricalMonument })), { ssr: false });
+const WorldMap3D = dynamic(() => import("./history/world-map-3d").then(mod => ({ default: mod.WorldMap3D })), { ssr: false });
+
 interface LessonVisualizationProps {
   subjectId: string;
   lessonId: string;
@@ -159,6 +169,66 @@ const VisualizationRenderer = memo(function VisualizationRenderer({ config }: { 
 
     case "water-cycle":
       return <WaterCycle animate={true} />;
+
+    // Reading visualizations
+    case "book-3d":
+      return (
+        <Book3D
+          title={(props.title as string) ?? "My Book"}
+          author={(props.author as string) ?? "Author"}
+          pages={(props.pages as number) ?? 12}
+          animate={true}
+          showPageContent={(props.showPageContent as boolean) ?? true}
+        />
+      );
+
+    case "word-cloud":
+      return (
+        <WordCloud3D
+          animate={true}
+          showCategories={(props.showCategories as boolean) ?? false}
+          interactive={(props.interactive as boolean) ?? true}
+        />
+      );
+
+    case "story-scene":
+      return (
+        <StoryScene
+          sceneType={(props.sceneType as "forest" | "city" | "ocean" | "space" | "home" | "school") ?? "forest"}
+          timeOfDay={(props.timeOfDay as "day" | "night" | "sunset") ?? "day"}
+          showLabels={(props.showLabels as boolean) ?? true}
+          animate={true}
+        />
+      );
+
+    // History visualizations
+    case "timeline-3d":
+      return (
+        <Timeline3D
+          title={(props.title as string) ?? "Historical Timeline"}
+          animate={true}
+          showDescriptions={(props.showDescriptions as boolean) ?? true}
+        />
+      );
+
+    case "historical-monument":
+      return (
+        <HistoricalMonument
+          type={(props.type as "pyramid" | "colosseum" | "lighthouse" | "temple" | "castle" | "tower" | "wall") ?? "pyramid"}
+          animate={true}
+          showInfo={true}
+        />
+      );
+
+    case "world-map":
+      return (
+        <WorldMap3D
+          title={(props.title as string) ?? "World Map"}
+          animate={true}
+          showLabels={(props.showLabels as boolean) ?? true}
+          interactive={(props.interactive as boolean) ?? true}
+        />
+      );
 
     default:
       return null;

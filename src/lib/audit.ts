@@ -219,6 +219,40 @@ export const auditHelpers = {
       },
     });
   },
+
+  /**
+   * Log a custom action
+   */
+  async logAction(params: {
+    actorId: string;
+    actorRole: string;
+    actorEmail?: string;
+    organizationId?: string | null;
+    action: string;
+    resourceType: string;
+    resourceId: string;
+    resourceName?: string;
+    description?: string;
+    metadata?: Record<string, unknown>;
+    status?: "success" | "failure" | "pending";
+  }) {
+    const category = getCategoryForResourceType(params.resourceType);
+
+    await createAuditLog({
+      actorId: params.actorId,
+      actorRole: params.actorRole,
+      actorEmail: params.actorEmail,
+      organizationId: params.organizationId,
+      action: params.action as AuditAction,
+      category,
+      resourceType: params.resourceType,
+      resourceId: params.resourceId,
+      resourceName: params.resourceName,
+      description: params.description,
+      metadata: params.metadata,
+      status: params.status,
+    });
+  },
 };
 
 function getCategoryForResourceType(resourceType: string): AuditCategory {
@@ -226,6 +260,7 @@ function getCategoryForResourceType(resourceType: string): AuditCategory {
     user: AUDIT_CATEGORIES.USER,
     learner: AUDIT_CATEGORIES.LEARNER,
     organization: AUDIT_CATEGORIES.ORGANIZATION,
+    organization_domain: AUDIT_CATEGORIES.ORGANIZATION,
     subject: AUDIT_CATEGORIES.CONTENT,
     unit: AUDIT_CATEGORIES.CONTENT,
     lesson: AUDIT_CATEGORIES.CONTENT,

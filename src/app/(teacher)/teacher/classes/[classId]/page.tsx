@@ -44,6 +44,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AddStudentsDialog } from "@/components/teacher/enrollment/add-students-dialog";
+import { AnnouncementsList } from "@/components/teacher/announcements";
 
 interface ClassData {
   id: string;
@@ -307,6 +308,7 @@ export default function ClassDetailPage() {
         <TabsList>
           <TabsTrigger value="students">Students ({students.length})</TabsTrigger>
           <TabsTrigger value="assignments">Assignments ({assignments.length})</TabsTrigger>
+          <TabsTrigger value="announcements">Announcements</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -543,6 +545,10 @@ export default function ClassDetailPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="announcements" className="mt-6">
+          <AnnouncementsList classId={classId} className={classData.name} />
         </TabsContent>
 
         <TabsContent value="settings" className="mt-6">

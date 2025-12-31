@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { LearnerSidebar } from "@/components/layouts/learner-sidebar";
 import { LearnerHeader } from "@/components/layouts/learner-header";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { LearnerLayoutClient } from "@/components/layouts/learner-layout-client";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { db } from "@/lib/db";
 import { learners } from "@/lib/db/schema/users";
@@ -70,23 +71,25 @@ export default async function LearnerLayout({
 
   return (
     <ThemeProvider defaultGradeLevel={gradeLevel}>
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          <LearnerSidebar user={session.user} />
-          <SidebarInset className="flex flex-col flex-1">
-            <LearnerHeader
-              user={session.user}
-              currentStreak={currentStreak}
-              totalStars={totalStars}
-            />
-            <main className="flex-1 overflow-auto">
-              <div className="container mx-auto px-4 py-6 lg:px-8">
-                {children}
-              </div>
-            </main>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+      <LearnerLayoutClient>
+        <SidebarProvider>
+          <div className="flex min-h-screen w-full">
+            <LearnerSidebar user={session.user} gradeLevel={gradeLevel} />
+            <SidebarInset className="flex flex-col flex-1">
+              <LearnerHeader
+                user={session.user}
+                currentStreak={currentStreak}
+                totalStars={totalStars}
+              />
+              <main className="flex-1 overflow-auto">
+                <div className="container mx-auto px-4 py-6 lg:px-8">
+                  {children}
+                </div>
+              </main>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
+      </LearnerLayoutClient>
     </ThemeProvider>
   );
 }

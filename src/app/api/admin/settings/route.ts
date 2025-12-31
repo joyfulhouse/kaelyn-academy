@@ -158,16 +158,20 @@ export async function PUT(request: NextRequest) {
 
     // Audit log the change
     await db.insert(auditLogs).values({
-      userId: session.user.id,
-      action: "settings_updated",
-      entityType: "system_settings",
-      entityId: "default",
-      details: {
-        updatedCategories: Object.keys(parsed.data),
-        changes: parsed.data,
+      actorId: session.user.id,
+      actorRole: session.user.role ?? "admin",
+      actorEmail: session.user.email ?? undefined,
+      action: "settings.update",
+      category: "settings",
+      resourceType: "system_settings",
+      resourceId: undefined,
+      resourceName: "System Settings",
+      description: `Updated system settings: ${Object.keys(parsed.data).join(", ")}`,
+      metadata: {
+        changes: parsed.data as Record<string, { from: unknown; to: unknown }>,
+        ipAddress: request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? undefined,
+        userAgent: request.headers.get("user-agent") ?? undefined,
       },
-      ipAddress: request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null,
-      userAgent: request.headers.get("user-agent") ?? null,
     });
 
     return NextResponse.json({

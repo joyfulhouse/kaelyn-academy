@@ -20,6 +20,14 @@ export type VisualizationType =
   | "atom-model"
   | "solar-system"
   | "water-cycle"
+  // Reading visualizations
+  | "book-3d"
+  | "word-cloud"
+  | "story-scene"
+  // History visualizations
+  | "timeline-3d"
+  | "historical-monument"
+  | "world-map"
   // Generic
   | "none";
 
@@ -108,6 +116,50 @@ const explicitMappings: Record<string, VisualizationConfig> = {
   "3-weather": { type: "water-cycle", props: { showClouds: true } },
   "4-water-cycle": { type: "water-cycle", props: { detailed: true } },
   "5-earth-systems": { type: "water-cycle" },
+
+  // Reading - Books and Stories
+  "k-alphabet": { type: "book-3d", props: { title: "ABC Book", pages: 26 } },
+  "k-sight-words": { type: "word-cloud", props: { showCategories: false } },
+  "k-story-elements": { type: "story-scene", props: { sceneType: "home" } },
+  "1-phonics": { type: "word-cloud", props: { showCategories: true } },
+  "1-reading-stories": { type: "book-3d", props: { title: "My First Story" } },
+  "1-story-setting": { type: "story-scene", props: { sceneType: "forest" } },
+  "2-vocabulary": { type: "word-cloud", props: { showCategories: true } },
+  "2-fiction": { type: "story-scene", props: { sceneType: "home" } },
+  "3-reading-comprehension": { type: "book-3d", props: { showPageContent: true } },
+  "3-vocabulary-context": { type: "word-cloud", props: { interactive: true } },
+  "3-story-structure": { type: "story-scene", props: { showLabels: true } },
+  "4-literature": { type: "book-3d", props: { title: "Classic Tales" } },
+  "4-word-roots": { type: "word-cloud", props: { showCategories: true } },
+  "5-literary-elements": { type: "story-scene", props: { sceneType: "city" } },
+  "5-vocabulary-advanced": { type: "word-cloud", props: { showCategories: true } },
+  "6-literature-analysis": { type: "book-3d", props: { showPageContent: true } },
+
+  // History - Timeline and Events
+  "k-past-present": { type: "timeline-3d", props: { title: "Then and Now" } },
+  "1-american-symbols": { type: "historical-monument", props: { type: "lighthouse" } },
+  "1-community-history": { type: "timeline-3d", props: { title: "Our Community" } },
+  "2-american-history": { type: "timeline-3d", props: { title: "American History" } },
+  "2-famous-americans": { type: "historical-monument", props: { type: "lighthouse" } },
+  "3-native-americans": { type: "world-map", props: { title: "Native American Regions" } },
+  "3-explorers": { type: "world-map", props: { title: "Age of Exploration" } },
+  "4-colonial-america": { type: "timeline-3d", props: { title: "Colonial Period" } },
+  "4-revolution": { type: "timeline-3d", props: { title: "American Revolution" } },
+  "5-westward-expansion": { type: "world-map", props: { title: "Westward Expansion" } },
+  "5-civil-war": { type: "timeline-3d", props: { title: "Civil War Era" } },
+  "6-ancient-civilizations": { type: "historical-monument", props: { type: "pyramid" } },
+  "6-ancient-egypt": { type: "historical-monument", props: { type: "pyramid" } },
+  "6-ancient-greece": { type: "historical-monument", props: { type: "temple" } },
+  "6-ancient-rome": { type: "historical-monument", props: { type: "colosseum" } },
+  "7-medieval-europe": { type: "historical-monument", props: { type: "castle" } },
+  "7-world-geography": { type: "world-map", props: { showLabels: true } },
+  "8-world-history": { type: "timeline-3d", props: { title: "World History" } },
+  "8-renaissance": { type: "historical-monument", props: { type: "tower" } },
+  "9-us-history": { type: "timeline-3d", props: { title: "US History" } },
+  "9-world-geography": { type: "world-map", props: { interactive: true } },
+  "10-world-history": { type: "timeline-3d", props: { title: "Modern World" } },
+  "11-us-history-advanced": { type: "timeline-3d", props: { showDescriptions: true } },
+  "12-government": { type: "historical-monument", props: { type: "temple" } },
 };
 
 /**
@@ -125,6 +177,17 @@ const keywordPatterns: Array<{ pattern: RegExp; config: VisualizationConfig }> =
   { pattern: /solar\s*system|planet|sun|moon|earth|orbit/i, config: { type: "solar-system" } },
   { pattern: /atom|element|electron|proton|neutron|molecule/i, config: { type: "atom-model" } },
   { pattern: /water\s*cycle|evaporation|condensation|precipitation/i, config: { type: "water-cycle" } },
+
+  // Reading patterns
+  { pattern: /book|reading|chapter|novel|literature/i, config: { type: "book-3d" } },
+  { pattern: /vocabulary|words|spelling|phonics|syllable/i, config: { type: "word-cloud" } },
+  { pattern: /story|character|setting|plot|narrative|fiction/i, config: { type: "story-scene" } },
+
+  // History patterns
+  { pattern: /timeline|era|century|decade|period|chronolog/i, config: { type: "timeline-3d" } },
+  { pattern: /pyramid|colosseum|temple|castle|monument|landmark/i, config: { type: "historical-monument" } },
+  { pattern: /map|geography|continent|country|region|territory/i, config: { type: "world-map" } },
+  { pattern: /ancient|medieval|renaissance|revolution|war|civilization/i, config: { type: "timeline-3d" } },
 ];
 
 /**
@@ -133,8 +196,8 @@ const keywordPatterns: Array<{ pattern: RegExp; config: VisualizationConfig }> =
 const subjectDefaults: Record<string, VisualizationConfig> = {
   math: { type: "number-line" },
   science: { type: "atom-model" },
-  reading: { type: "none" },
-  history: { type: "none" },
+  reading: { type: "book-3d" },
+  history: { type: "timeline-3d" },
   technology: { type: "none" },
 };
 
@@ -183,5 +246,5 @@ export function getVisualizationConfig(
  * Check if a visualization type is available for a subject
  */
 export function hasVisualizationSupport(subjectId: string): boolean {
-  return subjectId === "math" || subjectId === "science";
+  return subjectId === "math" || subjectId === "science" || subjectId === "reading" || subjectId === "history";
 }

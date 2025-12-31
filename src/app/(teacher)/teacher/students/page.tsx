@@ -9,7 +9,6 @@ import {
   MoreVertical,
   Users,
   GraduationCap,
-  FileSpreadsheet,
   MessageSquare,
   Eye,
   BarChart3,
@@ -21,6 +20,7 @@ import {
   Pin,
   Trash2,
 } from "lucide-react";
+import { StudentBulkActions } from "@/components/teacher/student-bulk-actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -240,31 +240,6 @@ export default function TeacherStudentsPage() {
     });
   }, [students, searchQuery, classFilter, statusFilter]);
 
-  const handleExportCSV = () => {
-    const headers = ["Name", "Class", "Grade", "Progress", "Mastery", "Streak", "Status", "Last Active"];
-    const rows = filteredStudents.map((s) => [
-      s.name,
-      s.className,
-      `Grade ${formatGradeLevel(s.gradeLevel)}`,
-      `${s.progress}%`,
-      `${s.mastery}%`,
-      `${s.streak} days`,
-      s.status,
-      s.lastActive ? new Date(s.lastActive).toLocaleDateString() : "Never",
-    ]);
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `students-${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
-  };
-
   const handleSendMessage = async () => {
     if (!messageRecipient || !messageContent.trim()) return;
     setSending(true);
@@ -409,10 +384,7 @@ export default function TeacherStudentsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={handleExportCSV}>
-            <FileSpreadsheet className="h-4 w-4" />
-            Export CSV
-          </Button>
+          <StudentBulkActions classes={classes} onImportComplete={fetchData} />
         </div>
       </div>
 

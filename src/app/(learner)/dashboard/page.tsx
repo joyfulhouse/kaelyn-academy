@@ -19,13 +19,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   SubjectProgressChart,
   WeeklyActivityChart,
   MasteryPieChart,
-  StreakChart,
   CircularProgress,
   type MasteryBreakdown,
 } from "@/components/dashboard/progress-charts";
@@ -34,6 +32,7 @@ import {
   type AdaptiveDifficultyData,
 } from "@/components/dashboard/difficulty-visualization";
 import { RecommendationsWidget } from "@/components/dashboard/recommendations-widget";
+import { StreakWidget } from "@/components/dashboard/streak-widget";
 import { useTheme } from "@/components/providers/theme-provider";
 
 interface Learner {
@@ -222,7 +221,7 @@ export default function LearnerDashboard() {
   const totalLessons = subjects.reduce((acc, s) => acc + (s.totalLessons || 0), 0);
   const overallProgress = totalLessons > 0 ? Math.round((totalLessonsCompleted / totalLessons) * 100) : 0;
   const currentStreak = data?.summary?.currentStreak || 0;
-  const longestStreak = data?.summary?.longestStreak || 0;
+  // longestStreak is now handled by the StreakWidget component
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -404,31 +403,8 @@ export default function LearnerDashboard() {
         </Card>
       </div>
 
-      {/* Study Streak */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Flame className="h-5 w-5 text-warning" />
-              Study Streak
-            </CardTitle>
-            <Badge variant="secondary">Keep it going!</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <StreakChart currentStreak={currentStreak} longestStreak={longestStreak} />
-          <div className="mt-4 flex gap-8">
-            <div>
-              <p className="text-2xl font-bold text-success">{currentStreak}</p>
-              <p className="text-sm text-muted-foreground">Current Streak</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{longestStreak}</p>
-              <p className="text-sm text-muted-foreground">Longest Streak</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Study Streak - Enhanced with freeze/repair functionality */}
+      <StreakWidget />
 
       {/* Adaptive Difficulty */}
       {difficultyData && (

@@ -106,6 +106,98 @@ export const parentalConsentRecordsRelations = relations(parentalConsentRecords,
   }),
 }));
 
+/**
+ * Content Approval Requests
+ *
+ * This table stores content that requires parental approval before
+ * a learner can access it. This is triggered when parental controls
+ * have "requireApprovalForNew" enabled.
+ *
+ * Content Types:
+ * - subject: Access to a new subject
+ * - unit: Access to a specific unit
+ * - lesson: Access to a specific lesson
+ * - activity: Access to a specific activity
+ * - feature: Access to a platform feature (e.g., AI tutor, messaging)
+ * - external_link: Access to external content
+ */
+export const contentApprovalRequests = pgTable("content_approval_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  // Child requesting access
+  learnerId: uuid("learner_id")
+    .notNull()
+    .references(() => learners.id, { onDelete: "cascade" }),
+
+  // Parent who needs to approve
+  parentUserId: uuid("parent_user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  // Content being requested
+  contentType: varchar("content_type", { length: 50 }).notNull(),
+  // subject | unit | lesson | activity | feature | external_link
+
+  contentId: uuid("content_id"), // FK to the content table (subject/unit/lesson/activity)
+  contentTitle: varchar("content_title", { length: 255 }).notNull(),
+  contentDescription: text("content_description"),
+
+  // Additional metadata about the content
+  contentMetadata: jsonb("content_metadata").$type<{
+    subjectName?: string;
+    gradeLevel?: number;
+    estimatedMinutes?: number;
+    difficultyLevel?: number;
+    externalUrl?: string;
+    featureName?: string;
+  }>(),
+
+  // Approval status
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  // pending | approved | denied | expired
+
+  // Reason for request (optional message from learner)
+  requestReason: text("request_reason"),
+
+  // Parent response
+  responseReason: text("response_reason"), // Reason for denial (optional)
+  respondedAt: timestamp("responded_at"),
+  respondedBy: uuid("responded_by").references(() => users.id, { onDelete: "set null" }),
+
+  // Expiration (optional - auto-expire after X days if not responded)
+  expiresAt: timestamp("expires_at"),
+
+  // Audit trail
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  learnerIdIdx: index("approval_learner_id_idx").on(table.learnerId),
+  parentUserIdIdx: index("approval_parent_user_id_idx").on(table.parentUserId),
+  statusIdx: index("approval_status_idx").on(table.status),
+  contentTypeIdx: index("approval_content_type_idx").on(table.contentType),
+  pendingApprovalIdx: index("approval_pending_idx").on(table.parentUserId, table.status),
+}));
+
+// Relations for content approval requests
+export const contentApprovalRequestsRelations = relations(contentApprovalRequests, ({ one }) => ({
+  learner: one(learners, {
+    fields: [contentApprovalRequests.learnerId],
+    references: [learners.id],
+  }),
+  parent: one(users, {
+    fields: [contentApprovalRequests.parentUserId],
+    references: [users.id],
+    relationName: "parentApprovals",
+  }),
+  responder: one(users, {
+    fields: [contentApprovalRequests.respondedBy],
+    references: [users.id],
+    relationName: "responderApprovals",
+  }),
+}));
+
 // Type exports
 export type ParentalConsentRecord = typeof parentalConsentRecords.$inferSelect;
 export type NewParentalConsentRecord = typeof parentalConsentRecords.$inferInsert;
+export type ContentApprovalRequest = typeof contentApprovalRequests.$inferSelect;
+export type NewContentApprovalRequest = typeof contentApprovalRequests.$inferInsert;

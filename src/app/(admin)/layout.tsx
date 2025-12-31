@@ -69,6 +69,12 @@ export default async function AdminLayout({
                 >
                   Import
                 </Link>
+                <Link
+                  href="/admin/billing"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Billing
+                </Link>
               </nav>
             </div>
             <div className="flex items-center gap-4">

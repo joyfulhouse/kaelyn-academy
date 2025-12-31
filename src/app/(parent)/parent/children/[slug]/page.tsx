@@ -12,7 +12,10 @@ import {
   Shield,
   Bot,
   History,
+  Target,
+  Activity,
 } from "lucide-react";
+import { SessionMonitorWidget } from "@/components/dashboard/session-monitor-widget";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -329,7 +332,13 @@ export default async function ChildProfilePage({
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" asChild>
+            <Link href={`/parent/children/${slug}/sessions`}>
+              <Activity className="h-4 w-4 mr-2" />
+              Sessions
+            </Link>
+          </Button>
           <Button variant="outline" asChild>
             <Link href={`/parent/children/${slug}/activity`}>
               <History className="h-4 w-4 mr-2" />
@@ -340,6 +349,12 @@ export default async function ChildProfilePage({
             <Link href={`/parent/children/${slug}/tutor-history`}>
               <Bot className="h-4 w-4 mr-2" />
               AI Tutor
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href={`/parent/children/${slug}/goals`}>
+              <Target className="h-4 w-4 mr-2" />
+              Goals
             </Link>
           </Button>
           <Button variant="outline" asChild>
@@ -433,6 +448,13 @@ export default async function ChildProfilePage({
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          {/* Session Monitor Widget */}
+          <SessionMonitorWidget
+            childId={child.id}
+            childSlug={slug}
+            childName={child.name}
+          />
+
           <div className="grid lg:grid-cols-2 gap-6">
             {/* This Week */}
             <Card>

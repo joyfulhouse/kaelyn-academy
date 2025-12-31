@@ -59,7 +59,9 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
+  Globe,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Organization {
   id: string;
@@ -205,6 +207,7 @@ function StatsSkeleton() {
 }
 
 export default function AdminOrganizationsPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -599,6 +602,14 @@ export default function AdminOrganizationsPage() {
                       <DropdownMenuItem onClick={() => openEditDialog(org)}>
                         <Pencil className="h-4 w-4 mr-2" />
                         Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          router.push(`/admin/organizations/${org.id}/domains`)
+                        }
+                      >
+                        <Globe className="h-4 w-4 mr-2" />
+                        Manage Domains
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
