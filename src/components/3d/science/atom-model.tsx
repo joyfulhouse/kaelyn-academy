@@ -144,7 +144,7 @@ function ElectronShell({
   const electronRefs = useRef<THREE.Mesh[]>([]);
   const radius = size * (0.5 + shellNumber * 0.4);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!animate) return;
 
     // Rotate shell
@@ -153,10 +153,10 @@ function ElectronShell({
       groupRef.current.rotation.x = Math.PI / 6;
     }
 
-    // Make electrons pulse slightly
+    // Make electrons pulse slightly using clock.elapsedTime (more efficient than Date.now())
     electronRefs.current.forEach((mesh, i) => {
       if (mesh) {
-        const scale = 1 + Math.sin(Date.now() * 0.005 + i) * 0.1;
+        const scale = 1 + Math.sin(state.clock.elapsedTime * 5 + i) * 0.1;
         mesh.scale.setScalar(scale);
       }
     });
