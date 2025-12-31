@@ -1,14 +1,126 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 /**
- * CSRF Protection Middleware
+ * Middleware Security
  *
- * Validates that state-changing requests (POST, PUT, DELETE, PATCH) come from
- * the same origin. This protects against CSRF attacks where malicious sites
- * try to make requests on behalf of authenticated users.
+ * 1. Rate limiting for all API routes (defense in depth)
+ * 2. CSRF protection for state-changing requests
  */
+
+// ============================================================================
+// Rate Limiting Configuration
+// ============================================================================
+
+const isRedisConfigured = !!(
+  process.env.UPSTASH_REDIS_REST_URL &&
+  process.env.UPSTASH_REDIS_REST_TOKEN
+);
+
+// Initialize Redis and rate limiter only if configured
+const redis = isRedisConfigured
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
+  : null;
+
+// Global API rate limiter: 100 requests per minute per IP
+const apiRateLimiter = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(100, "1 m"),
+      prefix: "ratelimit:api:global",
+      analytics: true,
+    })
+  : null;
+
+// Shared rate limit configuration
+const API_RATE_LIMIT = 100;
+const API_WINDOW_MS = 60000;
+
+// In-memory fallback for development
+const memoryStore = new Map<string, { count: number; resetAt: number }>();
+let lastCleanup = Date.now();
+const CLEANUP_INTERVAL_MS = 60000;
+
+function cleanupMemoryStore(): void {
+  const now = Date.now();
+  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
+
+  lastCleanup = now;
+  for (const [key, entry] of memoryStore.entries()) {
+    if (entry.resetAt <= now) {
+      memoryStore.delete(key);
+    }
+  }
+}
+
+function getClientIdentifier(request: NextRequest): string {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) return forwardedFor.split(",")[0].trim();
+
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp;
+
+  return "unknown";
+}
+
+async function checkRateLimit(
+  request: NextRequest
+): Promise<{ success: boolean; remaining: number; reset: number }> {
+  const identifier = getClientIdentifier(request);
+
+  // Use Upstash Redis if available
+  if (apiRateLimiter) {
+    try {
+      const result = await apiRateLimiter.limit(identifier);
+      return {
+        success: result.success,
+        remaining: result.remaining,
+        reset: result.reset,
+      };
+    } catch (error) {
+      // If Redis fails, fall through to in-memory fallback
+      console.error("[Middleware] Redis rate limit check failed, using in-memory fallback:", error);
+    }
+  }
+
+  // Fallback to in-memory for development or Redis failure
+  cleanupMemoryStore();
+  const now = Date.now();
+  const key = `global:${identifier}`;
+  const entry = memoryStore.get(key);
+
+  if (!entry || entry.resetAt <= now) {
+    memoryStore.set(key, { count: 1, resetAt: now + API_WINDOW_MS });
+    return { success: true, remaining: API_RATE_LIMIT - 1, reset: now + API_WINDOW_MS };
+  }
+
+  if (entry.count >= API_RATE_LIMIT) {
+    return { success: false, remaining: 0, reset: entry.resetAt };
+  }
+
+  entry.count++;
+  return { success: true, remaining: API_RATE_LIMIT - entry.count, reset: entry.resetAt };
+}
+
+// Paths exempt from rate limiting
+const RATE_LIMIT_EXEMPT_PATHS = [
+  "/api/health", // Health checks for load balancers
+  "/api/auth", // NextAuth handles its own rate limiting
+];
+
+function isRateLimitExempt(pathname: string): boolean {
+  return RATE_LIMIT_EXEMPT_PATHS.some((path) => pathname.startsWith(path));
+}
+
+// ============================================================================
+// CSRF Protection Configuration
+// ============================================================================
 
 const ALLOWED_ORIGINS = [
   process.env.NEXTAUTH_URL,
@@ -127,8 +239,31 @@ function csrfProtection(request: NextRequest): NextResponse | null {
   return null;
 }
 
-export default auth((request) => {
-  // Run CSRF protection first
+export default auth(async (request) => {
+  const { pathname } = request.nextUrl;
+
+  // 1. Rate limiting for API routes (defense in depth)
+  if (pathname.startsWith("/api/") && !isRateLimitExempt(pathname)) {
+    const rateLimitResult = await checkRateLimit(request);
+
+    if (!rateLimitResult.success) {
+      const retryAfter = Math.ceil((rateLimitResult.reset - Date.now()) / 1000);
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later.", retryAfter },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+            "X-RateLimit-Limit": String(API_RATE_LIMIT),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(rateLimitResult.reset),
+          },
+        }
+      );
+    }
+  }
+
+  // 2. CSRF protection for state-changing requests
   const csrfResponse = csrfProtection(request);
   if (csrfResponse) {
     return csrfResponse;
