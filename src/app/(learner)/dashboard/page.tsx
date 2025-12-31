@@ -29,6 +29,10 @@ import {
   CircularProgress,
   type MasteryBreakdown,
 } from "@/components/dashboard/progress-charts";
+import {
+  DifficultyVisualization,
+  type AdaptiveDifficultyData,
+} from "@/components/dashboard/difficulty-visualization";
 import { useTheme } from "@/components/providers/theme-provider";
 
 interface Learner {
@@ -103,6 +107,7 @@ export default function LearnerDashboard() {
   const [data, setData] = useState<ProgressSummary | null>(null);
   const [learnerId, setLearnerId] = useState<string | null>(null);
   const [learnerName, setLearnerName] = useState<string>("");
+  const [difficultyData, setDifficultyData] = useState<AdaptiveDifficultyData | null>(null);
 
   const fetchLearner = useCallback(async () => {
     try {
@@ -136,6 +141,42 @@ export default function LearnerDashboard() {
     }
   }, [learnerId]);
 
+  const fetchDifficulty = useCallback(async () => {
+    if (!learnerId) return;
+
+    try {
+      const response = await fetch(`/api/learner/difficulty?learnerId=${learnerId}`);
+      if (response.ok) {
+        const result = await response.json();
+        setDifficultyData(result);
+      }
+    } catch (error) {
+      console.error("Failed to fetch difficulty:", error);
+    }
+  }, [learnerId]);
+
+  const handleDifficultyAdjustment = useCallback(
+    async (subjectId: string, direction: "easier" | "harder") => {
+      if (!learnerId) return;
+
+      try {
+        const response = await fetch("/api/learner/difficulty", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ learnerId, subjectId, direction }),
+        });
+
+        if (response.ok) {
+          // Refetch difficulty data
+          fetchDifficulty();
+        }
+      } catch (error) {
+        console.error("Failed to adjust difficulty:", error);
+      }
+    },
+    [learnerId, fetchDifficulty]
+  );
+
   useEffect(() => {
     if (status === "authenticated") {
       fetchLearner();
@@ -145,8 +186,9 @@ export default function LearnerDashboard() {
   useEffect(() => {
     if (learnerId) {
       fetchProgress();
+      fetchDifficulty();
     }
-  }, [learnerId, fetchProgress]);
+  }, [learnerId, fetchProgress, fetchDifficulty]);
 
   // Use real data from API with fallback to empty state
   const subjects: SubjectProgress[] = data?.summary?.subjects || [];
@@ -383,6 +425,14 @@ export default function LearnerDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Adaptive Difficulty */}
+      {difficultyData && (
+        <DifficultyVisualization
+          data={difficultyData}
+          onRequestAdjustment={handleDifficultyAdjustment}
+        />
+      )}
 
       {/* Recent Activity */}
       <Card>
