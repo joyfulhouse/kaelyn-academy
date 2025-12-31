@@ -27,3 +27,6 @@ export * from "./marketing";
 
 // COPPA Consent Records
 export * from "./consent";
+
+// Parent-Teacher Messaging
+export * from "./messaging";
