@@ -34,11 +34,27 @@ vi.mock("@/data/curriculum", () => ({
 }));
 
 describe("GET /api/public/stats", () => {
+  // Store original env vars for restoration
+  let originalSatisfaction: string | undefined;
+  let originalRating: string | undefined;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset environment variables
+    // Store and reset environment variables
+    originalSatisfaction = process.env.PUBLIC_PARENT_SATISFACTION;
+    originalRating = process.env.PUBLIC_APP_RATING;
     delete process.env.PUBLIC_PARENT_SATISFACTION;
     delete process.env.PUBLIC_APP_RATING;
+  });
+
+  afterEach(() => {
+    // Restore original env vars
+    if (originalSatisfaction !== undefined) {
+      process.env.PUBLIC_PARENT_SATISFACTION = originalSatisfaction;
+    }
+    if (originalRating !== undefined) {
+      process.env.PUBLIC_APP_RATING = originalRating;
+    }
   });
 
   it("should return public stats with 200 status", async () => {
