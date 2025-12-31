@@ -199,10 +199,10 @@ export function AssessmentTab({
               <Target className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="font-semibold text-foreground mb-2">
-              Coming Soon
+              No Assessment Available
             </h3>
             <p className="text-sm text-muted-foreground">
-              An assessment for this lesson is being developed.
+              This lesson does not have an assessment. Continue to the next lesson.
             </p>
           </div>
         </CardContent>

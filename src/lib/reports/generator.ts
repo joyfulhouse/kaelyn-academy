@@ -323,7 +323,7 @@ export async function generatePerformanceReport(
   studentId: string,
   config: ReportConfig
 ): Promise<ReportResult> {
-  const mockData: PerformanceReportData = {
+  const reportData: PerformanceReportData = {
     student: {
       id: studentId,
       name: "Sample Student",
@@ -374,15 +374,15 @@ export async function generatePerformanceReport(
     generatedBy: "system",
     type: "performance",
     format: config.format,
-    recordCount: mockData.trends.length,
+    recordCount: reportData.trends.length,
   };
 
-  const content = generateJSON(mockData);
+  const content = generateJSON(reportData);
   metadata.fileSize = calculateFileSize(content);
 
   return {
     metadata,
-    data: mockData,
+    data: reportData,
   };
 }
 
@@ -394,7 +394,7 @@ export async function generateCurriculumReport(
   gradeLevel: number,
   config: ReportConfig
 ): Promise<ReportResult> {
-  const mockData: CurriculumReportData = {
+  const curriculumData: CurriculumReportData = {
     subject: {
       id: subjectId,
       name: "Mathematics",
@@ -437,15 +437,15 @@ export async function generateCurriculumReport(
     generatedBy: "system",
     type: "curriculum",
     format: config.format,
-    recordCount: mockData.units.length,
+    recordCount: curriculumData.units.length,
   };
 
-  const content = generateJSON(mockData);
+  const content = generateJSON(curriculumData);
   metadata.fileSize = calculateFileSize(content);
 
   return {
     metadata,
-    data: mockData,
+    data: curriculumData,
   };
 }
 
