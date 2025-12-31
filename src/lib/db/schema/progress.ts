@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, integer, boolean, jsonb, real } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, text, timestamp, integer, boolean, jsonb, real, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { organizations } from "./organizations";
 import { learners } from "./users";
@@ -28,7 +28,12 @@ export const learnerSubjectProgress = pgTable("learner_subject_progress", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  // Composite index for efficient lookups by learner and subject
+  index("learner_subject_progress_learner_subject_idx").on(table.learnerId, table.subjectId),
+  // Index for organization filtering
+  index("learner_subject_progress_org_idx").on(table.organizationId),
+]);
 
 // Progress per unit
 export const unitProgress = pgTable("unit_progress", {
@@ -46,7 +51,10 @@ export const unitProgress = pgTable("unit_progress", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("unit_progress_learner_unit_idx").on(table.learnerId, table.unitId),
+  index("unit_progress_org_idx").on(table.organizationId),
+]);
 
 // Progress per lesson
 export const lessonProgress = pgTable("lesson_progress", {
@@ -75,7 +83,10 @@ export const lessonProgress = pgTable("lesson_progress", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("lesson_progress_learner_lesson_idx").on(table.learnerId, table.lessonId),
+  index("lesson_progress_org_idx").on(table.organizationId),
+]);
 
 // Concept mastery
 export const conceptMastery = pgTable("concept_mastery", {
@@ -102,7 +113,10 @@ export const conceptMastery = pgTable("concept_mastery", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("concept_mastery_learner_concept_idx").on(table.learnerId, table.conceptId),
+  index("concept_mastery_org_idx").on(table.organizationId),
+]);
 
 // Activity attempts (quizzes, exercises)
 export const activityAttempts = pgTable("activity_attempts", {
@@ -134,7 +148,10 @@ export const activityAttempts = pgTable("activity_attempts", {
   completedAt: timestamp("completed_at"),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("activity_attempts_learner_activity_idx").on(table.learnerId, table.activityId),
+  index("activity_attempts_org_idx").on(table.organizationId),
+]);
 
 // Achievements and badges
 export const achievements = pgTable("achievements", {
@@ -167,7 +184,10 @@ export const learnerAchievements = pgTable("learner_achievements", {
   notifiedAt: timestamp("notified_at"),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("learner_achievements_learner_idx").on(table.learnerId),
+  index("learner_achievements_org_idx").on(table.organizationId),
+]);
 
 // Relations
 export const learnerSubjectProgressRelations = relations(learnerSubjectProgress, ({ one }) => ({
