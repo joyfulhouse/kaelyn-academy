@@ -25,6 +25,7 @@
     "@ai-sdk/anthropic": "^3.0.1",
     "@ai-sdk/google": "^3.0.1",
     "@ai-sdk/openai": "^3.0.1",
+    "@ai-sdk/react": "^3.0.5",
     "@auth/drizzle-adapter": "^1.11.1",
     "@ax-llm/ax": "^16.0.3",
     "@escape.tech/graphql-armor-cost-limit": "^2.4.3",
