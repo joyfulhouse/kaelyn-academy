@@ -64,8 +64,8 @@ export async function POST(request: NextRequest) {
       return controlsBlock;
     }
 
-    // Get quiz configuration
-    const quizConfig = getQuizForLesson(lessonId);
+    // Get quiz configuration (lazy-loaded per grade)
+    const quizConfig = await getQuizForLesson(lessonId);
     if (!quizConfig) {
       return NextResponse.json(
         { error: "Quiz not found for this lesson" },
@@ -190,8 +190,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get quiz configuration to find quiz ID
-    const quizConfig = getQuizForLesson(lessonId);
+    // Get quiz configuration to find quiz ID (lazy-loaded per grade)
+    const quizConfig = await getQuizForLesson(lessonId);
     if (!quizConfig) {
       return NextResponse.json({
         hasQuiz: false,
