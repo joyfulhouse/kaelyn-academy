@@ -20,6 +20,7 @@ export {
   aslCurriculum,
   languageCurricula,
 } from "./languages";
+export { CurriculumIndex } from "./curriculum-index";
 
 import { mathCurriculum } from "./math";
 import { readingCurriculum } from "./reading";
@@ -27,6 +28,7 @@ import { scienceCurriculum } from "./science";
 import { historyCurriculum } from "./history";
 import { technologyCurriculum } from "./technology";
 import { languageCurricula } from "./languages";
+import { CurriculumIndex } from "./curriculum-index";
 import type { Subject, Curriculum, GradeLevel, Unit, Lesson } from "./types";
 
 /**
@@ -46,42 +48,64 @@ export const curriculum: Curriculum = {
 };
 
 /**
- * Get subject by ID
+ * Singleton CurriculumIndex for O(1) lookups
+ * Initialized lazily on first access
+ */
+let _curriculumIndex: CurriculumIndex | null = null;
+
+export function getCurriculumIndex(): CurriculumIndex {
+  if (!_curriculumIndex) {
+    _curriculumIndex = new CurriculumIndex(curriculum);
+  }
+  return _curriculumIndex;
+}
+
+/**
+ * Get subject by ID - O(1) via CurriculumIndex
  */
 export function getSubject(subjectId: string): Subject | undefined {
-  return curriculum.subjects.find((s) => s.id === subjectId);
+  return getCurriculumIndex().getSubject(subjectId);
 }
 
 /**
- * Get all subjects
+ * Get all subjects - O(1) via CurriculumIndex
  */
 export function getAllSubjects(): Subject[] {
-  return curriculum.subjects;
+  return getCurriculumIndex().getAllSubjects();
 }
 
 /**
- * Get units for a specific grade and subject
+ * Get units for a specific grade and subject - O(1) via CurriculumIndex
  */
 export function getUnitsForGrade(subjectId: string, grade: GradeLevel): Unit[] {
-  const subject = getSubject(subjectId);
-  if (!subject) return [];
-  return subject.grades[grade] || [];
+  return getCurriculumIndex().getUnitsForGrade(subjectId, grade);
 }
 
 /**
- * Get a specific lesson by ID
+ * Get a specific lesson by ID - O(1) via CurriculumIndex
+ * Note: subjectId and grade parameters are kept for backward compatibility
+ * but are no longer needed for the lookup
  */
 export function getLesson(
-  subjectId: string,
-  grade: GradeLevel,
+  _subjectId: string,
+  _grade: GradeLevel,
   lessonId: string
 ): Lesson | undefined {
-  const units = getUnitsForGrade(subjectId, grade);
-  for (const unit of units) {
-    const lesson = unit.lessons.find((l) => l.id === lessonId);
-    if (lesson) return lesson;
-  }
-  return undefined;
+  return getCurriculumIndex().getLesson(lessonId);
+}
+
+/**
+ * Get lesson by ID only - O(1) (preferred new API)
+ */
+export function getLessonById(lessonId: string): Lesson | undefined {
+  return getCurriculumIndex().getLesson(lessonId);
+}
+
+/**
+ * Get lesson with full context (unit, subject, grade) - O(1)
+ */
+export function getLessonWithContext(lessonId: string) {
+  return getCurriculumIndex().getLessonEntry(lessonId);
 }
 
 /**
@@ -104,7 +128,7 @@ export function getTotalLessonCount(subjectId: string): number {
 }
 
 /**
- * Get curriculum statistics
+ * Get curriculum statistics - uses CurriculumIndex for efficiency
  */
 export function getCurriculumStats(): {
   totalSubjects: number;
@@ -112,8 +136,10 @@ export function getCurriculumStats(): {
   totalLessons: number;
   subjectStats: { [key: string]: { units: number; lessons: number } };
 } {
-  let totalUnits = 0;
-  let totalLessons = 0;
+  const index = getCurriculumIndex();
+  const stats = index.getStats();
+
+  // For backward compatibility, compute per-subject stats
   const subjectStats: { [key: string]: { units: number; lessons: number } } = {};
 
   for (const subject of curriculum.subjects) {
@@ -130,15 +156,13 @@ export function getCurriculumStats(): {
       }
     }
 
-    totalUnits += subjectUnits;
-    totalLessons += subjectLessons;
     subjectStats[subject.id] = { units: subjectUnits, lessons: subjectLessons };
   }
 
   return {
-    totalSubjects: curriculum.subjects.length,
-    totalUnits,
-    totalLessons,
+    totalSubjects: stats.totalSubjects,
+    totalUnits: stats.totalUnits,
+    totalLessons: stats.totalLessons,
     subjectStats,
   };
 }
