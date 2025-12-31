@@ -8,20 +8,17 @@
  * - Error wrapping utilities
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { ZodError, z } from "zod";
+import { z } from "zod";
 import { NextResponse } from "next/server";
 import { handleApiError, apiError, withErrorHandler } from "./error-handler";
 
 describe("handleApiError", () => {
-  const originalEnv = process.env.NODE_ENV;
-
   beforeEach(() => {
     // Suppress console.error output during tests
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv;
     vi.restoreAllMocks();
   });
 
@@ -106,11 +103,6 @@ describe("handleApiError", () => {
 });
 
 describe("apiError", () => {
-  const originalEnv = process.env.NODE_ENV;
-
-  afterEach(() => {
-    process.env.NODE_ENV = originalEnv;
-  });
 
   it("should create error response with message and status", async () => {
     const response = apiError("Bad request", 400);

@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
 import { SkipLink, SkipLinks } from "./skip-link";
 import { LiveRegion, LiveRegionProvider, useLiveAnnouncer } from "./live-region";
 import { VisuallyHidden, SrOnly, A11yText } from "./visually-hidden";
