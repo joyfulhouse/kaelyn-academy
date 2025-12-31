@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text, Cylinder, Sphere, Line } from "@react-three/drei";
 import type { Group } from "three";
@@ -27,14 +27,18 @@ export function NumberLine({
   const groupRef = useRef<Group>(null);
   const [hoveredNumber, setHoveredNumber] = useState<number | null>(null);
 
+  // Generate number array using useMemo to avoid eslint false positive about hooks in loops
+  const numbers = useMemo(() => {
+    const result: number[] = [];
+    for (let n = min; n <= max; n += step) {
+      result.push(n);
+    }
+    return result;
+  }, [min, max, step]);
+
   useFrame(() => {
     // Gentle animation can be added here
   });
-
-  const numbers: number[] = [];
-  for (let n = min; n <= max; n += step) {
-    numbers.push(n);
-  }
 
   const unitScale = 0.5; // Scale factor for visual spacing
 

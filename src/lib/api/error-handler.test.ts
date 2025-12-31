@@ -37,7 +37,7 @@ describe("handleApiError", () => {
   });
 
   it("should include Zod issues in development", async () => {
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
     const schema = z.object({ email: z.string().email() });
 
     try {
