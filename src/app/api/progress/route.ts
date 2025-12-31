@@ -13,6 +13,7 @@ import { auth } from "@/lib/auth";
 import { requireLearnerAccess, AuthorizationError } from "@/lib/auth/rbac";
 import { ValidationError } from "@/lib/validation";
 import { z } from "zod";
+import { aggregateProgressOnCompletion } from "@/lib/services/progress-aggregator";
 
 // Query schema for GET
 const progressQuerySchema = z.object({
@@ -340,6 +341,9 @@ export async function POST(request: NextRequest) {
     // Update concept mastery if this activity is linked to a concept
     const activity = await db.query.activities.findFirst({
       where: eq(activities.id, activityId),
+      with: {
+        lesson: true,
+      },
     });
 
     if (activity?.conceptId) {
@@ -385,7 +389,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ attempt }, { status: 201 });
+    // Aggregate progress at unit and subject levels
+    let aggregation = null;
+    if (activity?.lessonId) {
+      aggregation = await aggregateProgressOnCompletion({
+        learnerId,
+        lessonId: activity.lessonId,
+        organizationId,
+        timeSpent: timeSpent ?? 0,
+      });
+    }
+
+    return NextResponse.json({
+      attempt,
+      aggregation,
+    }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new ValidationError("Validation failed", error.issues.map(i => ({
@@ -468,6 +486,9 @@ export async function PATCH(request: NextRequest) {
       ),
     });
 
+    let progress;
+    let isNewRecord = false;
+
     if (existingProgress) {
       const [updated] = await db
         .update(lessonProgress)
@@ -485,7 +506,7 @@ export async function PATCH(request: NextRequest) {
         .where(eq(lessonProgress.id, existingProgress.id))
         .returning();
 
-      return NextResponse.json({ progress: updated });
+      progress = updated;
     } else {
       const [created] = await db
         .insert(lessonProgress)
@@ -504,8 +525,25 @@ export async function PATCH(request: NextRequest) {
         })
         .returning();
 
-      return NextResponse.json({ progress: created }, { status: 201 });
+      progress = created;
+      isNewRecord = true;
     }
+
+    // Aggregate progress at unit and subject levels when lesson status changes
+    let aggregation = null;
+    if (status === "completed" || status === "in_progress") {
+      aggregation = await aggregateProgressOnCompletion({
+        learnerId,
+        lessonId,
+        organizationId,
+        timeSpent: timeSpent ?? 0,
+      });
+    }
+
+    return NextResponse.json(
+      { progress, aggregation },
+      { status: isNewRecord ? 201 : 200 }
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new ValidationError("Validation failed", error.issues.map(i => ({
