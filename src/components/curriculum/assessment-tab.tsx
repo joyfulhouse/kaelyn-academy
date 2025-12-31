@@ -98,8 +98,8 @@ export function AssessmentTab({
 
   // Fetch quiz attempts
   const fetchQuizState = useCallback(async () => {
-    // First check if this lesson has a quiz in the data
-    if (!hasQuiz(lessonId)) {
+    // First check if this lesson has a quiz in the data (lazy-loaded per grade)
+    if (!(await hasQuiz(lessonId))) {
       setQuizState({
         hasQuiz: false,
         quizConfig: null,
@@ -111,7 +111,7 @@ export function AssessmentTab({
       return;
     }
 
-    const config = getQuizForLesson(lessonId);
+    const config = await getQuizForLesson(lessonId);
 
     try {
       const response = await fetch(`/api/learner/quiz?lessonId=${lessonId}`);
