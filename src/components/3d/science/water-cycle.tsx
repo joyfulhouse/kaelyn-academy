@@ -101,8 +101,24 @@ function WaterDroplets({
   type: "evaporation" | "precipitation";
   animate: boolean;
 }) {
-  const dropletsRef = useRef<THREE.Mesh[]>([]);
+  const meshRef = useRef<THREE.InstancedMesh>(null);
   const count = type === "evaporation" ? 20 : 30;
+
+  // Pre-compute geometry and material (reused for all instances)
+  const geometry = useMemo(
+    () => new THREE.SphereGeometry(type === "evaporation" ? 0.03 : 0.05, 8, 8),
+    [type]
+  );
+
+  const material = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: type === "evaporation" ? colors.primary.muted : colors.primary.DEFAULT,
+        transparent: true,
+        opacity: type === "evaporation" ? 0.6 : 0.8,
+      }),
+    [type]
+  );
 
   const initialPositions = useMemo(() => {
     return Array.from({ length: count }).map(() => ({
@@ -116,56 +132,49 @@ function WaterDroplets({
     }));
   }, [count, type]);
 
+  // Temporary matrix for instance transforms
+  const tempMatrix = useMemo(() => new THREE.Matrix4(), []);
+
   useFrame((state) => {
-    if (!animate) return;
+    if (!animate || !meshRef.current) return;
 
-    dropletsRef.current.forEach((mesh, i) => {
-      if (!mesh) return;
+    const time = state.clock.getElapsedTime();
 
+    for (let i = 0; i < count; i++) {
       const data = initialPositions[i];
-      const time = state.clock.getElapsedTime();
+      let x = data.x;
+      let y = data.y;
+      const z = data.z;
 
       if (type === "evaporation") {
         // Rise up and fade
-        mesh.position.y = -0.5 + ((time * data.speed + data.offset) % 4);
-        mesh.position.x = data.x + Math.sin(time + data.offset) * 0.2;
+        y = -0.5 + ((time * data.speed + data.offset) % 4);
+        x = data.x + Math.sin(time + data.offset) * 0.2;
 
         // Reset when too high
-        if (mesh.position.y > 3) {
-          mesh.position.y = -0.5;
+        if (y > 3) {
+          y = -0.5;
         }
       } else {
         // Fall down
-        mesh.position.y = 3 - ((time * data.speed * 2 + data.offset) % 4);
-        mesh.position.x = data.x + Math.sin(data.offset) * 0.1;
+        y = 3 - ((time * data.speed * 2 + data.offset) % 4);
+        x = data.x + Math.sin(data.offset) * 0.1;
 
         // Reset when too low
-        if (mesh.position.y < -0.8) {
-          mesh.position.y = 3;
+        if (y < -0.8) {
+          y = 3;
         }
       }
-    });
+
+      tempMatrix.setPosition(x, y, z);
+      meshRef.current.setMatrixAt(i, tempMatrix);
+    }
+
+    meshRef.current.instanceMatrix.needsUpdate = true;
   });
 
   return (
-    <>
-      {initialPositions.map((pos, i) => (
-        <mesh
-          key={i}
-          ref={(ref) => {
-            if (ref) dropletsRef.current[i] = ref;
-          }}
-          position={[pos.x, pos.y, pos.z]}
-        >
-          <sphereGeometry args={[type === "evaporation" ? 0.03 : 0.05, 8, 8]} />
-          <meshStandardMaterial
-            color={type === "evaporation" ? colors.primary.muted : colors.primary.DEFAULT}
-            transparent
-            opacity={type === "evaporation" ? 0.6 : 0.8}
-          />
-        </mesh>
-      ))}
-    </>
+    <instancedMesh ref={meshRef} args={[geometry, material, count]} frustumCulled={false} />
   );
 }
 
