@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Kaelyn's Academy** - A comprehensive K-12 educational platform with interactive 3D visualizations, AI tutoring, and multi-tenant support for schools and families.
 
+**Repository**: https://github.com/joyfulhouse/kaelyn-academy
+
 ## Non-Negotiables
 
 ### Technology Stack (MANDATORY)
