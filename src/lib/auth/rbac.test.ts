@@ -6,7 +6,7 @@ import {
   isRoleAtLeast,
   getPermissions,
   createPermissionChecker,
-} from "./permissions";
+} from "./rbac";
 
 describe("RBAC System", () => {
   describe("hasPermission", () => {
