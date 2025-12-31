@@ -2,6 +2,11 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
+// Mock DrizzleAdapter globally to prevent auth initialization issues
+vi.mock("@auth/drizzle-adapter", () => ({
+  DrizzleAdapter: vi.fn(() => ({})),
+}));
+
 // Cleanup after each test
 afterEach(() => {
   cleanup();

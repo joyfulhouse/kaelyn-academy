@@ -7,26 +7,49 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
-// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
-const mockCheckPublicRateLimit = vi.hoisted(() => vi.fn());
-const mockGetCurriculumStats = vi.hoisted(() => vi.fn());
+// Mock functions
+const mockCheckPublicRateLimit = vi.fn();
+const mockGetCurriculumStats = vi.fn();
+
+// Mock drizzle-orm with count function
+vi.mock("drizzle-orm", () => {
+  const createSql = (strings: TemplateStringsArray, ...values: unknown[]) => ({
+    strings,
+    values,
+    mapWith: () => createSql``,
+  });
+  createSql.raw = (str: string) => ({ raw: str, mapWith: () => createSql`` });
+  return {
+    sql: createSql,
+    count: () => ({ mapWith: Number }),
+    eq: vi.fn((a, b) => ({ type: "eq", left: a, right: b })),
+    and: vi.fn((...args: unknown[]) => ({ type: "and", conditions: args })),
+  };
+});
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({
   db: {
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    then: vi.fn().mockResolvedValue([{ count: 0 }]),
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ count: 0 }]),
+      }),
+    }),
   },
 }));
 
+vi.mock("@/lib/db/schema", () => ({
+  learners: { id: {} },
+  organizations: { id: {} },
+  lessonProgress: { id: {} },
+}));
+
 vi.mock("@/lib/rate-limit", () => ({
-  checkPublicRateLimit: mockCheckPublicRateLimit,
+  checkPublicRateLimit: (...args: unknown[]) => mockCheckPublicRateLimit(...args),
 }));
 
 vi.mock("@/data/curriculum", () => ({
-  getCurriculumStats: mockGetCurriculumStats,
+  getCurriculumStats: () => mockGetCurriculumStats(),
 }));
 
 import { GET, type PublicStats } from "@/app/api/public/stats/route";

@@ -17,38 +17,26 @@ const mockSession = {
   expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 };
 
-// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
-const mockAuth = vi.hoisted(() => vi.fn());
-const mockLearnersFindFirst = vi.hoisted(() => vi.fn());
-const mockLearnersFindMany = vi.hoisted(() => vi.fn());
-const mockAchievementsFindMany = vi.hoisted(() => vi.fn());
-const mockLearnerAchievementsFindFirst = vi.hoisted(() => vi.fn());
-const mockLearnerAchievementsFindMany = vi.hoisted(() => vi.fn());
+// Mock functions
+const mockAuth = vi.fn();
+const mockLearnersFindFirst = vi.fn();
+const mockLearnersFindMany = vi.fn();
+const mockAchievementsFindMany = vi.fn();
+const mockLearnerAchievementsFindFirst = vi.fn();
+const mockLearnerAchievementsFindMany = vi.fn();
+
+// Mock drizzle adapter to prevent auth initialization issues
+vi.mock("@auth/drizzle-adapter", () => ({
+  DrizzleAdapter: vi.fn(() => ({})),
+}));
 
 // Mock auth
 vi.mock("@/lib/auth", () => ({
-  auth: mockAuth,
+  auth: (...args: unknown[]) => mockAuth(...args),
 }));
 
 // Mock database with query interface
 vi.mock("@/lib/db", () => {
-  const mockQuery = {
-    learners: {
-      findFirst: mockLearnersFindFirst,
-      findMany: mockLearnersFindMany,
-    },
-    achievements: {
-      findMany: mockAchievementsFindMany,
-    },
-    learnerAchievements: {
-      findFirst: mockLearnerAchievementsFindFirst,
-      findMany: mockLearnerAchievementsFindMany,
-    },
-    learnerSubjectProgress: {
-      findMany: vi.fn().mockResolvedValue([]),
-    },
-  };
-
   const createChain = () => {
     const chain: Record<string, unknown> = {};
     chain.select = vi.fn().mockReturnValue(chain);
@@ -62,7 +50,22 @@ vi.mock("@/lib/db", () => {
 
   return {
     db: {
-      query: mockQuery,
+      query: {
+        learners: {
+          findFirst: (...args: unknown[]) => mockLearnersFindFirst(...args),
+          findMany: (...args: unknown[]) => mockLearnersFindMany(...args),
+        },
+        achievements: {
+          findMany: (...args: unknown[]) => mockAchievementsFindMany(...args),
+        },
+        learnerAchievements: {
+          findFirst: (...args: unknown[]) => mockLearnerAchievementsFindFirst(...args),
+          findMany: (...args: unknown[]) => mockLearnerAchievementsFindMany(...args),
+        },
+        learnerSubjectProgress: {
+          findMany: vi.fn().mockResolvedValue([]),
+        },
+      },
       ...createChain(),
     },
   };

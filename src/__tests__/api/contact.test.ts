@@ -7,19 +7,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
-// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
-const mockCheckFormRateLimit = vi.hoisted(() => vi.fn());
-const mockValidateBodySize = vi.hoisted(() => vi.fn());
-const mockDbInsert = vi.hoisted(() => vi.fn());
-const mockDbValues = vi.hoisted(() => vi.fn());
-const mockDbReturning = vi.hoisted(() => vi.fn());
+// Mock functions
+const mockCheckFormRateLimit = vi.fn();
+const mockValidateBodySize = vi.fn();
+const mockDbInsert = vi.fn();
+const mockDbValues = vi.fn();
+const mockDbReturning = vi.fn();
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({
   db: {
-    insert: mockDbInsert,
-    values: mockDbValues,
-    returning: mockDbReturning,
+    insert: (...args: unknown[]) => mockDbInsert(...args),
+    values: (...args: unknown[]) => mockDbValues(...args),
+    returning: (...args: unknown[]) => mockDbReturning(...args),
   },
 }));
 
@@ -28,11 +28,11 @@ vi.mock("@/lib/db/schema", () => ({
 }));
 
 vi.mock("@/lib/rate-limit", () => ({
-  checkFormRateLimit: mockCheckFormRateLimit,
+  checkFormRateLimit: (...args: unknown[]) => mockCheckFormRateLimit(...args),
 }));
 
 vi.mock("@/lib/api/body-size", () => ({
-  validateBodySize: mockValidateBodySize,
+  validateBodySize: (...args: unknown[]) => mockValidateBodySize(...args),
   BODY_SIZE_PRESETS: { form: 10000 },
 }));
 

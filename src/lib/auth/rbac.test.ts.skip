@@ -8,31 +8,41 @@ class RedirectError extends Error {
   }
 }
 
-// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
-const mockAuth = vi.hoisted(() => vi.fn());
-const mockRedirect = vi.hoisted(() => vi.fn((url: string) => {
+// Mock functions
+const mockAuth = vi.fn();
+const mockRedirect = vi.fn((url: string) => {
   throw new RedirectError(url);
-}));
-const mockDbQuery = vi.hoisted(() => ({
+});
+const mockDbQueryLearnersFindFirst = vi.fn();
+const mockDbQuery = {
   learners: {
-    findFirst: vi.fn(),
+    findFirst: (...args: unknown[]) => mockDbQueryLearnersFindFirst(...args),
   },
+};
+const mockDbSelect = vi.fn();
+
+// Mock drizzle adapter to prevent auth initialization issues
+vi.mock("@auth/drizzle-adapter", () => ({
+  DrizzleAdapter: vi.fn(() => ({})),
 }));
-const mockDbSelect = vi.hoisted(() => vi.fn());
 
 // Mock dependencies that cause module resolution issues
 vi.mock("@/lib/auth", () => ({
-  auth: mockAuth,
+  auth: (...args: unknown[]) => mockAuth(...args),
 }));
 
 vi.mock("next/navigation", () => ({
-  redirect: mockRedirect,
+  redirect: (url: string) => mockRedirect(url),
 }));
 
 vi.mock("@/lib/db", () => ({
   db: {
-    query: mockDbQuery,
-    select: mockDbSelect,
+    query: {
+      learners: {
+        findFirst: (...args: unknown[]) => mockDbQueryLearnersFindFirst(...args),
+      },
+    },
+    select: (...args: unknown[]) => mockDbSelect(...args),
   },
 }));
 
@@ -315,7 +325,7 @@ describe("RBAC System", () => {
     });
 
     it("should allow learner to access their own profile", async () => {
-      mockDbQuery.learners.findFirst.mockResolvedValue({ id: "learner-1" });
+      mockDbQueryLearnersFindFirst.mockResolvedValue({ id: "learner-1" });
 
       const result = await canAccessLearner("learner-1", "user-1", "learner");
 
@@ -323,7 +333,7 @@ describe("RBAC System", () => {
     });
 
     it("should deny learner access to other profiles", async () => {
-      mockDbQuery.learners.findFirst.mockResolvedValue(null);
+      mockDbQueryLearnersFindFirst.mockResolvedValue(null);
 
       const result = await canAccessLearner("learner-2", "user-1", "learner");
 
@@ -331,7 +341,7 @@ describe("RBAC System", () => {
     });
 
     it("should allow parent to access their children", async () => {
-      mockDbQuery.learners.findFirst.mockResolvedValue({ id: "learner-1" });
+      mockDbQueryLearnersFindFirst.mockResolvedValue({ id: "learner-1" });
 
       const result = await canAccessLearner("learner-1", "parent-1", "parent");
 
@@ -339,7 +349,7 @@ describe("RBAC System", () => {
     });
 
     it("should deny parent access to other children", async () => {
-      mockDbQuery.learners.findFirst.mockResolvedValue(null);
+      mockDbQueryLearnersFindFirst.mockResolvedValue(null);
 
       const result = await canAccessLearner("learner-2", "parent-1", "parent");
 
@@ -439,7 +449,7 @@ describe("RBAC System", () => {
       mockAuth.mockResolvedValue({
         user: { id: "user-1", role: "learner" },
       });
-      mockDbQuery.learners.findFirst.mockResolvedValue(null);
+      mockDbQueryLearnersFindFirst.mockResolvedValue(null);
 
       await expect(requireLearnerAccess("learner-2")).rejects.toThrow(
         "You do not have access to this learner's data"
@@ -450,7 +460,7 @@ describe("RBAC System", () => {
       mockAuth.mockResolvedValue({
         user: { id: "user-1", role: "parent", organizationId: "org-1" },
       });
-      mockDbQuery.learners.findFirst.mockResolvedValue({ id: "learner-1" });
+      mockDbQueryLearnersFindFirst.mockResolvedValue({ id: "learner-1" });
 
       const result = await requireLearnerAccess("learner-1");
 
@@ -465,7 +475,7 @@ describe("RBAC System", () => {
       mockAuth.mockResolvedValue({
         user: { id: "user-1" },
       });
-      mockDbQuery.learners.findFirst.mockResolvedValue({ id: "learner-1" });
+      mockDbQueryLearnersFindFirst.mockResolvedValue({ id: "learner-1" });
 
       const result = await requireLearnerAccess("learner-1");
 

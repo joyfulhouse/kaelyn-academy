@@ -7,10 +7,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
-// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
-const mockCheckFormRateLimit = vi.hoisted(() => vi.fn());
-const mockValidateBodySize = vi.hoisted(() => vi.fn());
-const mockValidateUnsubscribeToken = vi.hoisted(() => vi.fn());
+// Mock functions
+const mockCheckFormRateLimit = vi.fn();
+const mockValidateBodySize = vi.fn();
+const mockValidateUnsubscribeToken = vi.fn();
 
 // Mock all dependencies before importing the route
 vi.mock("@/lib/db", () => {

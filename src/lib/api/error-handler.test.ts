@@ -37,17 +37,23 @@ describe("handleApiError", () => {
   });
 
   it("should include Zod issues in development", async () => {
-    vi.stubEnv("NODE_ENV", "development");
-    const schema = z.object({ email: z.string().email() });
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
 
     try {
-      schema.parse({ email: "invalid" });
-    } catch (error) {
-      const response = handleApiError(error, "test");
-      const body = await response.json();
+      const schema = z.object({ email: z.string().email() });
 
-      expect(body.details).toBeDefined();
-      expect(body.details).toBeInstanceOf(Array);
+      try {
+        schema.parse({ email: "invalid" });
+      } catch (error) {
+        const response = handleApiError(error, "test");
+        const body = await response.json();
+
+        expect(body.details).toBeDefined();
+        expect(body.details).toBeInstanceOf(Array);
+      }
+    } finally {
+      process.env.NODE_ENV = originalEnv;
     }
   });
 
