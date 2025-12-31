@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 /**
- * Middleware Security
+ * Proxy Security (Next.js 16 pattern, replaces middleware.ts)
  *
  * 1. Rate limiting for all API routes (defense in depth)
  * 2. CSRF protection for state-changing requests
@@ -85,7 +84,7 @@ async function checkRateLimit(
       };
     } catch (error) {
       // If Redis fails, fall through to in-memory fallback
-      console.error("[Middleware] Redis rate limit check failed, using in-memory fallback:", error);
+      console.error("[Proxy] Redis rate limit check failed, using in-memory fallback:", error);
     }
   }
 
@@ -239,7 +238,11 @@ function csrfProtection(request: NextRequest): NextResponse | null {
   return null;
 }
 
-export default auth(async (request) => {
+// ============================================================================
+// Proxy Handler (Next.js 16 pattern)
+// ============================================================================
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Rate limiting for API routes (defense in depth)
@@ -271,9 +274,9 @@ export default auth(async (request) => {
 
   // Continue with the request
   return NextResponse.next();
-});
+}
 
-// Configure which paths the middleware runs on
+// Configure which paths the proxy runs on
 export const config = {
   matcher: [
     /*

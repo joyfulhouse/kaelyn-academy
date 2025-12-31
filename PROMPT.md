@@ -31,11 +31,12 @@ The skill reads this PROMPT.md file and orchestrates the entire loop autonomousl
 9. [Handling Discovered Work](#handling-discovered-work)
 10. [Implementation Standards](#implementation-standards)
 11. [Educational Platform Requirements](#educational-platform-requirements)
-12. [Test Coverage Requirements](#test-coverage-requirements)
-13. [Code Review Protocol](#code-review-protocol)
-14. [PR Creation and Merge](#pr-creation-and-merge)
-15. [Completion Criteria](#completion-criteria)
-16. [Completion Promise](#completion-promise)
+12. [End-to-End Testing Requirements](#end-to-end-testing-requirements-mandatory) ← **NEW: MANDATORY**
+13. [Test Coverage Requirements](#test-coverage-requirements)
+14. [Code Review Protocol](#code-review-protocol)
+15. [PR Creation and Merge](#pr-creation-and-merge)
+16. [Completion Criteria](#completion-criteria)
+17. [Completion Promise](#completion-promise)
 
 ---
 
@@ -49,11 +50,19 @@ The skill reads this PROMPT.md file and orchestrates the entire loop autonomousl
 
 4. **Accessibility Mandatory**: WCAG 2.1 AA compliance on all components. Age-adaptive UI for different grade levels.
 
-5. **Exit Condition**: You may ONLY output `<promise>IAMFINALLYDONE</promise>` when:
+5. **E2E Testing Mandatory**: Before ANY loop completion, test ALL personas (learner, parent, teacher, admin) via dev-oauth. Verify:
+   - Dev server starts without errors
+   - Each persona can login via dev-oauth
+   - Each persona reaches their dashboard without 500 errors
+   - Role-based access control works (blocked routes return 403/redirect)
+   - NO EXCEPTIONS. Do not claim completion without E2E validation.
+
+6. **Exit Condition**: You may ONLY output `<promise>IAMFINALLYDONE</promise>` when:
    - All identified issues have beads created
    - All beads are closed (implemented and verified)
    - The system is functionally complete for production use
    - Test coverage >= 80%
+   - **E2E persona tests pass for ALL roles**
 
 ---
 
@@ -838,6 +847,323 @@ Every concept visualization MUST have:
 
 ---
 
+## End-to-End Testing Requirements (MANDATORY)
+
+**CRITICAL**: Before ANY loop can complete, full E2E testing MUST be performed. This is NON-NEGOTIABLE.
+
+### Dev Server Validation
+
+The dev server MUST be running and accessible before any other testing:
+
+```bash
+# 1. Start dev server
+bun dev &
+DEV_PID=$!
+sleep 5
+
+# 2. Verify server responds
+curl -s http://localhost:5001 > /dev/null || { echo "FAIL: Dev server not responding"; exit 1; }
+
+# 3. Verify auth providers available
+providers=$(curl -s http://localhost:5001/api/auth/providers)
+echo "$providers" | jq -e '.providers | length > 0' || { echo "FAIL: No auth providers"; exit 1; }
+```
+
+### Dev OAuth Login Flow Validation
+
+The dev OAuth flow MUST work for all personas:
+
+```bash
+# Required environment variable
+ENABLE_DEV_OAUTH=true  # Must be set in .env
+
+# Test the dev OAuth flow programmatically
+# 1. Get CSRF token
+csrf=$(curl -s http://localhost:5001/api/auth/csrf | jq -r '.csrfToken')
+
+# 2. Initiate dev-oauth signin (check it doesn't error)
+curl -s -X POST http://localhost:5001/api/auth/signin/dev-oauth \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "csrfToken=$csrf" \
+  --max-redirs 0 \
+  -w "%{http_code}" | grep -q "302" || echo "WARN: OAuth redirect check"
+```
+
+### Persona E2E Test Matrix (MANDATORY)
+
+**Each persona MUST be tested with the following flows:**
+
+#### 1. Learner Persona
+```markdown
+□ Login via dev-oauth with role=learner
+□ Verify redirect to /learn (learner dashboard)
+□ Verify learner dashboard loads without errors
+□ Verify subjects list is accessible
+□ Verify lesson viewer works
+□ Verify AI tutor chat is accessible
+□ Verify progress tracking displays
+□ Verify CANNOT access /admin, /teacher, /parent routes (403/redirect)
+```
+
+#### 2. Parent Persona
+```markdown
+□ Login via dev-oauth with role=parent
+□ Verify redirect to /parent (parent dashboard)
+□ Verify parent dashboard loads without errors
+□ Verify children list is accessible
+□ Verify can view child progress
+□ Verify parental controls page works
+□ Verify activity reports load
+□ Verify CANNOT access /admin, /teacher routes (403/redirect)
+```
+
+#### 3. Teacher Persona
+```markdown
+□ Login via dev-oauth with role=teacher
+□ Verify redirect to /teacher (teacher dashboard)
+□ Verify teacher dashboard loads without errors
+□ Verify classes list is accessible
+□ Verify student roster works
+□ Verify assignments page works
+□ Verify standards alignment tools accessible
+□ Verify CANNOT access /admin route (403/redirect)
+```
+
+#### 4. Admin Persona
+```markdown
+□ Login via dev-oauth with role=admin
+□ Verify redirect to /admin (admin dashboard)
+□ Verify admin dashboard loads without errors
+□ Verify users management page works
+□ Verify organizations page works
+□ Verify analytics dashboard loads
+□ Verify audit logs accessible
+□ Verify CAN access all routes (/admin, /teacher, /parent, /learn)
+```
+
+### E2E Test Execution Script
+
+**This script MUST pass before loop completion:**
+
+```bash
+#!/bin/bash
+# scripts/e2e-persona-tests.sh
+set -e
+
+BASE_URL="${BASE_URL:-http://localhost:5001}"
+FAILED=0
+
+echo "========================================"
+echo "  E2E PERSONA VALIDATION TESTS"
+echo "========================================"
+echo ""
+
+# Function to test persona login and route access
+test_persona() {
+  local role=$1
+  local expected_dashboard=$2
+  local blocked_routes=("${@:3}")
+
+  echo "Testing: $role persona"
+  echo "----------------------------------------"
+
+  # 1. Check dev-oauth provider is available
+  providers=$(curl -s "$BASE_URL/api/auth/providers")
+  if ! echo "$providers" | jq -e '.providers[] | select(.id == "dev-oauth")' > /dev/null 2>&1; then
+    echo "  FAIL: dev-oauth provider not available"
+    echo "        Ensure ENABLE_DEV_OAUTH=true in .env"
+    return 1
+  fi
+  echo "  PASS: dev-oauth provider available"
+
+  # 2. Get CSRF token
+  csrf=$(curl -s "$BASE_URL/api/auth/csrf" | jq -r '.csrfToken')
+  if [ -z "$csrf" ] || [ "$csrf" = "null" ]; then
+    echo "  FAIL: Could not get CSRF token"
+    return 1
+  fi
+  echo "  PASS: CSRF token obtained"
+
+  # 3. Test dev-oauth authorize endpoint exists
+  auth_status=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/dev-oauth/authorize?role=$role&state=test")
+  if [ "$auth_status" != "302" ] && [ "$auth_status" != "200" ]; then
+    echo "  FAIL: dev-oauth authorize endpoint returned $auth_status"
+    return 1
+  fi
+  echo "  PASS: dev-oauth authorize endpoint works"
+
+  # 4. Test expected dashboard route exists (unauthenticated should redirect to login)
+  dashboard_status=$(curl -s -o /dev/null -w "%{http_code}" -L "$BASE_URL$expected_dashboard")
+  if [ "$dashboard_status" = "500" ]; then
+    echo "  FAIL: $expected_dashboard returns 500 error"
+    return 1
+  fi
+  echo "  PASS: $expected_dashboard route exists (status: $dashboard_status)"
+
+  # 5. Test blocked routes return appropriate response
+  for route in "${blocked_routes[@]}"; do
+    if [ -n "$route" ]; then
+      route_status=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL$route")
+      if [ "$route_status" = "500" ]; then
+        echo "  FAIL: $route returns 500 error (should be 403 or redirect)"
+        return 1
+      fi
+      echo "  PASS: $route access control works (status: $route_status)"
+    fi
+  done
+
+  echo "  ALL CHECKS PASSED for $role"
+  echo ""
+  return 0
+}
+
+# Test each persona
+echo ""
+echo "1. LEARNER PERSONA"
+if ! test_persona "learner" "/learn" "/admin" "/teacher/classes"; then
+  FAILED=1
+fi
+
+echo "2. PARENT PERSONA"
+if ! test_persona "parent" "/parent" "/admin" "/teacher/classes"; then
+  FAILED=1
+fi
+
+echo "3. TEACHER PERSONA"
+if ! test_persona "teacher" "/teacher" "/admin"; then
+  FAILED=1
+fi
+
+echo "4. ADMIN PERSONA"
+if ! test_persona "admin" "/admin"; then
+  FAILED=1
+fi
+
+echo "========================================"
+if [ $FAILED -eq 0 ]; then
+  echo "  ALL PERSONA TESTS PASSED"
+  echo "========================================"
+  exit 0
+else
+  echo "  SOME TESTS FAILED"
+  echo "========================================"
+  exit 1
+fi
+```
+
+### Browser-Based E2E Tests (Playwright)
+
+In addition to API tests, full browser tests MUST exist:
+
+```typescript
+// tests/e2e/auth/dev-oauth-flow.spec.ts
+import { test, expect } from '@playwright/test';
+
+const personas = ['learner', 'parent', 'teacher', 'admin'] as const;
+
+for (const role of personas) {
+  test.describe(`${role} persona`, () => {
+    test(`can login via dev-oauth and access dashboard`, async ({ page }) => {
+      // Navigate to login
+      await page.goto('/login');
+
+      // Click dev oauth button
+      await page.click('[data-testid="dev-oauth-button"]');
+
+      // Select role in dev oauth flow
+      await page.selectOption('[data-testid="role-select"]', role);
+      await page.fill('[data-testid="email-input"]', `test-${role}@example.com`);
+      await page.fill('[data-testid="name-input"]', `Test ${role}`);
+      await page.click('[data-testid="login-submit"]');
+
+      // Verify redirect to correct dashboard
+      const expectedPaths = {
+        learner: '/learn',
+        parent: '/parent',
+        teacher: '/teacher',
+        admin: '/admin',
+      };
+      await expect(page).toHaveURL(new RegExp(expectedPaths[role]));
+
+      // Verify dashboard loads without error
+      await expect(page.locator('[data-testid="dashboard-content"]')).toBeVisible();
+    });
+
+    test(`cannot access unauthorized routes`, async ({ page }) => {
+      // Login as role first
+      await loginAsRole(page, role);
+
+      // Try to access unauthorized routes
+      const blockedRoutes = {
+        learner: ['/admin', '/teacher/classes', '/parent/children'],
+        parent: ['/admin', '/teacher/classes'],
+        teacher: ['/admin'],
+        admin: [], // Admin can access all
+      };
+
+      for (const route of blockedRoutes[role]) {
+        await page.goto(route);
+        // Should either redirect to login or show 403
+        const url = page.url();
+        const is403 = await page.locator('text=Access Denied').isVisible().catch(() => false);
+        expect(url.includes('/login') || is403).toBe(true);
+      }
+    });
+  });
+}
+```
+
+### Required Route Validation
+
+These routes MUST work for each persona:
+
+| Route | Learner | Parent | Teacher | Admin |
+|-------|---------|--------|---------|-------|
+| `/login` | ✓ | ✓ | ✓ | ✓ |
+| `/learn` | ✓ | ✗ | ✗ | ✓ |
+| `/learn/subjects` | ✓ | ✗ | ✗ | ✓ |
+| `/parent` | ✗ | ✓ | ✗ | ✓ |
+| `/parent/children` | ✗ | ✓ | ✗ | ✓ |
+| `/parent/children/[slug]` | ✗ | ✓ | ✗ | ✓ |
+| `/parent/children/[slug]/controls` | ✗ | ✓ | ✗ | ✓ |
+| `/teacher` | ✗ | ✗ | ✓ | ✓ |
+| `/teacher/classes` | ✗ | ✗ | ✓ | ✓ |
+| `/teacher/students` | ✗ | ✗ | ✓ | ✓ |
+| `/admin` | ✗ | ✗ | ✗ | ✓ |
+| `/admin/users` | ✗ | ✗ | ✗ | ✓ |
+| `/admin/organizations` | ✗ | ✗ | ✗ | ✓ |
+
+### E2E Test Execution in Loop
+
+**These tests MUST be run:**
+
+1. **Before Implementation**: Verify current state
+2. **After Each Major Change**: Catch regressions immediately
+3. **Before PR Creation**: Full test suite must pass
+4. **Before Loop Completion**: Final validation
+
+```bash
+# Run E2E tests in loop
+echo "Running E2E persona tests..."
+./scripts/e2e-persona-tests.sh || {
+  echo "E2E tests FAILED - creating bead for fix"
+  bd create --title="[CRITICAL] Fix E2E persona test failures" --type=bug --priority=0
+  # DO NOT proceed until fixed
+}
+```
+
+### Common E2E Failures and Fixes
+
+| Failure | Cause | Fix |
+|---------|-------|-----|
+| "dev-oauth provider not available" | `ENABLE_DEV_OAUTH=true` missing | Add to `.env` |
+| "500 error on dashboard" | Server-side render error | Check server logs, fix error |
+| "Redirect to login instead of dashboard" | Auth callback not setting session | Fix auth callback flow |
+| "403 on accessible route" | RBAC misconfigured | Check role permissions |
+| "Can access blocked route" | Missing auth middleware | Add route protection |
+
+---
+
 ## Test Coverage Requirements
 
 ### Minimum Coverage: 80%
@@ -1049,6 +1375,16 @@ Before outputting the completion promise, ALL of the following MUST be true:
 - [ ] No `@ts-ignore` or `eslint-disable` comments
 - [ ] Clean architecture principles followed
 
+### E2E Testing (MANDATORY - NO EXCEPTIONS)
+- [ ] Dev server starts without errors
+- [ ] Auth providers endpoint returns dev-oauth
+- [ ] **Learner persona**: Login → dashboard → subjects → lessons (no 500s)
+- [ ] **Parent persona**: Login → dashboard → children → controls (no 500s)
+- [ ] **Teacher persona**: Login → dashboard → classes → students (no 500s)
+- [ ] **Admin persona**: Login → dashboard → users → orgs → audit logs (no 500s)
+- [ ] Role-based access control verified (blocked routes return 403/redirect)
+- [ ] `./scripts/e2e-persona-tests.sh` passes (if exists)
+
 ### Test Coverage
 - [ ] Test suite exists and runs
 - [ ] Coverage >= 80% (statements, branches, functions, lines)
@@ -1190,6 +1526,69 @@ else
   exit 1
 fi
 
+# 9. E2E Persona Tests (MANDATORY)
+echo ""
+echo "=== E2E PERSONA VALIDATION ==="
+
+# Start dev server in background
+bun dev &
+DEV_PID=$!
+sleep 5
+
+# Check dev server responds
+echo -n "Dev server: "
+if curl -s http://localhost:5001 > /dev/null; then
+  echo "PASS"
+else
+  echo "FAIL - server not responding"
+  kill $DEV_PID 2>/dev/null
+  exit 1
+fi
+
+# Check auth providers
+echo -n "Auth providers: "
+providers=$(curl -s http://localhost:5001/api/auth/providers)
+if echo "$providers" | jq -e '.providers[] | select(.id == "dev-oauth")' > /dev/null 2>&1; then
+  echo "PASS (dev-oauth available)"
+else
+  echo "FAIL - dev-oauth not available"
+  kill $DEV_PID 2>/dev/null
+  exit 1
+fi
+
+# Test each persona route
+test_route() {
+  local route=$1
+  local name=$2
+  local status=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:5001$route")
+  if [ "$status" = "500" ]; then
+    echo "FAIL - $name ($route) returns 500"
+    return 1
+  fi
+  echo "PASS - $name ($route) status: $status"
+  return 0
+}
+
+echo ""
+echo "Learner routes:"
+test_route "/learn" "Dashboard" || { kill $DEV_PID 2>/dev/null; exit 1; }
+
+echo ""
+echo "Parent routes:"
+test_route "/parent" "Dashboard" || { kill $DEV_PID 2>/dev/null; exit 1; }
+
+echo ""
+echo "Teacher routes:"
+test_route "/teacher" "Dashboard" || { kill $DEV_PID 2>/dev/null; exit 1; }
+
+echo ""
+echo "Admin routes:"
+test_route "/admin" "Dashboard" || { kill $DEV_PID 2>/dev/null; exit 1; }
+test_route "/admin/users" "Users" || { kill $DEV_PID 2>/dev/null; exit 1; }
+
+# Cleanup
+kill $DEV_PID 2>/dev/null
+
 echo ""
 echo "=== ALL CHECKS PASSED ==="
 echo "You may now output: <promise>IAMFINALLYDONE</promise>"
@@ -1288,15 +1687,17 @@ bd create --title="[FUTURE] ..." --type=feature --priority=3
 
 ## Important Reminders
 
+- **Never skip E2E testing** - Test ALL personas before completion (learner, parent, teacher, admin)
 - **Never skip COPPA checks** - Child safety is non-negotiable
 - **Never skip accessibility** - WCAG 2.1 AA is required
 - **Never ask the user** - Research and decide autonomously
 - **Never compromise quality** - Clean architecture always
-- **Never exit early** - Only when ALL beads are closed
+- **Never exit early** - Only when ALL beads are closed AND E2E tests pass
+- **Always test dev-oauth flow** - Verify login works for each role
 - **Always discover** - Create beads for everything you find
 - **Always complete discoveries** - Don't just log issues, fix them
 - **Always commit** - Follow session close protocol
-- **Always verify** - Typecheck and lint after changes
+- **Always verify** - Typecheck, lint, AND E2E test after changes
 
 ### The Loop Never Ends Early
 

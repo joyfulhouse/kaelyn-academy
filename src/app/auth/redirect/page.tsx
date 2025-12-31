@@ -15,6 +15,7 @@ export default async function AuthRedirectPage() {
   const role = session.user.role;
 
   // Redirect to role-specific dashboard
+  // Note: "platform_admin" and "school_admin" are the database roles for admin users
   switch (role) {
     case "learner":
       redirect("/dashboard");
@@ -23,6 +24,8 @@ export default async function AuthRedirectPage() {
     case "teacher":
       redirect("/teacher");
     case "admin":
+    case "platform_admin":
+    case "school_admin":
       redirect("/admin");
     default:
       // Default to dashboard for unknown roles

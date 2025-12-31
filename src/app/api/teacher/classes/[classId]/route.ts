@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
 import { z } from "zod";
 
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ classId: string }>;
 }
 
 // Helper to verify teacher role
@@ -20,7 +20,7 @@ async function verifyTeacher(userId: string) {
   return user?.role === "teacher";
 }
 
-// GET /api/teacher/classes/[id] - Get a single class with details
+// GET /api/teacher/classes/[classId] - Get a single class with details
 export async function GET(request: NextRequest, context: RouteContext) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
-  const { id } = await context.params;
+  const { classId } = await context.params;
 
   try {
     // Verify teacher owns this class
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .from(classes)
       .where(
         and(
-          eq(classes.id, id),
+          eq(classes.id, classId),
           eq(classes.teacherId, session.user.id),
           isNull(classes.deletedAt)
         )
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .innerJoin(learners, eq(classEnrollments.learnerId, learners.id))
       .where(
         and(
-          eq(classEnrollments.classId, id),
+          eq(classEnrollments.classId, classId),
           eq(classEnrollments.status, "active")
         )
       );
@@ -131,7 +131,7 @@ const updateClassSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-// PATCH /api/teacher/classes/[id] - Update a class
+// PATCH /api/teacher/classes/[classId] - Update a class
 export async function PATCH(request: NextRequest, context: RouteContext) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -142,7 +142,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
-  const { id } = await context.params;
+  const { classId } = await context.params;
 
   try {
     // Verify teacher owns this class
@@ -151,7 +151,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .from(classes)
       .where(
         and(
-          eq(classes.id, id),
+          eq(classes.id, classId),
           eq(classes.teacherId, session.user.id),
           isNull(classes.deletedAt)
         )
@@ -170,7 +170,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         ...data,
         updatedAt: new Date(),
       })
-      .where(eq(classes.id, id))
+      .where(eq(classes.id, classId))
       .returning();
 
     return NextResponse.json({ class: updatedClass });
@@ -189,7 +189,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 }
 
-// DELETE /api/teacher/classes/[id] - Soft delete (archive) a class
+// DELETE /api/teacher/classes/[classId] - Soft delete (archive) a class
 export async function DELETE(request: NextRequest, context: RouteContext) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -200,7 +200,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Forbidden - teacher access required" }, { status: 403 });
   }
 
-  const { id } = await context.params;
+  const { classId } = await context.params;
 
   try {
     // Verify teacher owns this class
@@ -209,7 +209,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       .from(classes)
       .where(
         and(
-          eq(classes.id, id),
+          eq(classes.id, classId),
           eq(classes.teacherId, session.user.id),
           isNull(classes.deletedAt)
         )
@@ -227,7 +227,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
         isActive: false,
         updatedAt: new Date(),
       })
-      .where(eq(classes.id, id));
+      .where(eq(classes.id, classId));
 
     return NextResponse.json({ success: true });
   } catch (error) {

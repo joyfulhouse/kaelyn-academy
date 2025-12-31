@@ -22,8 +22,9 @@ export default async function LearnerLayout({
 
   const role = session.user.role;
 
-  // Only learners and parents (viewing child's dashboard) can access
-  if (!["learner", "parent"].includes(role)) {
+  // Learners, parents (viewing child's dashboard), and admins can access
+  const allowedRoles = ["learner", "parent", "admin", "platform_admin", "school_admin"];
+  if (!allowedRoles.includes(role)) {
     redirect("/");
   }
 

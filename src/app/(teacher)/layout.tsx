@@ -17,7 +17,9 @@ export default async function TeacherLayout({
 
   const role = session.user.role;
 
-  if (!["teacher", "admin"].includes(role)) {
+  // Allow teachers and all admin roles access to teacher dashboard
+  const allowedRoles = ["teacher", "admin", "platform_admin", "school_admin"];
+  if (!allowedRoles.includes(role)) {
     redirect("/");
   }
 

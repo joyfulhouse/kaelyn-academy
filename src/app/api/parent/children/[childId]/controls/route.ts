@@ -97,11 +97,11 @@ async function findChildBySlug(userId: string, slug: string) {
 // GET - Get parental controls for a specific child
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ childId: string }> }
 ) {
   try {
     const session = await auth();
-    const { slug } = await params;
+    const { childId } = await params;
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -115,7 +115,7 @@ export async function GET(
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    const child = await findChildBySlug(session.user.id, slug);
+    const child = await findChildBySlug(session.user.id, childId);
 
     if (!child) {
       return NextResponse.json({ error: "Child not found" }, { status: 404 });
@@ -158,11 +158,11 @@ export async function GET(
 // PUT - Update parental controls for a specific child
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ childId: string }> }
 ) {
   try {
     const session = await auth();
-    const { slug } = await params;
+    const { childId } = await params;
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -176,7 +176,7 @@ export async function PUT(
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    const child = await findChildBySlug(session.user.id, slug);
+    const child = await findChildBySlug(session.user.id, childId);
 
     if (!child) {
       return NextResponse.json({ error: "Child not found" }, { status: 404 });

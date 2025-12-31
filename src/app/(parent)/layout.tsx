@@ -17,7 +17,9 @@ export default async function ParentLayout({
 
   const role = session.user.role;
 
-  if (role !== "parent") {
+  // Allow parents and admin roles access to parent dashboard
+  const allowedRoles = ["parent", "admin", "platform_admin", "school_admin"];
+  if (!allowedRoles.includes(role)) {
     redirect("/");
   }
 

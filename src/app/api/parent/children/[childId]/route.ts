@@ -4,14 +4,14 @@ import { db } from "@/lib/db";
 import { learners, users } from "@/lib/db/schema";
 import { eq, and, isNull } from "drizzle-orm";
 
-// GET - Get a specific child by slug
+// GET - Get a specific child by childId (slug)
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ childId: string }> }
 ) {
   try {
     const session = await auth();
-    const { slug } = await params;
+    const { childId } = await params;
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -51,7 +51,7 @@ export async function GET(
         ? `${firstName}-${middleInitial}`
         : firstName;
 
-      if (childSlug === slug) {
+      if (childSlug === childId) {
         const age = child.dateOfBirth
           ? Math.floor((Date.now() - new Date(child.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
           : null;
