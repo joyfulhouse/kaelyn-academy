@@ -15,6 +15,7 @@ import {
 } from "@/lib/db/schema/progress";
 import { lessons, units, activities } from "@/lib/db/schema/curriculum";
 import { eq, and, sql, gte, count, avg, isNull } from "drizzle-orm";
+import { checkAndAwardAchievements } from "./achievement-service";
 
 interface UpdateProgressParams {
   learnerId: string;
@@ -303,16 +304,30 @@ export async function updateUnitProgress(
   }
 }
 
+interface NewAchievement {
+  id: string;
+  name: string;
+  description: string | null;
+  iconUrl: string | null;
+  type: string;
+  points: number | null;
+  earnedAt: Date;
+}
+
+interface AggregationResult {
+  lessonComplete: boolean;
+  unitComplete: boolean;
+  streak: StreakResult;
+  newAchievements: NewAchievement[];
+  achievementPoints: number;
+}
+
 /**
  * Main entry point: Update all progress levels when an activity is completed
  */
 export async function aggregateProgressOnCompletion(
   params: UpdateProgressParams
-): Promise<{
-  lessonComplete: boolean;
-  unitComplete: boolean;
-  streak: StreakResult;
-}> {
+): Promise<AggregationResult> {
   const { learnerId, lessonId, organizationId, timeSpent = 0 } = params;
 
   // Get the lesson's unit and subject
@@ -332,6 +347,8 @@ export async function aggregateProgressOnCompletion(
       lessonComplete: false,
       unitComplete: false,
       streak: { currentStreak: 0, longestStreak: 0, streakUpdated: false },
+      newAchievements: [],
+      achievementPoints: 0,
     };
   }
 
@@ -367,9 +384,14 @@ export async function aggregateProgressOnCompletion(
   // Get final streak
   const streak = await calculateStreak(learnerId, subjectId);
 
+  // Check and award achievements
+  const achievementResult = await checkAndAwardAchievements(learnerId, organizationId);
+
   return {
     lessonComplete,
     unitComplete,
     streak,
+    newAchievements: achievementResult.newAchievements,
+    achievementPoints: achievementResult.totalPoints,
   };
 }
