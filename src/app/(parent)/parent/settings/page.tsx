@@ -14,7 +14,10 @@ import {
   Loader2,
   CheckCircle2,
   AlertTriangle,
+  Lock,
+  ExternalLink,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -262,7 +265,7 @@ export default function ParentSettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile" className="gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
@@ -270,6 +273,10 @@ export default function ParentSettingsPage() {
           <TabsTrigger value="notifications" className="gap-2">
             <Bell className="h-4 w-4" />
             <span className="hidden sm:inline">Notifications</span>
+          </TabsTrigger>
+          <TabsTrigger value="privacy" className="gap-2">
+            <Lock className="h-4 w-4" />
+            <span className="hidden sm:inline">Privacy</span>
           </TabsTrigger>
           <TabsTrigger value="billing" className="gap-2">
             <CreditCard className="h-4 w-4" />
@@ -507,6 +514,78 @@ export default function ParentSettingsPage() {
                     })
                   }
                 />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Privacy Settings */}
+        <TabsContent value="privacy" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Privacy & COPPA</CardTitle>
+              <CardDescription>
+                Manage your children&apos;s privacy and parental consent
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Under the Children&apos;s Online Privacy Protection Act (COPPA),
+                you have the right to review, delete, and refuse further
+                collection of your child&apos;s personal information.
+              </p>
+              <Button asChild className="gap-2">
+                <Link href="/parent/privacy">
+                  <Lock className="h-4 w-4" />
+                  Manage Privacy & Consent
+                  <ExternalLink className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Data Rights</CardTitle>
+              <CardDescription>
+                Your rights under privacy regulations
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary font-semibold text-sm">1</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Right to Review</h4>
+                    <p className="text-sm text-muted-foreground">
+                      You can view all data we collect about your children
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary font-semibold text-sm">2</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Right to Delete</h4>
+                    <p className="text-sm text-muted-foreground">
+                      You can request deletion of your child&apos;s data at any time
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary font-semibold text-sm">3</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Right to Refuse</h4>
+                    <p className="text-sm text-muted-foreground">
+                      You can revoke consent and stop data collection
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
