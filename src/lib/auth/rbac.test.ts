@@ -5,6 +5,7 @@ import {
   hasAllPermissions,
   isRoleAtLeast,
   getPermissions,
+  createPermissionChecker,
 } from "./permissions";
 
 describe("RBAC System", () => {
@@ -71,6 +72,40 @@ describe("RBAC System", () => {
       const permissions = getPermissions("learner");
       expect(permissions.length).toBe(2);
       expect(permissions).toContain("read:own_progress");
+    });
+  });
+
+  describe("createPermissionChecker", () => {
+    it("should create a permission checker for admin", () => {
+      const checker = createPermissionChecker("admin");
+      expect(checker.can("manage:users")).toBe(true);
+      expect(checker.can("view:admin_dashboard")).toBe(true);
+    });
+
+    it("should provide canAny method", () => {
+      const checker = createPermissionChecker("teacher");
+      expect(checker.canAny(["view:analytics", "manage:users"])).toBe(true);
+      expect(checker.canAny(["manage:users", "manage:organizations"])).toBe(false);
+    });
+
+    it("should provide canAll method", () => {
+      const checker = createPermissionChecker("admin");
+      expect(checker.canAll(["manage:users", "view:analytics"])).toBe(true);
+
+      const learnerChecker = createPermissionChecker("learner");
+      expect(learnerChecker.canAll(["read:own_progress", "manage:users"])).toBe(false);
+    });
+
+    it("should provide isAtLeast method", () => {
+      const checker = createPermissionChecker("teacher");
+      expect(checker.isAtLeast("learner")).toBe(true);
+      expect(checker.isAtLeast("admin")).toBe(false);
+    });
+
+    it("should expose permissions array", () => {
+      const checker = createPermissionChecker("parent");
+      expect(checker.permissions).toContain("read:child_progress");
+      expect(checker.permissions).toContain("write:child_settings");
     });
   });
 });

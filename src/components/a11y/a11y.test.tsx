@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
 import { SkipLink, SkipLinks } from "./skip-link";
 import { LiveRegion, LiveRegionProvider, useLiveAnnouncer } from "./live-region";
 import { VisuallyHidden, SrOnly, A11yText } from "./visually-hidden";
@@ -102,6 +102,53 @@ describe("Accessibility Components", () => {
       expect(screen.getByRole("status")).toBeInTheDocument();
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
+
+    it("announces polite message when button clicked", async () => {
+      render(
+        <LiveRegionProvider>
+          <TestComponent />
+        </LiveRegionProvider>
+      );
+
+      const button = screen.getByRole("button", { name: /announce polite/i });
+      await act(async () => {
+        button.click();
+      });
+
+      // Wait for the setTimeout in the announce function
+      await waitFor(() => {
+        expect(screen.getByRole("status")).toHaveTextContent("Polite message");
+      }, { timeout: 200 });
+    });
+
+    it("announces assertive message when button clicked", async () => {
+      render(
+        <LiveRegionProvider>
+          <TestComponent />
+        </LiveRegionProvider>
+      );
+
+      const button = screen.getByRole("button", { name: /announce assertive/i });
+      await act(async () => {
+        button.click();
+      });
+
+      // Wait for the setTimeout in the announce function
+      await waitFor(() => {
+        expect(screen.getByRole("alert")).toHaveTextContent("Assertive message");
+      }, { timeout: 200 });
+    });
+
+    it("throws error when useLiveAnnouncer is used outside provider", () => {
+      function InvalidComponent() {
+        useLiveAnnouncer();
+        return null;
+      }
+
+      expect(() => render(<InvalidComponent />)).toThrow(
+        "useLiveAnnouncer must be used within a LiveRegionProvider"
+      );
+    });
   });
 
   describe("VisuallyHidden", () => {
@@ -126,6 +173,50 @@ describe("Accessibility Components", () => {
       render(<VisuallyHidden as="div">Hidden text</VisuallyHidden>);
       const element = screen.getByText("Hidden text");
       expect(element.tagName).toBe("DIV");
+    });
+
+    it("renders as paragraph when as=p", () => {
+      render(<VisuallyHidden as="p">Hidden paragraph</VisuallyHidden>);
+      const element = screen.getByText("Hidden paragraph");
+      expect(element.tagName).toBe("P");
+    });
+
+    it("renders as heading elements", () => {
+      const { rerender } = render(<VisuallyHidden as="h1">Heading 1</VisuallyHidden>);
+      expect(screen.getByText("Heading 1").tagName).toBe("H1");
+
+      rerender(<VisuallyHidden as="h2">Heading 2</VisuallyHidden>);
+      expect(screen.getByText("Heading 2").tagName).toBe("H2");
+
+      rerender(<VisuallyHidden as="h3">Heading 3</VisuallyHidden>);
+      expect(screen.getByText("Heading 3").tagName).toBe("H3");
+
+      rerender(<VisuallyHidden as="h4">Heading 4</VisuallyHidden>);
+      expect(screen.getByText("Heading 4").tagName).toBe("H4");
+
+      rerender(<VisuallyHidden as="h5">Heading 5</VisuallyHidden>);
+      expect(screen.getByText("Heading 5").tagName).toBe("H5");
+
+      rerender(<VisuallyHidden as="h6">Heading 6</VisuallyHidden>);
+      expect(screen.getByText("Heading 6").tagName).toBe("H6");
+    });
+
+    it("renders as label when as=label", () => {
+      render(<VisuallyHidden as="label">Hidden label</VisuallyHidden>);
+      const element = screen.getByText("Hidden label");
+      expect(element.tagName).toBe("LABEL");
+    });
+
+    it("applies focusable styles when focusable prop is true", () => {
+      render(<VisuallyHidden focusable>Focusable content</VisuallyHidden>);
+      const element = screen.getByText("Focusable content");
+      expect(element).toHaveClass("focus:static");
+    });
+
+    it("applies custom className", () => {
+      render(<VisuallyHidden className="custom-class">Custom styled</VisuallyHidden>);
+      const element = screen.getByText("Custom styled");
+      expect(element).toHaveClass("custom-class");
     });
   });
 
