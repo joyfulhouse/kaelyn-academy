@@ -11,6 +11,7 @@ import {
   Settings,
   Shield,
   Bot,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -329,6 +330,12 @@ export default async function ChildProfilePage({
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link href={`/parent/children/${slug}/activity`}>
+              <History className="h-4 w-4 mr-2" />
+              Activity
+            </Link>
+          </Button>
           <Button variant="outline" asChild>
             <Link href={`/parent/children/${slug}/tutor-history`}>
               <Bot className="h-4 w-4 mr-2" />
