@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AddStudentsDialog } from "@/components/teacher/enrollment/add-students-dialog";
 
 interface ClassData {
   id: string;
@@ -128,6 +129,7 @@ export default function ClassDetailPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [addStudentsOpen, setAddStudentsOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -223,7 +225,11 @@ export default function ClassDetailPage() {
             <p className="text-muted-foreground">{classData.description || "No description"}</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => setAddStudentsOpen(true)}
+            >
               <UserPlus className="h-4 w-4" />
               Add Students
             </Button>
@@ -316,7 +322,11 @@ export default function ClassDetailPage() {
               {students.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>No students enrolled in this class yet.</p>
-                  <Button variant="outline" className="mt-4 gap-2">
+                  <Button
+                    variant="outline"
+                    className="mt-4 gap-2"
+                    onClick={() => setAddStudentsOpen(true)}
+                  >
                     <UserPlus className="h-4 w-4" />
                     Add Students
                   </Button>
@@ -574,6 +584,16 @@ export default function ClassDetailPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add Students Dialog */}
+      <AddStudentsDialog
+        open={addStudentsOpen}
+        onOpenChange={setAddStudentsOpen}
+        classId={classId}
+        className={classData.name}
+        classGrade={classData.gradeLevel}
+        onStudentsAdded={fetchData}
+      />
     </div>
   );
 }
