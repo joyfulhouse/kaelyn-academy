@@ -15,6 +15,7 @@ export default async function AdminLayout({
     redirect("/login?callbackUrl=/auth/redirect");
   }
 
+  // Check for admin role (RBAC uses "admin" role for platform admins)
   if (session.user.role !== "admin") {
     redirect("/");
   }

@@ -57,6 +57,130 @@ The skill reads this PROMPT.md file and orchestrates the entire loop autonomousl
 
 ---
 
+## Zero-Beads Discovery Protocol
+
+**CRITICAL**: When the loop starts with NO open beads, you MUST NOT output the completion promise. Instead, perform comprehensive discovery to identify missing features, incomplete functionality, and areas for improvement.
+
+### Mandatory Discovery When No Beads Exist
+
+```bash
+# Check if there are open beads
+open_count=$(bd list --status=open 2>/dev/null | wc -l)
+
+if [ "$open_count" -eq 0 ]; then
+  # DO NOT output completion promise
+  # Instead, run comprehensive discovery
+  echo "No open beads - initiating discovery phase"
+fi
+```
+
+### Discovery Areas for Educational Platform
+
+When no beads exist, systematically analyze these areas and create beads for gaps:
+
+#### 1. Grade-Level Coverage (K-12)
+For EACH grade level, verify:
+- [ ] Dashboard exists with age-appropriate UI
+- [ ] Subjects have grade-specific content
+- [ ] Activities are developmentally appropriate
+- [ ] 3D visualizations match cognitive level
+- [ ] AI tutor responses are age-calibrated
+
+#### 2. Subject Completeness
+For EACH subject (Math, Reading, History, Science, Technology):
+- [ ] Lessons exist for all grade levels
+- [ ] Quizzes/assessments are functional
+- [ ] Progress tracking works
+- [ ] 3D visualizations enhance learning
+- [ ] Standards alignment documented
+
+#### 3. User Role Features
+**Learner Features:**
+- [ ] Interactive lessons with engagement tracking
+- [ ] Achievement system (badges, streaks, levels)
+- [ ] Personalized learning paths
+- [ ] AI tutor integration
+- [ ] Progress visualization
+
+**Parent Features:**
+- [ ] Multi-child management
+- [ ] Progress monitoring dashboard
+- [ ] Parental controls (time limits, content filters)
+- [ ] Communication with teachers
+- [ ] Data export/deletion (COPPA)
+
+**Teacher Features:**
+- [ ] Classroom management
+- [ ] Assignment creation and grading
+- [ ] Student progress analytics
+- [ ] Standards mapping
+- [ ] Bulk operations
+
+**Admin Features:**
+- [ ] Organization management
+- [ ] User administration
+- [ ] Analytics and reporting
+- [ ] Content moderation
+- [ ] Subscription/billing
+
+#### 4. Technical Completeness
+- [ ] All API endpoints have tests
+- [ ] All pages handle loading/error states
+- [ ] Forms have proper validation
+- [ ] Database queries are optimized
+- [ ] Security headers configured
+
+#### 5. Content & Resources
+- [ ] Sufficient lessons per subject/grade
+- [ ] Quality 3D visualizations
+- [ ] Educational worksheets/printables
+- [ ] Video content integration
+- [ ] External resource links
+
+### Discovery Process
+
+```markdown
+1. **Run feature-dev:code-explorer** on each major area
+2. **Compare against Production Readiness Audit** checklist
+3. **Create beads** for EVERY gap identified
+4. **Prioritize** based on user impact:
+   - P0: Blocking core functionality
+   - P1: Required for MVP
+   - P2: Important enhancements
+   - P3: Nice-to-have features
+5. **Continue the loop** - implement discovered beads
+```
+
+### Example Discovery Beads
+
+```bash
+# Missing grade-level content
+bd create --title="[REQUIRED] Add 2nd grade math lessons" --type=task --priority=1
+
+# Missing user feature
+bd create --title="[REQUIRED] Implement teacher assignment grading" --type=feature --priority=1
+
+# Technical gap
+bd create --title="[REQUIRED] Add API tests for messaging routes" --type=task --priority=2
+
+# Enhancement
+bd create --title="[FEATURE] Add printable worksheets for offline learning" --type=feature --priority=2
+```
+
+### The Loop NEVER Completes Without Genuine Completeness
+
+The completion promise may ONLY be output when:
+1. Discovery has been performed
+2. ALL discovered gaps have beads
+3. ALL beads are implemented and closed
+4. The platform is GENUINELY ready for production use by:
+   - Students of ALL grade levels (K-12)
+   - Parents managing multiple children
+   - Teachers running classrooms
+   - Administrators managing organizations
+
+---
+
 ## Loop Lifecycle
 
 Each academy loop follows this iterative sequence with discovery built-in:
