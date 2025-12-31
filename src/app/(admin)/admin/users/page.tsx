@@ -28,7 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, UserPlus, Mail, Shield, Trash2, UserX, UserCheck, Pencil } from "lucide-react";
+import { MoreHorizontal, UserPlus, Mail, Trash2, UserX, UserCheck, Pencil } from "lucide-react";
 
 interface User {
   id: string;

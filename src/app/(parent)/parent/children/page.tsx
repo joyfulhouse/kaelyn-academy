@@ -6,13 +6,9 @@ import {
   UserPlus,
   Settings,
   MoreVertical,
-  Mail,
   Shield,
   Clock,
-  BookOpen,
   TrendingUp,
-  Award,
-  Calendar,
   Loader2,
   Trash2,
 } from "lucide-react";

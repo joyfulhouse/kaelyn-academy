@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Save, Eye, Send } from "lucide-react";
+import { Loader2, Save, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -106,8 +106,6 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
       status: (post?.status as "draft" | "published" | "archived") || "draft",
     },
   });
-
-  const watchTitle = form.watch("title");
 
   function handleTitleChange(value: string) {
     form.setValue("title", value);

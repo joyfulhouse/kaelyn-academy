@@ -10,12 +10,6 @@ import { useState, useEffect, useCallback, createContext, useContext } from "rea
 
 type Politeness = "polite" | "assertive" | "off";
 
-interface Announcement {
-  id: string;
-  message: string;
-  politeness: Politeness;
-}
-
 interface LiveRegionContextType {
   announce: (message: string, politeness?: Politeness) => void;
   announcePolite: (message: string) => void;

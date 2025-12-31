@@ -17,22 +17,13 @@ const mockSession = {
   expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 };
 
-// Define hoisted mocks
-const {
-  mockAuth,
-  mockLearnersFindFirst,
-  mockLearnersFindMany,
-  mockAchievementsFindMany,
-  mockLearnerAchievementsFindFirst,
-  mockLearnerAchievementsFindMany,
-} = vi.hoisted(() => ({
-  mockAuth: vi.fn(),
-  mockLearnersFindFirst: vi.fn(),
-  mockLearnersFindMany: vi.fn(),
-  mockAchievementsFindMany: vi.fn(),
-  mockLearnerAchievementsFindFirst: vi.fn(),
-  mockLearnerAchievementsFindMany: vi.fn(),
-}));
+// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
+const mockAuth = vi.hoisted(() => vi.fn());
+const mockLearnersFindFirst = vi.hoisted(() => vi.fn());
+const mockLearnersFindMany = vi.hoisted(() => vi.fn());
+const mockAchievementsFindMany = vi.hoisted(() => vi.fn());
+const mockLearnerAchievementsFindFirst = vi.hoisted(() => vi.fn());
+const mockLearnerAchievementsFindMany = vi.hoisted(() => vi.fn());
 
 // Mock auth
 vi.mock("@/lib/auth", () => ({

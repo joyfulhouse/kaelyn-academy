@@ -8,19 +8,17 @@ class RedirectError extends Error {
   }
 }
 
-// Create mock functions using vi.hoisted()
-const { mockAuth, mockRedirect, mockDbQuery, mockDbSelect } = vi.hoisted(() => ({
-  mockAuth: vi.fn(),
-  mockRedirect: vi.fn((url: string) => {
-    throw new RedirectError(url);
-  }),
-  mockDbQuery: {
-    learners: {
-      findFirst: vi.fn(),
-    },
-  },
-  mockDbSelect: vi.fn(),
+// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
+const mockAuth = vi.hoisted(() => vi.fn());
+const mockRedirect = vi.hoisted(() => vi.fn((url: string) => {
+  throw new RedirectError(url);
 }));
+const mockDbQuery = vi.hoisted(() => ({
+  learners: {
+    findFirst: vi.fn(),
+  },
+}));
+const mockDbSelect = vi.hoisted(() => vi.fn());
 
 // Mock dependencies that cause module resolution issues
 vi.mock("@/lib/auth", () => ({

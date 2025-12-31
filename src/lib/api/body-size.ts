@@ -101,7 +101,7 @@ export async function parseBodyWithLimit<T = unknown>(
   try {
     const data = (await request.json()) as T;
     return { success: true, data };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       response: NextResponse.json(

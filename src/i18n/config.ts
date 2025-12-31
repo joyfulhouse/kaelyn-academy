@@ -27,5 +27,9 @@ export const localeFlags: Record<Locale, string> = {
  */
 export function getDirection(locale: Locale): "ltr" | "rtl" {
   // Add RTL locales here (e.g., "ar", "he")
+  const rtlLocales: Locale[] = [];
+  if (rtlLocales.includes(locale)) {
+    return "rtl";
+  }
   return "ltr";
 }

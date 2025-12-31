@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import {
   GraduationCap,
@@ -62,14 +61,7 @@ const stats = [
   { value: "6+", label: "Languages Supported" },
 ];
 
-const team = [
-  {
-    name: "The Kaelyn's Academy Team",
-    role: "Educators, Engineers & Designers",
-    description:
-      "We're a diverse team of former teachers, curriculum designers, software engineers, and child development specialists united by a common mission: making learning accessible and engaging for every child.",
-  },
-];
+// Team content will be populated from CMS in future iteration
 
 export default function AboutPage() {
   return (

@@ -8,7 +8,7 @@ import {
   readReceipts,
 } from "@/lib/db/schema/messaging";
 import { users } from "@/lib/db/schema/users";
-import { eq, and, desc, isNull, asc } from "drizzle-orm";
+import { eq, and, isNull, asc } from "drizzle-orm";
 import { z } from "zod";
 import { ValidationError, validateBody } from "@/lib/validation";
 

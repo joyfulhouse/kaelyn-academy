@@ -1,12 +1,7 @@
 /**
  * Tests for Curriculum Index exports
  */
-import { describe, it, expect, beforeEach, vi } from "vitest";
-
-// Reset the singleton before each test
-beforeEach(() => {
-  vi.resetModules();
-});
+import { describe, it, expect } from "vitest";
 
 describe("Curriculum Index", () => {
   describe("getCurriculumIndex", () => {

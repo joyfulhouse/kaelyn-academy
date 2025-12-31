@@ -25,11 +25,8 @@ export interface ThemeSwitcherProps {
   side?: "top" | "right" | "bottom" | "left";
 }
 
-export function ThemeSwitcher({
-  showLabel = false,
-  align = "end",
-  side = "bottom",
-}: ThemeSwitcherProps) {
+export function ThemeSwitcher(props: ThemeSwitcherProps) {
+  const { align = "end", side = "bottom" } = props;
   const { mode, resolvedMode, setMode, isDark } = useThemeMode();
 
   const handleModeChange = (newMode: ThemeMode) => {

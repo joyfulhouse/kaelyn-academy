@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { classes, classEnrollments } from "@/lib/db/schema/classroom";
-import { users, learners } from "@/lib/db/schema/users";
+import { users } from "@/lib/db/schema/users";
 import { learnerSubjectProgress } from "@/lib/db/schema/progress";
 import { eq, and, sql, isNull, desc, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";

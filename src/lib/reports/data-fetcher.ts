@@ -10,8 +10,7 @@ import {
   lessonProgress as lessonProgressTable,
   activityAttempts,
 } from "@/lib/db/schema/progress";
-import { subjects as subjectsTable } from "@/lib/db/schema/curriculum";
-import { eq, and, gte, lte, desc, sql, isNull } from "drizzle-orm";
+import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 import type {
   ProgressReportData,
   ActivityReportData,

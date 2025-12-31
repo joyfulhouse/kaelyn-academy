@@ -7,7 +7,6 @@ import {
   Trophy,
   TrendingUp,
   BookOpen,
-  Target,
   Award,
   Settings,
   Shield,
@@ -269,11 +268,12 @@ function formatMinutes(minutes: number): string {
 }
 
 export async function generateMetadata({
-  params,
+  params: _params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  // Note: slug available for dynamic metadata in future iteration
+  void _params;
 
   return {
     title: `Child Profile | Parent Dashboard | Kaelyn's Academy`,

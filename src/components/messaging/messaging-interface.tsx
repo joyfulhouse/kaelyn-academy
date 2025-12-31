@@ -9,10 +9,7 @@ import {
   ArrowLeft,
   Check,
   CheckCheck,
-  Clock,
   Loader2,
-  User,
-  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -93,7 +90,6 @@ export function MessagingInterface({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
@@ -131,7 +127,6 @@ export function MessagingInterface({
       if (response.ok) {
         const data = await response.json();
         setMessages(data.messages);
-        setParticipants(data.participants);
       }
     } catch (error) {
       console.error("Failed to fetch messages:", error);

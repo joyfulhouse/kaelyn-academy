@@ -7,11 +7,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
-// Define hoisted mocks before they're used in vi.mock
-const { mockCheckPublicRateLimit, mockGetCurriculumStats } = vi.hoisted(() => ({
-  mockCheckPublicRateLimit: vi.fn(),
-  mockGetCurriculumStats: vi.fn(),
-}));
+// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
+const mockCheckPublicRateLimit = vi.hoisted(() => vi.fn());
+const mockGetCurriculumStats = vi.hoisted(() => vi.fn());
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({

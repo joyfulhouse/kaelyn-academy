@@ -39,15 +39,8 @@ interface LessonPageProps {
   params: Promise<{ subjectId: string; lessonId: string }>;
 }
 
-// Bloom's level descriptions
-const bloomsDescriptions: Record<string, string> = {
-  remember: "Recall facts and basic concepts",
-  understand: "Explain ideas or concepts",
-  apply: "Use information in new situations",
-  analyze: "Draw connections among ideas",
-  evaluate: "Justify a stand or decision",
-  create: "Produce new or original work",
-};
+// Note: Bloom's level descriptions available for future lesson detail views
+// remember, understand, apply, analyze, evaluate, create
 
 function findLessonAndContext(
   subjectId: string,

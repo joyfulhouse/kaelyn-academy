@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { learners } from "@/lib/db/schema/users";
 import { learnerSubjectProgress } from "@/lib/db/schema/progress";
-import { eq, and, isNull, sql } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 
 // GET /api/learner/profile - Get current learner's profile
 export async function GET() {

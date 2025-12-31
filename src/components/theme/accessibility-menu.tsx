@@ -34,7 +34,6 @@ export function AccessibilityMenu({
   side = "bottom",
 }: AccessibilityMenuProps) {
   const {
-    preferences,
     setPreferences,
     toggleHighContrast,
     isHighContrast,

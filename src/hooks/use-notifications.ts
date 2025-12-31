@@ -96,7 +96,7 @@ export function useNotifications(): UseNotificationsResult {
   const unread = useMemo(() => notifications.filter((n) => !n.read), [notifications]);
   const unreadCount = unread.length;
 
-  const groups = useMemo(() => notificationStore.getGrouped(), [notifications]);
+  const groups = useMemo(() => notificationStore.getGrouped(), []);
 
   const markAsRead = useCallback((id: string) => {
     notificationStore.markAsRead(id);

@@ -507,7 +507,6 @@ function PracticeRenderer({
 
   const problem = problems[currentProblem];
   const correctCount = Object.values(results).filter(Boolean).length;
-  const attemptedCount = Object.keys(results).length;
 
   const checkAnswer = (problemId: string, answer: string) => {
     const prob = problems.find((p) => p.id === problemId);
@@ -698,8 +697,7 @@ function ReadingRenderer({
   onComplete: (score?: number) => void;
   readOnly?: boolean;
 }) {
-  const { text, keyTerms, comprehensionQuestions, audioUrl, wordCount } = activity.content;
-  const [isReading, setIsReading] = useState(false);
+  const { text, keyTerms, audioUrl, wordCount } = activity.content;
   const [readProgress, setReadProgress] = useState(0);
   const [showTerms, setShowTerms] = useState(false);
 

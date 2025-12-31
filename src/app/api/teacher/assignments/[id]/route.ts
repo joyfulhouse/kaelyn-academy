@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { assignments, assignmentSubmissions, classes, classEnrollments } from "@/lib/db/schema/classroom";
 import { learners, users } from "@/lib/db/schema/users";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 

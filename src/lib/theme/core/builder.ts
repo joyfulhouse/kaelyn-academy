@@ -27,7 +27,6 @@ import type {
   UserRole,
   AccessibilityPreferences,
   OrganizationBranding,
-  DEFAULT_ACCESSIBILITY,
 } from "./types";
 import { lightDesignTokens, darkDesignTokens } from "./tokens";
 import { mergeThemeLayers, cloneDeep } from "./merger";

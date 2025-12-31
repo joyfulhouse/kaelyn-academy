@@ -125,7 +125,7 @@ test.describe("COPPA Consent Flow", () => {
       await page.goto("/consent");
 
       // Check if button is initially disabled (when empty)
-      const continueButton = page.getByRole("button", { name: /continue/i });
+      void page.getByRole("button", { name: /continue/i });
 
       // Fill only some fields
       await page.locator("#parentName").fill("John Parent");

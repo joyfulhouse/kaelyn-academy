@@ -10,7 +10,6 @@ import {
   createInitialMetrics,
   AdaptiveDifficultyManager,
   type PerformanceMetrics,
-  type DifficultyConfig,
 } from "./difficulty";
 
 describe("Adaptive Difficulty System", () => {

@@ -24,13 +24,6 @@ import type {
 // ============================================================================
 
 /**
- * Convert camelCase to kebab-case
- */
-function toKebabCase(str: string): string {
-  return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-}
-
-/**
  * Generate CSS variables from semantic colors
  */
 function generateSemanticColorVars(colors: SemanticColors): CSSVariables {

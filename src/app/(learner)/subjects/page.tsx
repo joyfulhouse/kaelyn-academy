@@ -10,7 +10,6 @@ import {
   Monitor,
   Languages,
   Hand,
-  Loader2,
 } from "lucide-react";
 import {
   Card,

@@ -4,11 +4,10 @@ import {
   achievements,
   learnerAchievements,
   learnerSubjectProgress,
-  lessonProgress,
   conceptMastery,
 } from "@/lib/db/schema/progress";
 import { learners } from "@/lib/db/schema/users";
-import { eq, and, desc, sql, isNull } from "drizzle-orm";
+import { eq, and, sql, isNull } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { ValidationError } from "@/lib/validation";

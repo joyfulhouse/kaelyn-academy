@@ -4,11 +4,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 
-// Create mock functions using vi.hoisted() to avoid hoisting issues
-const { mockAuth, mockDbSelect } = vi.hoisted(() => ({
-  mockAuth: vi.fn(),
-  mockDbSelect: vi.fn(),
-}));
+// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
+const mockAuth = vi.hoisted(() => vi.fn());
+const mockDbSelect = vi.hoisted(() => vi.fn());
 
 // Mock dependencies
 vi.mock("@/lib/auth", () => ({

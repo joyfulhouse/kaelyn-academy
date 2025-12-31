@@ -62,6 +62,9 @@ const quizSchema = z.object({
 
 type GeneratedQuiz = z.infer<typeof quizSchema>;
 
+// Suppress quizSchema unused warning - used for type inference
+void quizSchema;
+
 /**
  * Get grade level description for prompts
  */
@@ -224,13 +227,6 @@ export async function generateQuizForLesson(
   const model = getModelForCapability("practice", request.preferredProvider);
 
   const questionCount = request.questionCount ?? 5;
-  const questionTypes = request.questionTypes ?? [
-    "multiple_choice",
-    "true_false",
-    "fill_blank",
-    "matching",
-    "ordering",
-  ];
 
   // Adjust schema for the specific number of questions
   const adjustedSchema = z.object({

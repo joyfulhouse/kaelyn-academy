@@ -11,7 +11,6 @@ import {
   Sun,
   Monitor,
   Save,
-  Camera,
   Check,
   Loader2,
 } from "lucide-react";
@@ -36,7 +35,6 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Slider } from "@/components/ui/slider";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AvatarPicker, getAvatarById } from "@/components/ui/avatar-picker";
 
 interface SettingsData {

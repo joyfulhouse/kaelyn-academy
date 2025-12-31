@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { classes, classEnrollments } from "@/lib/db/schema/classroom";
 import { learners, users } from "@/lib/db/schema/users";
 import { learnerSubjectProgress, activityAttempts } from "@/lib/db/schema/progress";
-import { eq, and, sql, isNull, desc, gte, inArray } from "drizzle-orm";
+import { eq, and, sql, isNull, gte, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
 // Helper to verify teacher role

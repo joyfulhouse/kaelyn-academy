@@ -7,7 +7,7 @@ import {
   messages,
 } from "@/lib/db/schema/messaging";
 import { users, learners } from "@/lib/db/schema/users";
-import { eq, and, desc, isNull, sql, or } from "drizzle-orm";
+import { eq, and, desc, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ValidationError, validateBody } from "@/lib/validation";
 

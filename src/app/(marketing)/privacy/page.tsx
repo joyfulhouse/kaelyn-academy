@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Shield, Lock, Eye, Database, Bell, Trash2, UserCheck, Mail } from "lucide-react";
+import { Shield, Lock, Eye, Bell, Trash2, UserCheck, Mail } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 

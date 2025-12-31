@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
@@ -204,10 +205,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {post.coverImageUrl && (
         <section className="px-4 sm:px-6 lg:px-8 -mt-4">
           <div className="max-w-4xl mx-auto">
-            <img
+            <Image
               src={post.coverImageUrl}
               alt={post.title}
+              width={800}
+              height={450}
               className="w-full h-auto rounded-lg shadow-lg"
+              priority
             />
           </div>
         </section>

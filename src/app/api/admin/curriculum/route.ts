@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { subjects, units, lessons } from "@/lib/db/schema/curriculum";
 import { users } from "@/lib/db/schema/users";
-import { eq, sql, isNull, ilike, and, or, desc } from "drizzle-orm";
+import { eq, sql, isNull, ilike, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
 // GET /api/admin/curriculum - Get curriculum overview with subjects, units, and lessons

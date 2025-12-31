@@ -8,7 +8,6 @@ import {
   UserPlus,
   AlertCircle,
   CheckCircle,
-  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +43,7 @@ export default function AddChildPage() {
   const [birthYear, setBirthYear] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [existingChildren, setExistingChildren] = useState<ExistingChild[]>([]);
 
   // Fetch existing children to check for duplicates

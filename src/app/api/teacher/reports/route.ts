@@ -4,7 +4,7 @@ import { classes, classEnrollments, assignments, assignmentSubmissions } from "@
 import { users, learners } from "@/lib/db/schema/users";
 import { learnerSubjectProgress, activityAttempts } from "@/lib/db/schema/progress";
 import { subjects } from "@/lib/db/schema/curriculum";
-import { eq, and, sql, isNull, gte, inArray, desc } from "drizzle-orm";
+import { eq, and, sql, isNull, gte, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { subjectColors, colors } from "@/lib/colors";
 
@@ -48,7 +48,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const classFilter = searchParams.get("classId") || "all";
     const dateRange = searchParams.get("dateRange") || "30days";
-    const startDate = getDateRange(dateRange);
+    // Note: startDate is extracted for potential future filtering
+    void getDateRange(dateRange);
 
     // Fetch teacher's classes
     const teacherClasses = await db

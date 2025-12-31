@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurriculumStats, getAllSubjects } from "@/data/curriculum";
+import { getCurriculumStats } from "@/data/curriculum";
 
 // Subject-specific example questions mapped from curriculum
 const CURRICULUM_QUESTIONS: Record<string, Record<number, string[]>> = {

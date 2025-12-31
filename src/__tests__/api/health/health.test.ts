@@ -6,10 +6,8 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Define hoisted mocks
-const { mockDbExecute } = vi.hoisted(() => ({
-  mockDbExecute: vi.fn(),
-}));
+// Define hoisted mocks - vi.hoisted ensures mocks are available when vi.mock runs
+const mockDbExecute = vi.hoisted(() => vi.fn());
 
 // Mock database
 vi.mock("@/lib/db", () => ({

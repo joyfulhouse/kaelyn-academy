@@ -24,7 +24,7 @@ interface LearnerHeaderProps {
 }
 
 export function LearnerHeader({ user, currentStreak, totalStars }: LearnerHeaderProps) {
-  const { theme } = useTheme();
+  useTheme();
 
   return (
     <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">

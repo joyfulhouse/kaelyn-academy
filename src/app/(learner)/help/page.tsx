@@ -8,7 +8,6 @@ import {
   Search,
   ChevronRight,
   Mail,
-  Phone,
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

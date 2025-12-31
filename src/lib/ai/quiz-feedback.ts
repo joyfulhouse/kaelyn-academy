@@ -37,7 +37,6 @@ function buildFeedbackPrompt(request: QuizFeedbackRequest): string {
   const { quizConfig, questionResults, score, passed, learnerName, gradeLevel } = request;
   const gradeDesc = getGradeDescription(gradeLevel);
   const correctCount = questionResults.filter((q) => q.correct).length;
-  const incorrectCount = questionResults.length - correctCount;
   // SECURITY: Pseudonymize student name for COPPA/privacy compliance
   const displayName = sanitizeLearnerName(learnerName);
 

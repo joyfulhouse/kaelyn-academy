@@ -10,7 +10,7 @@ import {
 import { subjects, lessons, concepts, activities } from "@/lib/db/schema/curriculum";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { requireLearnerAccess, AuthorizationError, type Role } from "@/lib/auth/rbac";
+import { requireLearnerAccess, AuthorizationError } from "@/lib/auth/rbac";
 import { ValidationError } from "@/lib/validation";
 import { z } from "zod";
 
@@ -220,8 +220,6 @@ export async function GET(request: NextRequest) {
           else if (level > 0) needsReview += m.count;
         }
 
-        // Calculate "not started" from total concepts vs tracked concepts
-        const totalTracked = mastered + learning + needsReview;
         const masteryBreakdown = [
           { name: "Mastered", value: mastered, color: "var(--success)" },
           { name: "Learning", value: learning, color: "var(--primary)" },

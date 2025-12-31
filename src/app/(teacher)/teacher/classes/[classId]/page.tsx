@@ -9,13 +9,11 @@ import {
   Plus,
   MoreVertical,
   TrendingUp,
-  TrendingDown,
   Award,
   Mail,
   UserPlus,
   ClipboardList,
   AlertTriangle,
-  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -122,7 +120,7 @@ function ClassDetailSkeleton() {
 
 export default function ClassDetailPage() {
   const params = useParams();
-  const router = useRouter();
+  void useRouter(); // Router available for future navigation features
   const classId = params.classId as string;
 
   const [loading, setLoading] = useState(true);

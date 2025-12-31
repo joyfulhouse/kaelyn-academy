@@ -7,7 +7,7 @@
 
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Text, Plane, Line } from "@react-three/drei";
+import { Text, Line } from "@react-three/drei";
 import * as THREE from "three";
 import { colors } from "@/lib/colors";
 

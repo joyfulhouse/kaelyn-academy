@@ -8,7 +8,6 @@ import {
   FileText,
   Eye,
   Pencil,
-  Trash2,
   Filter,
   MoreHorizontal,
   Archive,

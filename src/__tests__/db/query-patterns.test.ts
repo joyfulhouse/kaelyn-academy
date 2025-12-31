@@ -9,7 +9,7 @@
  * - Aggregation queries
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   createMockOrganization,
   createMockUser,

@@ -4,9 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   FileText,
   Download,
-  TrendingUp,
-  TrendingDown,
-  Clock,
   BookOpen,
   Target,
   Award,

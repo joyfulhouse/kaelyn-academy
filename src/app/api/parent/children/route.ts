@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { learners, users } from "@/lib/db/schema";
 import { learnerSubjectProgress, lessonProgress } from "@/lib/db/schema/progress";
 import { subjects } from "@/lib/db/schema/curriculum";
-import { eq, and, isNull, gte, sql } from "drizzle-orm";
+import { eq, and, isNull, gte } from "drizzle-orm";
 import { z } from "zod";
 
 // Schema for creating a child

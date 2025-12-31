@@ -5,7 +5,6 @@ import {
   localeNames,
   localeFlags,
   getDirection,
-  type Locale,
 } from "./config";
 
 describe("i18n Configuration", () => {

@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { users, learners } from "@/lib/db/schema/users";
 import { organizations } from "@/lib/db/schema/organizations";
 import { learnerSubjectProgress } from "@/lib/db/schema/progress";
-import { eq, sql, isNull, or, ilike, desc, and, gte, inArray } from "drizzle-orm";
+import { eq, sql, isNull, or, ilike, desc, and, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { validatePagination, PAGINATION_PRESETS } from "@/lib/api/pagination";
 import { z } from "zod";

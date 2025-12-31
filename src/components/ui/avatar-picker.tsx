@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Check, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -66,8 +66,6 @@ export function AvatarPicker({
     onSelect(avatarId);
     setOpen(false);
   };
-
-  const currentAvatarData = AVATAR_COLLECTION.find((a) => a.id === currentAvatar);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

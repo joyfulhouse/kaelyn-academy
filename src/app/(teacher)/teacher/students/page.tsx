@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   Search,
-  Download,
-  Mail,
   TrendingUp,
   TrendingDown,
   MoreVertical,

@@ -144,7 +144,7 @@ function ClassesSkeleton() {
 export default function ClassesPage() {
   const [loading, setLoading] = useState(true);
   const [classes, setClasses] = useState<ClassData[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [, setSubjects] = useState<Subject[]>([]);
   const [summary, setSummary] = useState<ClassSummary>({
     totalClasses: 0,
     totalStudents: 0,

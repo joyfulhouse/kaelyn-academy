@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { notifications } from "@/lib/db/schema/marketing";
-import { eq, and, desc, sql, isNull, or, inArray } from "drizzle-orm";
+import { eq, and, desc, sql, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { ValidationError } from "@/lib/validation";
