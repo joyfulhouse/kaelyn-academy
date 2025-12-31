@@ -237,11 +237,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // TODO: Send invitation emails if requested
+    // Email invitations are logged but not sent - email service integration pending
     const invitationsSent = 0;
     if (sendInvitations) {
-      // This would integrate with the email service
-      // For now, just log the intent
       logger.info("Invitations requested for imported students", {
         count: createdLearners.length,
       });

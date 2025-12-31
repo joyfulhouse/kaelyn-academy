@@ -101,7 +101,7 @@ const nextConfig: NextConfig = {
             value: [
               "default-src 'self'",
               // SECURITY: Remove unsafe-eval in production (unsafe-inline still needed for Next.js hydration)
-              // TODO: Implement nonce-based CSP with middleware for full protection
+              // Note: Nonce-based CSP requires middleware integration for full protection
               process.env.NODE_ENV === "development"
                 ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'"
                 : "script-src 'self' 'unsafe-inline'",
