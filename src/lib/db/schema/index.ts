@@ -30,3 +30,6 @@ export * from "./consent";
 
 // Parent-Teacher Messaging
 export * from "./messaging";
+
+// Audit Logging
+export * from "./audit";

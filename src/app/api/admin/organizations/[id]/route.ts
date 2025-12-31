@@ -5,6 +5,7 @@ import { organizations } from "@/lib/db/schema/organizations";
 import { eq, sql, isNull, and } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { auditHelpers } from "@/lib/audit";
 
 // GET /api/admin/organizations/[id] - Get organization details
 export async function GET(
@@ -201,12 +202,30 @@ export async function PATCH(
         : null;
     if (mergedSettings !== undefined) updateData.settings = mergedSettings;
 
+    // Get the current state before update for audit logging
+    const [beforeState] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, id));
+
     // Update the organization
     const [updated] = await db
       .update(organizations)
       .set(updateData)
       .where(eq(organizations.id, id))
       .returning();
+
+    // Log the update action
+    await auditHelpers.logUpdate({
+      actorId: session.user.id,
+      actorRole: currentUser.role,
+      actorEmail: session.user.email ?? undefined,
+      resourceType: "organization",
+      resourceId: id,
+      resourceName: updated.name,
+      before: beforeState as Record<string, unknown>,
+      after: updated as Record<string, unknown>,
+    });
 
     return NextResponse.json({ organization: updated });
   } catch (error) {
@@ -287,6 +306,12 @@ export async function DELETE(
       );
     }
 
+    // Get full organization data for audit log
+    const [orgData] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, id));
+
     // Soft delete the organization
     await db
       .update(organizations)
@@ -295,6 +320,17 @@ export async function DELETE(
         updatedAt: new Date(),
       })
       .where(eq(organizations.id, id));
+
+    // Log the delete action
+    await auditHelpers.logDelete({
+      actorId: session.user.id,
+      actorRole: currentUser.role,
+      actorEmail: session.user.email ?? undefined,
+      resourceType: "organization",
+      resourceId: id,
+      resourceName: existing.name,
+      resourceData: orgData as Record<string, unknown>,
+    });
 
     return NextResponse.json({
       success: true,

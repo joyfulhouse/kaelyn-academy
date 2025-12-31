@@ -6,6 +6,7 @@ import { eq, sql, isNull, or, ilike, desc, and, gt, lt } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { validatePagination, PAGINATION_PRESETS } from "@/lib/api/pagination";
 import { z } from "zod";
+import { auditHelpers } from "@/lib/audit";
 
 // Helper to generate slug from name
 function generateSlug(name: string): string {
@@ -267,6 +268,17 @@ export async function POST(request: NextRequest) {
         },
       })
       .returning();
+
+    // Log the create action
+    await auditHelpers.logCreate({
+      actorId: session.user.id,
+      actorRole: currentUser.role,
+      actorEmail: session.user.email ?? undefined,
+      resourceType: "organization",
+      resourceId: newOrg.id,
+      resourceName: newOrg.name,
+      resourceData: newOrg as Record<string, unknown>,
+    });
 
     return NextResponse.json({ organization: newOrg }, { status: 201 });
   } catch (error) {
