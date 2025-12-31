@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 import createNextIntlPlugin from "next-intl/plugin";
 import withPWAInit from "next-pwa";
 
@@ -108,7 +109,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com wss:",
+              "connect-src 'self' https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://*.ingest.sentry.io wss:",
               "worker-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",
@@ -123,4 +124,29 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(withNextIntl(nextConfig));
+// Compose all the config wrappers
+const composedConfig = withPWA(withNextIntl(nextConfig));
+
+// Wrap with Sentry for error tracking and source maps
+export default withSentryConfig(composedConfig, {
+  // Sentry organization and project (from environment)
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Only print logs for uploading source maps in CI
+  silent: !process.env.CI,
+
+  // Source maps configuration
+  sourcemaps: {
+    // Delete source maps after upload to hide from production users
+    deleteSourcemapsAfterUpload: true,
+  },
+
+  // Automatically tree-shake Sentry debug statements to reduce bundle size
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+  },
+
+  // Tunneling to avoid ad blockers (optional - requires /api/tunnel route)
+  // tunnelRoute: "/api/tunnel",
+});
