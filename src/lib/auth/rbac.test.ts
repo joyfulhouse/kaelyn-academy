@@ -1,4 +1,35 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+// Mock dependencies that cause module resolution issues
+vi.mock("@/lib/auth", () => ({
+  auth: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn(),
+}));
+
+vi.mock("@/lib/db", () => ({
+  db: {
+    select: vi.fn(),
+  },
+}));
+
+vi.mock("@/lib/db/schema", () => ({
+  learners: {},
+}));
+
+vi.mock("@/lib/db/schema/classroom", () => ({
+  classes: {},
+  classEnrollments: {},
+}));
+
+vi.mock("drizzle-orm", () => ({
+  eq: vi.fn(),
+  and: vi.fn(),
+  inArray: vi.fn(),
+}));
+
 import {
   hasPermission,
   hasAnyPermission,
