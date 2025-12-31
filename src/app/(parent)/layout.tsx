@@ -66,6 +66,12 @@ export default async function ParentLayout({
                   Reports
                 </Link>
                 <Link
+                  href="/parent/messages"
+                  className="text-sm font-medium text-muted-foreground hover:text-role-parent transition-colors"
+                >
+                  Messages
+                </Link>
+                <Link
                   href="/parent/settings"
                   className="text-sm font-medium text-muted-foreground hover:text-role-parent transition-colors"
                 >

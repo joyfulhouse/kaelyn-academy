@@ -77,6 +77,12 @@ export default async function TeacherLayout({
                 >
                   Reports
                 </Link>
+                <Link
+                  href="/teacher/messages"
+                  className="text-sm font-medium text-muted-foreground hover:text-role-teacher transition-colors"
+                >
+                  Messages
+                </Link>
               </nav>
             </div>
             <div className="flex items-center gap-4">
