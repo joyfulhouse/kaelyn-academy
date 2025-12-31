@@ -1,33 +1,70 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// Custom error to simulate Next.js redirect behavior
+class RedirectError extends Error {
+  constructor(public url: string) {
+    super(`NEXT_REDIRECT: ${url}`);
+    this.name = "RedirectError";
+  }
+}
+
+// Create mock functions using vi.hoisted()
+const { mockAuth, mockRedirect, mockDbQuery, mockDbSelect } = vi.hoisted(() => ({
+  mockAuth: vi.fn(),
+  mockRedirect: vi.fn((url: string) => {
+    throw new RedirectError(url);
+  }),
+  mockDbQuery: {
+    learners: {
+      findFirst: vi.fn(),
+    },
+  },
+  mockDbSelect: vi.fn(),
+}));
 
 // Mock dependencies that cause module resolution issues
 vi.mock("@/lib/auth", () => ({
-  auth: vi.fn(),
+  auth: mockAuth,
 }));
 
 vi.mock("next/navigation", () => ({
-  redirect: vi.fn(),
+  redirect: mockRedirect,
 }));
 
 vi.mock("@/lib/db", () => ({
   db: {
-    select: vi.fn(),
+    query: mockDbQuery,
+    select: mockDbSelect,
   },
 }));
 
 vi.mock("@/lib/db/schema", () => ({
-  learners: {},
+  learners: {
+    id: "id",
+    userId: "userId",
+    organizationId: "organizationId",
+  },
 }));
 
 vi.mock("@/lib/db/schema/classroom", () => ({
-  classes: {},
-  classEnrollments: {},
+  classes: {
+    id: "id",
+    teacherId: "teacherId",
+    organizationId: "organizationId",
+    isActive: "isActive",
+  },
+  classEnrollments: {
+    id: "id",
+    learnerId: "learnerId",
+    classId: "classId",
+    status: "status",
+  },
 }));
 
 vi.mock("drizzle-orm", () => ({
-  eq: vi.fn(),
-  and: vi.fn(),
-  inArray: vi.fn(),
+  eq: vi.fn((a, b) => ({ type: "eq", left: a, right: b })),
+  and: vi.fn((...args) => ({ type: "and", conditions: args })),
+  inArray: vi.fn((a, b) => ({ type: "inArray", left: a, right: b })),
 }));
 
 import {
@@ -37,6 +74,11 @@ import {
   isRoleAtLeast,
   getPermissions,
   createPermissionChecker,
+  requireRole,
+  requirePermission,
+  canAccessLearner,
+  requireLearnerAccess,
+  AuthorizationError,
 } from "./rbac";
 
 describe("RBAC System", () => {
@@ -137,6 +179,314 @@ describe("RBAC System", () => {
       const checker = createPermissionChecker("parent");
       expect(checker.permissions).toContain("read:child_progress");
       expect(checker.permissions).toContain("write:child_settings");
+    });
+  });
+
+  describe("requireRole", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("should redirect to login when no session", async () => {
+      mockAuth.mockResolvedValue(null);
+
+      await expect(requireRole("teacher")).rejects.toThrow("NEXT_REDIRECT");
+      expect(mockRedirect).toHaveBeenCalledWith("/login?callbackUrl=%2F");
+    });
+
+    it("should redirect to login when no user in session", async () => {
+      mockAuth.mockResolvedValue({});
+
+      await expect(requireRole("teacher")).rejects.toThrow("NEXT_REDIRECT");
+      expect(mockRedirect).toHaveBeenCalledWith("/login?callbackUrl=%2F");
+    });
+
+    it("should redirect to unauthorized when role not allowed", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "user-1", email: "test@test.com", role: "learner" },
+      });
+
+      await expect(requireRole("teacher")).rejects.toThrow("NEXT_REDIRECT");
+      expect(mockRedirect).toHaveBeenCalledWith("/unauthorized");
+    });
+
+    it("should return user data when role is allowed", async () => {
+      mockAuth.mockResolvedValue({
+        user: {
+          id: "user-1",
+          email: "teacher@test.com",
+          role: "teacher",
+          organizationId: "org-1",
+        },
+      });
+
+      const result = await requireRole("teacher");
+
+      expect(result).toEqual({
+        id: "user-1",
+        email: "teacher@test.com",
+        role: "teacher",
+        organizationId: "org-1",
+      });
+    });
+
+    it("should accept array of roles", async () => {
+      mockAuth.mockResolvedValue({
+        user: {
+          id: "user-1",
+          email: "admin@test.com",
+          role: "admin",
+        },
+      });
+
+      const result = await requireRole(["teacher", "admin"]);
+
+      expect(result.role).toBe("admin");
+      expect(mockRedirect).not.toHaveBeenCalled();
+    });
+
+    it("should use custom redirect URL", async () => {
+      mockAuth.mockResolvedValue(null);
+
+      await expect(requireRole("teacher", "/custom-login")).rejects.toThrow("NEXT_REDIRECT");
+      expect(mockRedirect).toHaveBeenCalledWith("/custom-login?callbackUrl=%2F");
+    });
+  });
+
+  describe("requirePermission", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("should redirect to login when no session", async () => {
+      mockAuth.mockResolvedValue(null);
+
+      await expect(requirePermission("manage:users")).rejects.toThrow("NEXT_REDIRECT");
+      expect(mockRedirect).toHaveBeenCalledWith("/login?callbackUrl=%2F");
+    });
+
+    it("should redirect to unauthorized when permission not granted", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "user-1", email: "test@test.com", role: "learner" },
+      });
+
+      await expect(requirePermission("manage:users")).rejects.toThrow("NEXT_REDIRECT");
+      expect(mockRedirect).toHaveBeenCalledWith("/unauthorized");
+    });
+
+    it("should return user data when permission is granted", async () => {
+      mockAuth.mockResolvedValue({
+        user: {
+          id: "user-1",
+          email: "admin@test.com",
+          role: "admin",
+          organizationId: "org-1",
+        },
+      });
+
+      const result = await requirePermission("manage:users");
+
+      expect(result).toEqual({
+        id: "user-1",
+        email: "admin@test.com",
+        role: "admin",
+        organizationId: "org-1",
+      });
+    });
+
+    it("should accept array of permissions (any)", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "user-1", email: "teacher@test.com", role: "teacher" },
+      });
+
+      const result = await requirePermission(["manage:users", "view:analytics"]);
+
+      expect(result.role).toBe("teacher");
+      expect(mockRedirect).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("canAccessLearner", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("should allow admin to access any learner", async () => {
+      const result = await canAccessLearner("learner-1", "admin-1", "admin");
+      expect(result).toBe(true);
+    });
+
+    it("should allow learner to access their own profile", async () => {
+      mockDbQuery.learners.findFirst.mockResolvedValue({ id: "learner-1" });
+
+      const result = await canAccessLearner("learner-1", "user-1", "learner");
+
+      expect(result).toBe(true);
+    });
+
+    it("should deny learner access to other profiles", async () => {
+      mockDbQuery.learners.findFirst.mockResolvedValue(null);
+
+      const result = await canAccessLearner("learner-2", "user-1", "learner");
+
+      expect(result).toBe(false);
+    });
+
+    it("should allow parent to access their children", async () => {
+      mockDbQuery.learners.findFirst.mockResolvedValue({ id: "learner-1" });
+
+      const result = await canAccessLearner("learner-1", "parent-1", "parent");
+
+      expect(result).toBe(true);
+    });
+
+    it("should deny parent access to other children", async () => {
+      mockDbQuery.learners.findFirst.mockResolvedValue(null);
+
+      const result = await canAccessLearner("learner-2", "parent-1", "parent");
+
+      expect(result).toBe(false);
+    });
+
+    it("should deny teacher access without organization", async () => {
+      const result = await canAccessLearner("learner-1", "teacher-1", "teacher");
+      expect(result).toBe(false);
+    });
+
+    it("should deny teacher access when they have no classes", async () => {
+      mockDbSelect.mockReturnValue({
+        from: () => ({
+          where: () => Promise.resolve([]),
+        }),
+      });
+
+      const result = await canAccessLearner("learner-1", "teacher-1", "teacher", "org-1");
+
+      expect(result).toBe(false);
+    });
+
+    it("should allow teacher access to enrolled students", async () => {
+      mockDbSelect
+        .mockReturnValueOnce({
+          from: () => ({
+            where: () => Promise.resolve([{ id: "class-1" }]),
+          }),
+        })
+        .mockReturnValueOnce({
+          from: () => ({
+            innerJoin: () => ({
+              where: () => ({
+                limit: () => Promise.resolve([{ id: "enrollment-1" }]),
+              }),
+            }),
+          }),
+        });
+
+      const result = await canAccessLearner("learner-1", "teacher-1", "teacher", "org-1");
+
+      expect(result).toBe(true);
+    });
+
+    it("should deny teacher access to non-enrolled students", async () => {
+      mockDbSelect
+        .mockReturnValueOnce({
+          from: () => ({
+            where: () => Promise.resolve([{ id: "class-1" }]),
+          }),
+        })
+        .mockReturnValueOnce({
+          from: () => ({
+            innerJoin: () => ({
+              where: () => ({
+                limit: () => Promise.resolve([]),
+              }),
+            }),
+          }),
+        });
+
+      const result = await canAccessLearner("learner-1", "teacher-1", "teacher", "org-1");
+
+      expect(result).toBe(false);
+    });
+
+    it("should return false for unknown roles", async () => {
+      // @ts-expect-error testing invalid role
+      const result = await canAccessLearner("learner-1", "user-1", "unknown");
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("requireLearnerAccess", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("should throw AuthorizationError when no session", async () => {
+      mockAuth.mockResolvedValue(null);
+
+      await expect(requireLearnerAccess("learner-1")).rejects.toThrow(
+        AuthorizationError
+      );
+    });
+
+    it("should throw AuthorizationError when no user id", async () => {
+      mockAuth.mockResolvedValue({ user: {} });
+
+      await expect(requireLearnerAccess("learner-1")).rejects.toThrow(
+        "Authentication required"
+      );
+    });
+
+    it("should throw AuthorizationError when access denied", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "user-1", role: "learner" },
+      });
+      mockDbQuery.learners.findFirst.mockResolvedValue(null);
+
+      await expect(requireLearnerAccess("learner-2")).rejects.toThrow(
+        "You do not have access to this learner's data"
+      );
+    });
+
+    it("should return user data when access granted", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "user-1", role: "parent", organizationId: "org-1" },
+      });
+      mockDbQuery.learners.findFirst.mockResolvedValue({ id: "learner-1" });
+
+      const result = await requireLearnerAccess("learner-1");
+
+      expect(result).toEqual({
+        userId: "user-1",
+        role: "parent",
+        organizationId: "org-1",
+      });
+    });
+
+    it("should default to learner role when not specified", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "user-1" },
+      });
+      mockDbQuery.learners.findFirst.mockResolvedValue({ id: "learner-1" });
+
+      const result = await requireLearnerAccess("learner-1");
+
+      expect(result.role).toBe("learner");
+    });
+  });
+
+  describe("AuthorizationError", () => {
+    it("should have correct name", () => {
+      const error = new AuthorizationError("Test error");
+      expect(error.name).toBe("AuthorizationError");
+      expect(error.message).toBe("Test error");
+    });
+
+    it("should generate correct response", () => {
+      const error = new AuthorizationError("Access denied");
+      const response = error.toResponse();
+
+      expect(response.status).toBe(403);
     });
   });
 });
