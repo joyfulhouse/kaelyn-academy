@@ -1,0 +1,5 @@
+[test]
+# Exclude e2e tests from bun's native test runner
+# E2E tests should be run with: bun run test:e2e (Playwright)
+# Unit/integration tests should be run with: bun run test (Vitest)
+root = "src"
