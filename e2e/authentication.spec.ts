@@ -2,105 +2,47 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Authentication", () => {
   test.describe("Login Page", () => {
-    test("should display login form", async ({ page }) => {
-      await page.goto("/auth/login");
+    test("should display OAuth login options", async ({ page }) => {
+      await page.goto("/login");
 
-      // Should have login form
-      const form = page.locator("form");
-      await expect(form).toBeVisible();
+      // Should have welcome heading
+      await expect(page.getByText("Welcome to Kaelyn's Academy")).toBeVisible();
 
-      // Should have email input
-      const emailInput = page.getByRole("textbox", { name: /email/i });
-      await expect(emailInput).toBeVisible();
+      // Should have OAuth provider buttons (wait for providers to load)
+      await page.waitForTimeout(2000); // Wait for provider fetch
 
-      // Should have password input
-      const passwordInput = page.getByLabel(/password/i);
-      await expect(passwordInput).toBeVisible();
-
-      // Should have submit button
-      const submitButton = page.getByRole("button", { name: /sign in|login|log in/i });
-      await expect(submitButton).toBeVisible();
+      // Check for provider buttons or dev login buttons
+      const buttons = page.locator("button");
+      const buttonCount = await buttons.count();
+      expect(buttonCount).toBeGreaterThan(0);
     });
 
-    test("should show validation errors for empty form", async ({ page }) => {
-      await page.goto("/auth/login");
+    test("should display terms and privacy links", async ({ page }) => {
+      await page.goto("/login");
 
-      // Submit empty form
-      const submitButton = page.getByRole("button", { name: /sign in|login|log in/i });
-      await submitButton.click();
+      // Should have terms link
+      const termsLink = page.getByRole("link", { name: /terms/i });
+      await expect(termsLink).toBeVisible();
 
-      // Should show error messages
-      const errorMessage = page.locator('[role="alert"], .error, [aria-invalid="true"]');
-      await expect(errorMessage.first()).toBeVisible({ timeout: 5000 }).catch(() => {
-        // Form may use HTML5 validation instead
-      });
+      // Should have privacy link
+      const privacyLink = page.getByRole("link", { name: /privacy/i });
+      await expect(privacyLink).toBeVisible();
     });
 
-    test("should show error for invalid credentials", async ({ page }) => {
-      await page.goto("/auth/login");
+    test("should display support link", async ({ page }) => {
+      await page.goto("/login");
 
-      // Fill in invalid credentials
-      await page.getByRole("textbox", { name: /email/i }).fill("invalid@example.com");
-      await page.getByLabel(/password/i).fill("wrongpassword");
-
-      // Submit form
-      const submitButton = page.getByRole("button", { name: /sign in|login|log in/i });
-      await submitButton.click();
-
-      // Should show error (after form submission)
-      await page.waitForResponse((response) =>
-        response.url().includes("/api/auth") && response.status() !== 200
-      ).catch(() => {
-        // May redirect or show inline error
-      });
+      // Should have support link
+      const supportLink = page.getByRole("link", { name: /support/i });
+      await expect(supportLink).toBeVisible();
     });
 
-    test("should have link to registration", async ({ page }) => {
-      await page.goto("/auth/login");
+    test("should show error message when error param is present", async ({ page }) => {
+      await page.goto("/login?error=OAuthSignin");
 
-      // Should have link to register/sign up
-      const registerLink = page.getByRole("link", { name: /sign up|register|create account/i });
-      await expect(registerLink).toBeVisible();
-    });
-
-    test("should have link to password recovery", async ({ page }) => {
-      await page.goto("/auth/login");
-
-      // Should have forgot password link
-      const forgotLink = page.getByRole("link", { name: /forgot|reset|recover/i });
-      if (await forgotLink.isVisible()) {
-        await expect(forgotLink).toBeVisible();
-      }
-    });
-  });
-
-  test.describe("Registration Page", () => {
-    test("should display registration form", async ({ page }) => {
-      await page.goto("/auth/register");
-
-      // Should have registration form
-      const form = page.locator("form");
-      await expect(form).toBeVisible();
-
-      // Should have name input
-      const nameInput = page.getByRole("textbox", { name: /name/i });
-      await expect(nameInput).toBeVisible();
-
-      // Should have email input
-      const emailInput = page.getByRole("textbox", { name: /email/i });
-      await expect(emailInput).toBeVisible();
-
-      // Should have password input
-      const passwordInput = page.getByLabel(/^password$/i);
-      await expect(passwordInput).toBeVisible();
-    });
-
-    test("should have link to login", async ({ page }) => {
-      await page.goto("/auth/register");
-
-      // Should have link to login
-      const loginLink = page.getByRole("link", { name: /sign in|login|log in|already have/i });
-      await expect(loginLink).toBeVisible();
+      // Should show error alert
+      const errorText = page.getByText(/error|try again/i);
+      await expect(errorText).toBeVisible();
     });
   });
 
@@ -117,7 +59,31 @@ test.describe("Authentication", () => {
 
       // Should redirect to login or show 403
       const url = page.url();
-      expect(url.includes("login") || url.includes("signin") || url.includes("403")).toBeTruthy();
+      expect(url.includes("login") || url.includes("signin") || url.includes("403") || url.includes("unauthorized")).toBeTruthy();
+    });
+
+    test("should redirect unauthenticated users from teacher dashboard", async ({ page }) => {
+      await page.goto("/teacher");
+
+      // Should redirect to login
+      await expect(page).toHaveURL(/login|signin|auth/);
+    });
+
+    test("should redirect unauthenticated users from parent dashboard", async ({ page }) => {
+      await page.goto("/parent");
+
+      // Should redirect to login
+      await expect(page).toHaveURL(/login|signin|auth/);
+    });
+  });
+
+  test.describe("Auth Error Page", () => {
+    test("should display error page with message", async ({ page }) => {
+      await page.goto("/auth/error");
+
+      // Should show some error indication - CardTitle renders as h3 or div
+      const errorContent = page.getByText(/error|problem|try again/i);
+      await expect(errorContent.first()).toBeVisible();
     });
   });
 });
