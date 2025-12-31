@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -39,11 +40,16 @@ export interface MasteryBreakdown {
 }
 
 export function SubjectProgressChart({ data }: { data: SubjectProgress[] }) {
-  const chartData = data.map((item) => ({
-    name: item.subjectName,
-    mastery: item.masteryLevel,
-    progress: Math.round((item.completedLessons / item.totalLessons) * 100) || 0,
-  }));
+  // Memoize data transformation to prevent recalculation on every render
+  const chartData = useMemo(
+    () =>
+      data.map((item) => ({
+        name: item.subjectName,
+        mastery: item.masteryLevel,
+        progress: Math.round((item.completedLessons / item.totalLessons) * 100) || 0,
+      })),
+    [data]
+  );
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -148,11 +154,15 @@ export function MasteryPieChart({ data }: { data: MasteryBreakdown[] }) {
 }
 
 export function StreakChart({ currentStreak, longestStreak }: { currentStreak: number; longestStreak: number }) {
-  // Generate last 30 days with some activity pattern
-  const days = Array.from({ length: 30 }, (_, i) => ({
-    day: i + 1,
-    active: i < currentStreak || (i >= 10 && i < 10 + longestStreak - currentStreak),
-  }));
+  // Memoize day generation to prevent recalculation on every render
+  const days = useMemo(
+    () =>
+      Array.from({ length: 30 }, (_, i) => ({
+        day: i + 1,
+        active: i < currentStreak || (i >= 10 && i < 10 + longestStreak - currentStreak),
+      })),
+    [currentStreak, longestStreak]
+  );
 
   return (
     <div className="flex flex-wrap gap-1">
@@ -173,8 +183,15 @@ export function StreakChart({ currentStreak, longestStreak }: { currentStreak: n
 
 export function CircularProgress({ value, label, color }: { value: number; label: string; color: string }) {
   const radius = 40;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (value / 100) * circumference;
+
+  // Memoize SVG calculations
+  const { circumference, strokeDashoffset } = useMemo(() => {
+    const c = 2 * Math.PI * radius;
+    return {
+      circumference: c,
+      strokeDashoffset: c - (value / 100) * c,
+    };
+  }, [value]);
 
   return (
     <div className="flex flex-col items-center">

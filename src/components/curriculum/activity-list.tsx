@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   Play,
   Check,
@@ -92,8 +92,11 @@ export function ActivityList({
   activities: rawActivities,
   onProgressUpdate,
 }: ActivityListProps) {
-  // Normalize activities to Activity[] format
-  const activities = normalizeActivities(rawActivities);
+  // Normalize activities to Activity[] format (memoized)
+  const activities = useMemo(
+    () => normalizeActivities(rawActivities),
+    [rawActivities]
+  );
 
   const {
     isLoading,
@@ -110,6 +113,11 @@ export function ActivityList({
   });
 
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null);
+
+  // Memoized callback for toggling expanded activity
+  const toggleExpandedActivity = useCallback((index: number) => {
+    setExpandedActivity((prev) => (prev === index ? null : index));
+  }, []);
 
   if (isLoading) {
     return (
@@ -241,9 +249,7 @@ export function ActivityList({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      setExpandedActivity(expandedActivity === index ? null : index);
-                    }}
+                    onClick={() => toggleExpandedActivity(index)}
                   >
                     {expandedActivity === index ? "Hide" : "Review"}
                   </Button>

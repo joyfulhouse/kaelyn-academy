@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useCallback, memo } from "react";
 import dynamic from "next/dynamic";
 import { Lightbulb, Play, RotateCcw, Maximize, Minimize, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -75,7 +75,7 @@ function NoVisualizationPlaceholder({ lessonTitle }: { lessonTitle: string }) {
   );
 }
 
-function VisualizationRenderer({ config }: { config: VisualizationConfig }) {
+const VisualizationRenderer = memo(function VisualizationRenderer({ config }: { config: VisualizationConfig }) {
   const props = config.props ?? {};
 
   switch (config.type) {
@@ -163,7 +163,7 @@ function VisualizationRenderer({ config }: { config: VisualizationConfig }) {
     default:
       return null;
   }
-}
+});
 
 /**
  * Lesson Visualization Component
@@ -181,6 +181,10 @@ export function LessonVisualization({
 }: LessonVisualizationProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
+
+  const togglePlaying = useCallback(() => setIsPlaying((prev) => !prev), []);
+  const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), []);
+  const closeFullscreen = useCallback(() => setIsFullscreen(false), []);
 
   // Get visualization configuration
   const config = getVisualizationConfig(lessonId, lessonTitle, subjectId, gradeLevel);
@@ -222,7 +226,7 @@ export function LessonVisualization({
                   <Button
                     variant="secondary"
                     size="icon"
-                    onClick={() => setIsPlaying(!isPlaying)}
+                    onClick={togglePlaying}
                   >
                     {isPlaying ? (
                       <RotateCcw className="h-4 w-4" />
@@ -245,7 +249,7 @@ export function LessonVisualization({
                   <Button
                     variant="secondary"
                     size="icon"
-                    onClick={() => setIsFullscreen(!isFullscreen)}
+                    onClick={toggleFullscreen}
                   >
                     {isFullscreen ? (
                       <Minimize className="h-4 w-4" />
@@ -276,7 +280,7 @@ export function LessonVisualization({
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4"
-            onClick={() => setIsFullscreen(false)}
+            onClick={closeFullscreen}
           >
             <Minimize className="h-5 w-5" />
           </Button>
