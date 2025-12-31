@@ -7,6 +7,7 @@ import {
   BookOpen,
   Trophy,
   Sparkles,
+  Target,
   Settings,
   HelpCircle,
   ChevronUp,
@@ -64,6 +65,11 @@ const mainNavItems = [
     title: "AI Tutor",
     url: "/tutor",
     icon: Sparkles,
+  },
+  {
+    title: "Practice",
+    url: "/practice",
+    icon: Target,
   },
 ];
 
