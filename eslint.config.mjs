@@ -13,6 +13,20 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Disable overly strict rule for educational text content
+      // Apostrophes in "Let's", "don't", "you're" etc. are standard English
+      "react/no-unescaped-entities": "off",
+    },
+  },
+  // GraphQL Yoga plugins use "use" prefix but are not React hooks
+  {
+    files: ["**/api/graphql/**/*.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

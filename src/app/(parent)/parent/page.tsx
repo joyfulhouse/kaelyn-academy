@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -196,7 +197,7 @@ export default function ParentDashboard() {
           <CardContent className="pt-6 text-center">
             <p className="text-muted-foreground mb-4">No children registered yet.</p>
             <Button asChild>
-              <a href="/parent/children/add">Add a Child</a>
+              <Link href="/parent/children/add">Add a Child</Link>
             </Button>
           </CardContent>
         </Card>

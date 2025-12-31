@@ -61,7 +61,7 @@ describe("GET /api/subjects", () => {
 
   it("should return 401 when not authenticated", async () => {
     const { auth } = await import("@/lib/auth");
-    vi.mocked(auth).mockResolvedValueOnce(null);
+    vi.mocked(auth).mockResolvedValueOnce(null as never);
 
     const response = await GET();
     const data = await response.json();
@@ -86,7 +86,7 @@ describe("GET /api/subjects", () => {
 
   it("should return subjects for authenticated user", async () => {
     const { auth } = await import("@/lib/auth");
-    vi.mocked(auth).mockResolvedValueOnce(mockSession);
+    vi.mocked(auth).mockResolvedValueOnce(mockSession as never);
 
     const { db } = await import("@/lib/db");
     const mockSubjects = [
@@ -131,7 +131,7 @@ describe("GET /api/subjects", () => {
 
   it("should include only required fields in response", async () => {
     const { auth } = await import("@/lib/auth");
-    vi.mocked(auth).mockResolvedValueOnce(mockSession);
+    vi.mocked(auth).mockResolvedValueOnce(mockSession as never);
 
     const { db } = await import("@/lib/db");
     const mockSubject = {
@@ -169,7 +169,7 @@ describe("GET /api/subjects", () => {
 
   it("should handle database errors gracefully", async () => {
     const { auth } = await import("@/lib/auth");
-    vi.mocked(auth).mockResolvedValueOnce(mockSession);
+    vi.mocked(auth).mockResolvedValueOnce(mockSession as never);
 
     const { db } = await import("@/lib/db");
     vi.mocked(db.query.users.findFirst).mockRejectedValueOnce(
@@ -185,7 +185,7 @@ describe("GET /api/subjects", () => {
 
   it("should return empty array when no subjects exist", async () => {
     const { auth } = await import("@/lib/auth");
-    vi.mocked(auth).mockResolvedValueOnce(mockSession);
+    vi.mocked(auth).mockResolvedValueOnce(mockSession as never);
 
     const { db } = await import("@/lib/db");
     vi.mocked(db.select).mockReturnValue({

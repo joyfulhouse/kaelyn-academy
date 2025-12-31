@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
     };
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     let totalMinutes = 0;
-    let totalLessons = recentLessons.length;
+    const totalLessons = recentLessons.length;
 
     recentLessons.forEach((lesson) => {
       if (lesson.completedAt) {
