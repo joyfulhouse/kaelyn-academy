@@ -151,36 +151,168 @@ export const concepts = pgTable("concepts", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Activities (quizzes, exercises, games)
+// Interactive activity type definitions
+export type InteractiveActivityType =
+  | "quiz"
+  | "exercise"
+  | "game"
+  | "practice"
+  | "drag_drop"
+  | "code_editor"
+  | "fill_blank"
+  | "drawing"
+  | "matching"
+  | "sorting";
+
+// Drag-and-drop item configuration
+export interface DragDropItem {
+  id: string;
+  content: string;
+  category?: string;
+  imageUrl?: string;
+}
+
+// Drag-and-drop zone configuration
+export interface DragDropZone {
+  id: string;
+  label: string;
+  acceptedItemIds: string[];
+  maxItems?: number;
+}
+
+// Code editor configuration
+export interface CodeEditorConfig {
+  language: "javascript" | "typescript" | "python" | "html" | "css" | "sql" | "json";
+  starterCode?: string;
+  solution?: string;
+  testCases?: Array<{
+    id: string;
+    input: string;
+    expectedOutput: string;
+    description?: string;
+    isHidden?: boolean;
+  }>;
+  hints?: string[];
+  allowedImports?: string[];
+  executionTimeLimit?: number; // milliseconds
+}
+
+// Fill-in-the-blank configuration
+export interface FillBlankConfig {
+  text: string; // Text with {{blank:id}} placeholders
+  blanks: Array<{
+    id: string;
+    correctAnswers: string[]; // Multiple acceptable answers
+    caseSensitive?: boolean;
+    hint?: string;
+    points?: number;
+  }>;
+  showWordBank?: boolean;
+  wordBank?: string[]; // Optional word bank for younger learners
+}
+
+// Drawing/annotation configuration
+export interface DrawingConfig {
+  backgroundImage?: string;
+  backgroundType?: "blank" | "grid" | "lined" | "image";
+  gridSize?: number;
+  allowedTools: Array<"pen" | "highlighter" | "eraser" | "shape" | "text" | "stamp">;
+  colors?: string[];
+  strokeWidths?: number[];
+  rubric?: Array<{
+    criterion: string;
+    description: string;
+    points: number;
+  }>;
+  referenceAnswer?: string; // Base64 encoded image for teacher reference
+}
+
+// Activity configuration type
+export interface ActivityConfig {
+  // Quiz/exercise questions
+  questions?: Array<{
+    id: string;
+    type: "multiple_choice" | "true_false" | "fill_blank" | "matching" | "ordering";
+    question: string;
+    options?: string[];
+    correctAnswer: string | string[];
+    explanation?: string;
+    points?: number;
+  }>;
+
+  // Drag-and-drop configuration
+  dragDrop?: {
+    items: DragDropItem[];
+    zones: DragDropZone[];
+    enableReorder?: boolean;
+    shuffleItems?: boolean;
+  };
+
+  // Code editor configuration
+  codeEditor?: CodeEditorConfig;
+
+  // Fill-in-the-blank configuration
+  fillBlank?: FillBlankConfig;
+
+  // Drawing/annotation configuration
+  drawing?: DrawingConfig;
+
+  // Matching pairs (for matching activity type)
+  matchingPairs?: Array<{
+    id: string;
+    left: string;
+    right: string;
+    leftImage?: string;
+    rightImage?: string;
+  }>;
+
+  // Sorting items (for sorting activity type)
+  sortingItems?: Array<{
+    id: string;
+    content: string;
+    correctPosition: number;
+    imageUrl?: string;
+  }>;
+
+  // Game configuration
+  gameConfig?: Record<string, unknown>;
+
+  // Time and retry settings
+  timeLimit?: number; // seconds
+  allowRetry?: boolean;
+  maxAttempts?: number;
+  showExplanations?: boolean;
+
+  // Accessibility
+  accessibilityDescription?: string;
+  screenReaderInstructions?: string;
+}
+
+// Activities (quizzes, exercises, games, interactive activities)
 export const activities = pgTable("activities", {
   id: uuid("id").primaryKey().defaultRandom(),
   lessonId: uuid("lesson_id").references(() => lessons.id, { onDelete: "cascade" }),
   conceptId: uuid("concept_id").references(() => concepts.id, { onDelete: "cascade" }),
 
   title: varchar("title", { length: 255 }).notNull(),
-  type: varchar("type", { length: 50 }).notNull(), // quiz, exercise, game, practice
+  type: varchar("type", { length: 50 }).notNull().$type<InteractiveActivityType>(),
   instructions: text("instructions"),
 
   // Activity configuration
-  config: jsonb("config").$type<{
-    questions?: Array<{
-      id: string;
-      type: "multiple_choice" | "true_false" | "fill_blank" | "matching" | "ordering";
-      question: string;
-      options?: string[];
-      correctAnswer: string | string[];
-      explanation?: string;
-      points?: number;
-    }>;
-    gameConfig?: Record<string, unknown>;
-    timeLimit?: number; // seconds
-    allowRetry?: boolean;
-    showExplanations?: boolean;
-  }>(),
+  config: jsonb("config").$type<ActivityConfig>(),
 
   // Scoring
   maxPoints: integer("max_points").default(100),
   passingScore: integer("passing_score").default(70),
+
+  // Grade level appropriateness
+  minGradeLevel: integer("min_grade_level"),
+  maxGradeLevel: integer("max_grade_level"),
+
+  // Accessibility flags
+  hasAudioSupport: boolean("has_audio_support").default(false),
+  hasVisualAlternative: boolean("has_visual_alternative").default(false),
+  mobileOptimized: boolean("mobile_optimized").default(true),
 
   order: integer("order").default(0),
 
