@@ -33,6 +33,7 @@ import {
   DifficultyVisualization,
   type AdaptiveDifficultyData,
 } from "@/components/dashboard/difficulty-visualization";
+import { RecommendationsWidget } from "@/components/dashboard/recommendations-widget";
 import { useTheme } from "@/components/providers/theme-provider";
 
 interface Learner {
@@ -306,6 +307,9 @@ export default function LearnerDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Personalized Recommendations */}
+      <RecommendationsWidget />
 
       {/* Main Dashboard Grid */}
       <div className="grid md:grid-cols-3 gap-6">
