@@ -74,7 +74,7 @@ export function Scene3D({
             position={[10, 10, 5]}
             intensity={1}
             castShadow={shadows}
-            shadow-mapSize={[2048, 2048]}
+            shadow-mapSize={[1024, 1024]}
           />
 
           <Environment preset={environment} />
