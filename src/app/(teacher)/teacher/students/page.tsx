@@ -612,13 +612,13 @@ export default function TeacherStudentsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link href={`/teacher/students?id=${student.id}`}>
+                            <Link href={`/teacher/students/${student.id}`}>
                               <Eye className="h-4 w-4 mr-2" />
                               View Profile
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href={`/teacher/students?id=${student.id}&tab=progress`}>
+                            <Link href={`/teacher/students/${student.id}?tab=progress`}>
                               <BarChart3 className="h-4 w-4 mr-2" />
                               View Progress
                             </Link>
