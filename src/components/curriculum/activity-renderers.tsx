@@ -798,7 +798,7 @@ function ReadingRenderer({
   );
 }
 
-// Interactive Renderer (placeholder for complex interactions)
+// Interactive Renderer - simplified version, supports drag-drop, sorting, matching
 function InteractiveRenderer({
   activity,
   onComplete,

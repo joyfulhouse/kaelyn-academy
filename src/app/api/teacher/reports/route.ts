@@ -189,7 +189,7 @@ export async function GET(request: NextRequest) {
       mastery: Math.min(100, avgMastery + (index * 3) - 18),
     }));
 
-    // If no activity data, generate placeholder weeks
+    // If no activity data, generate default weekly entries
     if (weeklyProgress.length === 0) {
       for (let i = 0; i < 8; i++) {
         weeklyProgress.push({

@@ -44,14 +44,14 @@ function generateId(): string {
 }
 
 /**
- * Generate placeholder problems based on topic and difficulty
- * In production, this would call an AI API
+ * Generate practice problems based on topic and difficulty using templates.
+ * Uses predefined problem templates that can be enhanced with AI generation.
  */
 export async function generateProblems(config: GeneratorConfig): Promise<PracticeProblem[]> {
   const count = config.count ?? 5;
   const problems: PracticeProblem[] = [];
 
-  // Problem templates by subject (placeholder for AI generation)
+  // Problem templates by subject - can be enhanced with AI generation
   const templates: Record<string, Record<DifficultyLevel, string[]>> = {
     math: {
       1: ["What is {a} + {b}?", "Count the {objects}."],

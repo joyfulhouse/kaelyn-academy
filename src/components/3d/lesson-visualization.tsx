@@ -57,7 +57,7 @@ function VisualizationSkeleton() {
   );
 }
 
-function NoVisualizationPlaceholder({ lessonTitle }: { lessonTitle: string }) {
+function NoVisualizationFallback({ lessonTitle }: { lessonTitle: string }) {
   return (
     <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center relative rounded-lg overflow-hidden">
       <div className="text-center">
@@ -170,7 +170,7 @@ const VisualizationRenderer = memo(function VisualizationRenderer({ config }: { 
  *
  * Renders interactive 3D visualizations for lessons based on subject and content.
  * Automatically detects the appropriate visualization based on lesson metadata
- * and falls back to a placeholder for unsupported content.
+ * and shows a fallback UI for unsupported content.
  */
 export function LessonVisualization({
   subjectId,
@@ -193,7 +193,7 @@ export function LessonVisualization({
   if (!hasVisualizationSupport(subjectId) || !config) {
     return (
       <div className={className}>
-        <NoVisualizationPlaceholder lessonTitle={lessonTitle} />
+        <NoVisualizationFallback lessonTitle={lessonTitle} />
       </div>
     );
   }

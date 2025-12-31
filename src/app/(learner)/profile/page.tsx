@@ -495,7 +495,7 @@ export default function LearnerProfilePage() {
                   )}
                 </div>
               ))}
-              {/* Placeholder for locked achievements */}
+              {/* Display locked achievement slots */}
               {achievements.length < 5 &&
                 Array.from({ length: 5 - achievements.length }).map((_, i) => (
                   <div

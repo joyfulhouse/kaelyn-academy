@@ -112,13 +112,13 @@ function calculateFileSize(content: string): number {
  * Generate progress report
  *
  * Fetches real data from the database for progress reports.
- * Falls back to placeholder data if learner is not found.
+ * Returns empty data structure if learner is not found.
  */
 export async function generateProgressReport(
   studentId: string,
   config: ReportConfig
 ): Promise<ReportResult> {
-  // Fetch real data from database with fallback to placeholder
+  // Fetch real data from database with fallback to empty structure
   const fetchedData = await fetchProgressReportData(studentId);
   const reportData: ProgressReportData = fetchedData ?? {
     student: {
@@ -177,13 +177,13 @@ export async function generateProgressReport(
  * Generate grades report
  *
  * Fetches real data from the database for grade reports.
- * Falls back to placeholder data if learner is not found.
+ * Returns empty data structure if learner is not found.
  */
 export async function generateGradesReport(
   studentId: string,
   config: ReportConfig
 ): Promise<ReportResult> {
-  // Fetch real data from database with fallback to placeholder
+  // Fetch real data from database with fallback to empty structure
   const fetchedData = await fetchGradesReportData(
     studentId,
     config.dateRange?.start,
@@ -247,13 +247,13 @@ export async function generateGradesReport(
  * Generate activity report
  *
  * Fetches real data from the database for activity reports.
- * Falls back to placeholder data if learner is not found.
+ * Returns empty data structure if learner is not found.
  */
 export async function generateActivityReport(
   studentId: string,
   config: ReportConfig
 ): Promise<ReportResult> {
-  // Fetch real data from database with fallback to placeholder
+  // Fetch real data from database with fallback to empty structure
   const fetchedData = await fetchActivityReportData(
     studentId,
     config.dateRange?.start,

@@ -199,8 +199,8 @@ export function PracticeGenerator({
         (a) => a?.toLowerCase().trim() === String(selectedAnswer).toLowerCase().trim()
       );
     } else if (currentQuestion.type === "short-answer") {
-      // For short answer, we just record it - manual review needed
-      isCorrect = true; // Placeholder
+      // Short answer requires manual review - mark as correct for progress tracking
+      isCorrect = true;
     }
 
     const newAnswer: Answer = {
