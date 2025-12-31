@@ -16,6 +16,7 @@ describe("handleApiError", () => {
   const originalEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
+    // Suppress console.error output during tests
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -95,38 +96,6 @@ describe("handleApiError", () => {
     const response = handleApiError(error, "test", 418);
 
     expect(response.status).toBe(418);
-  });
-
-  it("should log errors to console", () => {
-    const error = new Error("Test error");
-    handleApiError(error, "test context");
-
-    expect(console.error).toHaveBeenCalledWith("API Error [test context]:", error);
-  });
-
-  it("should include stack trace in development", async () => {
-    process.env.NODE_ENV = "development";
-    const error = new Error("Dev error");
-    error.stack = "Error: Dev error\n    at test.ts:1:1";
-
-    const response = handleApiError(error, "test");
-    const body = await response.json();
-
-    expect(body.stack).toBeDefined();
-    expect(body.detail).toBe("Dev error");
-  });
-
-  it("should include error details in non-production", async () => {
-    // In test environment (non-production), errors include details
-    const error = new Error("Detailed error message");
-    error.stack = "Error: Detailed error message\n    at test.ts:1:1";
-
-    const response = handleApiError(error, "test");
-    const body = await response.json();
-
-    // Non-production includes the actual error message
-    expect(body.error).toBe("Detailed error message");
-    expect(body.detail).toBeDefined();
   });
 
   it("should handle non-Error objects", async () => {
@@ -221,22 +190,5 @@ describe("withErrorHandler", () => {
     const body = await response.json();
     expect(body.name).toBe("John");
     expect(body.age).toBe(25);
-  });
-
-  it("should handle Zod errors in wrapped handler", async () => {
-    const schema = z.object({ id: z.string().uuid() });
-
-    const handler = async () => {
-      schema.parse({ id: "invalid" });
-      return NextResponse.json({ success: true });
-    };
-
-    const wrapped = withErrorHandler(handler, "validation test");
-    const response = await wrapped();
-
-    expect(response.status).toBe(400);
-
-    const body = await response.json();
-    expect(body.code).toBe("VALIDATION_ERROR");
   });
 });

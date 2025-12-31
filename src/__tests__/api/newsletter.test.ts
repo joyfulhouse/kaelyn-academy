@@ -7,6 +7,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+// Define hoisted mocks
+const { mockCheckFormRateLimit, mockValidateBodySize, mockValidateUnsubscribeToken } = vi.hoisted(() => ({
+  mockCheckFormRateLimit: vi.fn(),
+  mockValidateBodySize: vi.fn(),
+  mockValidateUnsubscribeToken: vi.fn(),
+}));
+
 // Mock all dependencies before importing the route
 vi.mock("@/lib/db", () => {
   const createChainMock = (result: unknown) => {
@@ -33,25 +40,16 @@ vi.mock("@/lib/db/schema/marketing", () => ({
 }));
 
 vi.mock("@/lib/rate-limit", () => ({
-  checkFormRateLimit: vi.fn().mockResolvedValue({ success: true, response: null }),
+  checkFormRateLimit: mockCheckFormRateLimit,
 }));
 
 vi.mock("@/lib/api/body-size", () => ({
-  validateBodySize: vi.fn().mockResolvedValue({ success: true }),
+  validateBodySize: mockValidateBodySize,
   BODY_SIZE_PRESETS: { form: 10000 },
 }));
 
 vi.mock("@/lib/api/newsletter-tokens", () => ({
-  validateUnsubscribeToken: vi.fn().mockReturnValue({
-    valid: true,
-    email: "test@example.com",
-  }),
-}));
-
-vi.mock("@/lib/api/error-handler", () => ({
-  handleApiError: vi.fn().mockReturnValue(
-    new Response(JSON.stringify({ error: "Internal error" }), { status: 500 })
-  ),
+  validateUnsubscribeToken: mockValidateUnsubscribeToken,
 }));
 
 // Import after mocks are set up
@@ -60,6 +58,10 @@ import { POST, DELETE } from "@/app/api/newsletter/route";
 describe("POST /api/newsletter", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Set up default mock implementations
+    mockCheckFormRateLimit.mockResolvedValue({ success: true, response: null });
+    mockValidateBodySize.mockResolvedValue({ success: true });
+    mockValidateUnsubscribeToken.mockReturnValue({ valid: true, email: "test@example.com" });
   });
 
   it("should successfully subscribe a new email", async () => {
@@ -93,8 +95,7 @@ describe("POST /api/newsletter", () => {
   });
 
   it("should respect rate limiting", async () => {
-    const { checkFormRateLimit } = await import("@/lib/rate-limit");
-    vi.mocked(checkFormRateLimit).mockResolvedValueOnce({
+    mockCheckFormRateLimit.mockResolvedValueOnce({
       success: false,
       response: new Response("Too Many Requests", { status: 429 }),
     });
@@ -127,8 +128,7 @@ describe("POST /api/newsletter", () => {
   });
 
   it("should enforce body size limits", async () => {
-    const { validateBodySize } = await import("@/lib/api/body-size");
-    vi.mocked(validateBodySize).mockResolvedValueOnce({
+    mockValidateBodySize.mockResolvedValueOnce({
       success: false,
       response: new Response("Payload Too Large", { status: 413 }),
     });
@@ -176,10 +176,7 @@ describe("DELETE /api/newsletter", () => {
   });
 
   it("should reject invalid tokens", async () => {
-    const { validateUnsubscribeToken } = await import(
-      "@/lib/api/newsletter-tokens"
-    );
-    vi.mocked(validateUnsubscribeToken).mockReturnValueOnce({
+    mockValidateUnsubscribeToken.mockReturnValueOnce({
       valid: false,
       error: "Token expired",
     });
