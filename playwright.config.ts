@@ -14,7 +14,7 @@ export default defineConfig({
   timeout: 30000,
 
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5001",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "on-first-retry",
@@ -46,7 +46,7 @@ export default defineConfig({
   /* Run local dev server before starting the tests */
   webServer: {
     command: "bun run dev",
-    url: "http://localhost:3000",
+    url: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5001",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
