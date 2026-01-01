@@ -1164,6 +1164,248 @@ echo "Running E2E persona tests..."
 
 ---
 
+## Zero Error Tolerance (MANDATORY)
+
+**CRITICAL**: Users should NEVER see error messages, broken pages, or failed asset loads. This is NON-NEGOTIABLE.
+
+### Runtime Error Detection
+
+Every E2E test MUST monitor for runtime errors:
+
+```typescript
+// e2e/fixtures/error-monitoring.ts
+import { test as base, expect } from '@playwright/test';
+
+interface ConsoleMessage {
+  type: string;
+  text: string;
+  location: { url: string; lineNumber: number };
+}
+
+export const test = base.extend<{ consoleErrors: ConsoleMessage[] }>({
+  consoleErrors: async ({ page }, use) => {
+    const errors: ConsoleMessage[] = [];
+
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        errors.push({
+          type: msg.type(),
+          text: msg.text(),
+          location: msg.location(),
+        });
+      }
+    });
+
+    page.on('pageerror', error => {
+      errors.push({
+        type: 'pageerror',
+        text: error.message,
+        location: { url: page.url(), lineNumber: 0 },
+      });
+    });
+
+    await use(errors);
+
+    // After test, fail if any console errors
+    if (errors.length > 0) {
+      console.error('Console errors detected:', JSON.stringify(errors, null, 2));
+      throw new Error(`Test failed due to ${errors.length} console error(s)`);
+    }
+  },
+});
+```
+
+### Failed Asset Detection
+
+Tests MUST detect and fail on failed resource loads:
+
+```typescript
+// e2e/fixtures/asset-monitoring.ts
+export const test = base.extend<{ failedAssets: string[] }>({
+  failedAssets: async ({ page }, use) => {
+    const failed: string[] = [];
+
+    page.on('requestfailed', request => {
+      failed.push(`${request.url()} - ${request.failure()?.errorText}`);
+    });
+
+    page.on('response', response => {
+      if (response.status() >= 400 && !response.url().includes('/api/')) {
+        failed.push(`${response.url()} - HTTP ${response.status()}`);
+      }
+    });
+
+    await use(failed);
+
+    // After test, fail if any assets failed to load
+    if (failed.length > 0) {
+      console.error('Failed assets:', JSON.stringify(failed, null, 2));
+      throw new Error(`Test failed due to ${failed.length} failed asset(s)`);
+    }
+  },
+});
+```
+
+### Error Boundary Fallbacks
+
+All components that load external assets MUST have error boundaries with graceful fallbacks:
+
+```typescript
+// Example: 3D visualization with HDR environment fallback
+function SafeEnvironment({ preset }: { preset: string }) {
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  if (loadFailed) {
+    // Fallback to procedural lighting when HDR fails to load
+    return (
+      <>
+        <hemisphereLight intensity={0.6} groundColor="#444444" />
+        <pointLight position={[-10, 10, -10]} intensity={0.4} />
+      </>
+    );
+  }
+
+  return (
+    <ErrorBoundary onError={() => setLoadFailed(true)}>
+      <Environment preset={preset} />
+    </ErrorBoundary>
+  );
+}
+```
+
+### Common Error Sources to Handle
+
+| Error Type | Cause | Required Fix |
+|------------|-------|--------------|
+| HDR file load failure | CDN unavailable | Fallback to procedural lighting |
+| Font load failure | Google Fonts blocked | Local font fallback |
+| Image load failure | Missing or broken URL | Placeholder image component |
+| API timeout | Slow network | Loading state + retry |
+| WebGL not supported | Old device | 2D fallback visualization |
+| Third-party script failure | Ad blocker | Graceful degradation |
+
+---
+
+## Placeholder Content Detection (MANDATORY)
+
+**CRITICAL**: No placeholder or stub content should exist in production code. This is NON-NEGOTIABLE.
+
+### Placeholder Detection Tests
+
+E2E tests MUST scan for common placeholder patterns:
+
+```typescript
+// e2e/helpers/placeholder-detector.ts
+const PLACEHOLDER_PATTERNS = [
+  /\bTODO\b/i,
+  /\bFIXME\b/i,
+  /\bPLACEHOLDER\b/i,
+  /\bCOMING SOON\b/i,
+  /\bUNDER CONSTRUCTION\b/i,
+  /\bloading\.\.\./i,  // Should have proper loading states
+  /lorem ipsum/i,
+  /test\s*content/i,
+  /example\s*(text|content|data)/i,
+  /\b(xxx|yyy|zzz)\b/i,  // Common placeholder values
+  /fake\s*(data|name|email)/i,
+  /dummy\s*(data|text|content)/i,
+  /sample\s*(text|content)/i,
+  /\[insert\s/i,  // [Insert X here]
+  /TBD\b/i,
+  /N\/A\b/i,  // May indicate missing data
+];
+
+export async function detectPlaceholders(page: Page): Promise<string[]> {
+  const bodyText = await page.locator('body').textContent();
+  const placeholders: string[] = [];
+
+  for (const pattern of PLACEHOLDER_PATTERNS) {
+    const match = bodyText?.match(pattern);
+    if (match) {
+      placeholders.push(`Found placeholder: "${match[0]}" on ${page.url()}`);
+    }
+  }
+
+  return placeholders;
+}
+```
+
+### Empty State Detection
+
+Pages MUST NOT show empty states when data should exist:
+
+```typescript
+// e2e/helpers/empty-state-detector.ts
+export async function detectEmptyStates(page: Page): Promise<string[]> {
+  const issues: string[] = [];
+
+  // Check for common empty indicators
+  const emptyIndicators = [
+    '[data-testid="empty-state"]',
+    '.empty-state',
+    'text="No data available"',
+    'text="Nothing to show"',
+    'text="No results"',
+  ];
+
+  for (const selector of emptyIndicators) {
+    const visible = await page.locator(selector).isVisible().catch(() => false);
+    if (visible) {
+      issues.push(`Empty state detected: ${selector} on ${page.url()}`);
+    }
+  }
+
+  // Check for missing images
+  const brokenImages = await page.evaluate(() => {
+    return Array.from(document.images)
+      .filter(img => !img.complete || img.naturalHeight === 0)
+      .map(img => img.src);
+  });
+
+  if (brokenImages.length > 0) {
+    issues.push(`Broken images: ${brokenImages.join(', ')}`);
+  }
+
+  return issues;
+}
+```
+
+### Stub Implementation Detection
+
+Code MUST NOT contain stub implementations:
+
+```typescript
+// Patterns to detect in code review
+const STUB_PATTERNS = [
+  /throw new Error\(['"]Not implemented['"]\)/,
+  /\/\/ TODO: implement/i,
+  /return null; \/\/ placeholder/i,
+  /console\.log\(['"]stub/i,
+  /function.*\{\s*\}/,  // Empty function bodies
+  /=>\s*\{\s*\}/,  // Empty arrow functions
+];
+```
+
+### Required Validation Before PR
+
+Before any PR is created, run:
+
+```bash
+# 1. Scan codebase for placeholder patterns
+grep -rn "TODO\|FIXME\|PLACEHOLDER\|lorem ipsum" src/ --include="*.tsx" --include="*.ts"
+
+# 2. Run E2E placeholder detection tests
+bun run playwright test --grep="placeholder"
+
+# 3. Verify no empty states on main pages
+bun run playwright test --grep="empty-state"
+
+# 4. Verify all images load
+bun run playwright test --grep="asset-loading"
+```
+
+---
+
 ## Test Coverage Requirements
 
 ### Minimum Coverage: 80%

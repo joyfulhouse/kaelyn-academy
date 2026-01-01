@@ -5,7 +5,7 @@ import { learners } from "@/lib/db/schema";
 import { classes, classEnrollments } from "@/lib/db/schema/classroom";
 import { eq, and, inArray } from "drizzle-orm";
 
-export type Role = "learner" | "parent" | "teacher" | "admin";
+export type Role = "learner" | "parent" | "teacher" | "admin" | "platform_admin" | "school_admin";
 
 export type Permission =
   | "read:own_progress"
@@ -58,6 +58,36 @@ const rolePermissions: Record<Role, Permission[]> = {
     "view:analytics",
     "view:admin_dashboard",
   ],
+  platform_admin: [
+    "read:own_progress",
+    "read:child_progress",
+    "read:class_progress",
+    "read:all_progress",
+    "write:own_profile",
+    "write:child_settings",
+    "write:class_content",
+    "write:all_content",
+    "manage:users",
+    "manage:organizations",
+    "manage:curriculum",
+    "manage:agents",
+    "view:analytics",
+    "view:admin_dashboard",
+  ],
+  school_admin: [
+    "read:own_progress",
+    "read:child_progress",
+    "read:class_progress",
+    "read:all_progress",
+    "write:own_profile",
+    "write:child_settings",
+    "write:class_content",
+    "write:all_content",
+    "manage:users",
+    "manage:curriculum",
+    "view:analytics",
+    "view:admin_dashboard",
+  ],
 };
 
 // Role hierarchy for inheritance
@@ -66,6 +96,8 @@ const roleHierarchy: Record<Role, number> = {
   parent: 2,
   teacher: 3,
   admin: 4,
+  school_admin: 4,
+  platform_admin: 5,
 };
 
 /**

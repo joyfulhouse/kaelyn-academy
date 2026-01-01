@@ -23,6 +23,8 @@ export default async function AuthRedirectPage() {
     case "teacher":
       redirect("/teacher");
     case "admin":
+    case "platform_admin":
+    case "school_admin":
       redirect("/admin");
     default:
       // Default to dashboard for unknown roles

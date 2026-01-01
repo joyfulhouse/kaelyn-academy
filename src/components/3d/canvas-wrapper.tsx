@@ -1,9 +1,64 @@
 "use client";
 
 import { Canvas, type CanvasProps } from "@react-three/fiber";
-import { Suspense, type ReactNode } from "react";
+import { Suspense, type ReactNode, useState, Component, type ErrorInfo } from "react";
 import { OrbitControls, PerspectiveCamera, Environment, ContactShadows } from "@react-three/drei";
 import { cn } from "@/lib/utils";
+
+// Safe environment component with error boundary fallback
+// HDR preset loading can fail in some network conditions, so we provide fallback lighting
+function SafeEnvironment({ preset }: { preset: string }) {
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  // Try to use the preset, fallback to simple lighting if it fails
+  if (loadFailed) {
+    return (
+      <>
+        <hemisphereLight intensity={0.6} groundColor="#444444" />
+        <pointLight position={[-10, 10, -10]} intensity={0.4} />
+        <pointLight position={[10, -10, 10]} intensity={0.2} />
+      </>
+    );
+  }
+
+  return (
+    <ErrorBoundary onError={() => setLoadFailed(true)}>
+      <Environment preset={preset as "studio"} />
+    </ErrorBoundary>
+  );
+}
+
+// Simple error boundary for R3F components
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  onError?: () => void;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
+    this.props.onError?.();
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
 
 interface Scene3DProps extends Omit<CanvasProps, "children"> {
   children: ReactNode;
@@ -77,7 +132,7 @@ export function Scene3D({
             shadow-mapSize={[1024, 1024]}
           />
 
-          <Environment preset={environment} />
+          <SafeEnvironment preset={environment} />
 
           {shadows && (
             <ContactShadows
