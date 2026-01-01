@@ -847,7 +847,7 @@ test.describe("Marketplace Journey: Complete Flow", () => {
     await page.goto("/marketplace");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
 
     const content = await page.textContent("body");
     expect(
@@ -904,7 +904,7 @@ test.describe("Marketplace Journey: Responsive Design", () => {
     await page.goto("/marketplace");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
   });
 
   test("should display on tablet", async ({ page }) => {
@@ -912,7 +912,7 @@ test.describe("Marketplace Journey: Responsive Design", () => {
     await page.goto("/marketplace");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
   });
 
   test("should display on desktop", async ({ page }) => {
@@ -920,6 +920,6 @@ test.describe("Marketplace Journey: Responsive Design", () => {
     await page.goto("/marketplace");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
   });
 });

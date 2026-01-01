@@ -28,7 +28,7 @@ test.describe("Learner Persona", () => {
       }
 
       // Dashboard should have main content area
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -161,7 +161,7 @@ test.describe("Learner Persona", () => {
         return;
       }
 
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -194,7 +194,7 @@ test.describe("Learner Persona", () => {
         return;
       }
 
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -251,7 +251,7 @@ test.describe("Learner Persona", () => {
         return;
       }
 
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -305,7 +305,7 @@ test.describe("Learner Persona", () => {
         return;
       }
 
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -359,7 +359,7 @@ test.describe("Learner Persona", () => {
         return;
       }
 
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -394,7 +394,7 @@ test.describe("Learner Persona", () => {
         return;
       }
 
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -429,7 +429,7 @@ test.describe("Learner Persona", () => {
         return;
       }
 
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
     });
   });
@@ -444,7 +444,7 @@ test.describe("Learner Persona", () => {
         return;
       }
 
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
 
       const content = await learnerPage.textContent("body");
@@ -512,7 +512,7 @@ test.describe("Learner Persona", () => {
         return;
       }
 
-      const main = learnerPage.locator("main");
+      const main = learnerPage.locator("main").first();
       await expect(main).toBeVisible();
 
       // No horizontal scrolling

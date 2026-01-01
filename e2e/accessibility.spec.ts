@@ -17,7 +17,7 @@ test.describe("Accessibility", () => {
     await page.goto("/");
 
     // Should have main content area
-    const main = page.locator("main");
+    const main = page.locator("main").first();
     await expect(main).toBeVisible();
   });
 

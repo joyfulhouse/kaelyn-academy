@@ -28,7 +28,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const main = adminPage.locator("main");
+      const main = adminPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -132,7 +132,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const main = adminPage.locator("main");
+      const main = adminPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -333,7 +333,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const main = adminPage.locator("main");
+      const main = adminPage.locator("main").first();
       await expect(main).toBeVisible();
     });
   });
@@ -704,7 +704,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const main = adminPage.locator("main");
+      const main = adminPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -718,7 +718,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const main = adminPage.locator("main");
+      const main = adminPage.locator("main").first();
       await expect(main).toBeVisible();
     });
   });

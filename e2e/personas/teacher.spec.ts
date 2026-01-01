@@ -27,7 +27,7 @@ test.describe("Teacher Persona", () => {
         return;
       }
 
-      const main = teacherPage.locator("main");
+      const main = teacherPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -119,7 +119,7 @@ test.describe("Teacher Persona", () => {
         return;
       }
 
-      const main = teacherPage.locator("main");
+      const main = teacherPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -193,7 +193,7 @@ test.describe("Teacher Persona", () => {
         return;
       }
 
-      const main = teacherPage.locator("main");
+      const main = teacherPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -285,7 +285,7 @@ test.describe("Teacher Persona", () => {
         return;
       }
 
-      const main = teacherPage.locator("main");
+      const main = teacherPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -550,7 +550,7 @@ test.describe("Teacher Persona", () => {
         return;
       }
 
-      const main = teacherPage.locator("main");
+      const main = teacherPage.locator("main").first();
       await expect(main).toBeVisible();
 
       const bodyWidth = await teacherPage.evaluate(() => document.body.scrollWidth);
@@ -568,7 +568,7 @@ test.describe("Teacher Persona", () => {
         return;
       }
 
-      const main = teacherPage.locator("main");
+      const main = teacherPage.locator("main").first();
       await expect(main).toBeVisible();
     });
   });

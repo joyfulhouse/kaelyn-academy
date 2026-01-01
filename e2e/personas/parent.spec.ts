@@ -26,7 +26,7 @@ test.describe("Parent Persona", () => {
       }
 
       // Dashboard should have main content area
-      const main = parentPage.locator("main");
+      const main = parentPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -82,7 +82,7 @@ test.describe("Parent Persona", () => {
         return;
       }
 
-      const main = parentPage.locator("main");
+      const main = parentPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -162,7 +162,7 @@ test.describe("Parent Persona", () => {
         return;
       }
 
-      const main = parentPage.locator("main");
+      const main = parentPage.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -175,7 +175,7 @@ test.describe("Parent Persona", () => {
         return;
       }
 
-      const main = parentPage.locator("main");
+      const main = parentPage.locator("main").first();
       await expect(main).toBeVisible();
     });
   });
@@ -514,7 +514,7 @@ test.describe("Parent Persona", () => {
         return;
       }
 
-      const main = parentPage.locator("main");
+      const main = parentPage.locator("main").first();
       await expect(main).toBeVisible();
 
       // No horizontal scrolling

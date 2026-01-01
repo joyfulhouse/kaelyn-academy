@@ -8,7 +8,7 @@ test.describe("Navigation", () => {
     await expect(page).toHaveTitle(/Kaelyn/i);
 
     // Check main content is visible
-    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
   });
 
   test("should have accessible skip link", async ({ page }) => {

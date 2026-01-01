@@ -1256,27 +1256,27 @@ test.describe("Teacher Journey: Complete Flow", () => {
       return;
     }
 
-    await expect(teacherPage.locator("main")).toBeVisible();
+    await expect(teacherPage.locator("main").first()).toBeVisible();
 
     // Step 2: Check classes
     await teacherPage.goto("/teacher/classes");
     await teacherPage.waitForLoadState("networkidle");
-    await expect(teacherPage.locator("main")).toBeVisible();
+    await expect(teacherPage.locator("main").first()).toBeVisible();
 
     // Step 3: View students
     await teacherPage.goto("/teacher/students");
     await teacherPage.waitForLoadState("networkidle");
-    await expect(teacherPage.locator("main")).toBeVisible();
+    await expect(teacherPage.locator("main").first()).toBeVisible();
 
     // Step 4: Check grades
     await teacherPage.goto("/teacher/grades");
     await teacherPage.waitForLoadState("networkidle");
-    await expect(teacherPage.locator("main")).toBeVisible();
+    await expect(teacherPage.locator("main").first()).toBeVisible();
 
     // Step 5: View reports
     await teacherPage.goto("/teacher/reports");
     await teacherPage.waitForLoadState("networkidle");
-    await expect(teacherPage.locator("main")).toBeVisible();
+    await expect(teacherPage.locator("main").first()).toBeVisible();
   });
 
   test("should navigate between all teacher pages", async ({ teacherPage }) => {
@@ -1351,7 +1351,7 @@ test.describe("Teacher Journey: Responsive Design", () => {
       return;
     }
 
-    await expect(teacherPage.locator("main")).toBeVisible();
+    await expect(teacherPage.locator("main").first()).toBeVisible();
   });
 
   test("should display on tablet", async ({ teacherPage }) => {
@@ -1364,7 +1364,7 @@ test.describe("Teacher Journey: Responsive Design", () => {
       return;
     }
 
-    await expect(teacherPage.locator("main")).toBeVisible();
+    await expect(teacherPage.locator("main").first()).toBeVisible();
   });
 
   test("should display on desktop", async ({ teacherPage }) => {
@@ -1377,6 +1377,6 @@ test.describe("Teacher Journey: Responsive Design", () => {
       return;
     }
 
-    await expect(teacherPage.locator("main")).toBeVisible();
+    await expect(teacherPage.locator("main").first()).toBeVisible();
   });
 });

@@ -1066,27 +1066,27 @@ test.describe("Parent Journey: Complete Flow", () => {
       return;
     }
 
-    await expect(parentPage.locator("main")).toBeVisible();
+    await expect(parentPage.locator("main").first()).toBeVisible();
 
     // Step 2: Check children
     await parentPage.goto("/parent/children");
     await parentPage.waitForLoadState("networkidle");
-    await expect(parentPage.locator("main")).toBeVisible();
+    await expect(parentPage.locator("main").first()).toBeVisible();
 
     // Step 3: View reports
     await parentPage.goto("/parent/reports");
     await parentPage.waitForLoadState("networkidle");
-    await expect(parentPage.locator("main")).toBeVisible();
+    await expect(parentPage.locator("main").first()).toBeVisible();
 
     // Step 4: Check messages
     await parentPage.goto("/parent/messages");
     await parentPage.waitForLoadState("networkidle");
-    await expect(parentPage.locator("main")).toBeVisible();
+    await expect(parentPage.locator("main").first()).toBeVisible();
 
     // Step 5: Update settings
     await parentPage.goto("/parent/settings");
     await parentPage.waitForLoadState("networkidle");
-    await expect(parentPage.locator("main")).toBeVisible();
+    await expect(parentPage.locator("main").first()).toBeVisible();
   });
 
   test("should navigate between all parent pages", async ({ parentPage }) => {
@@ -1159,7 +1159,7 @@ test.describe("Parent Journey: Responsive Design", () => {
       return;
     }
 
-    await expect(parentPage.locator("main")).toBeVisible();
+    await expect(parentPage.locator("main").first()).toBeVisible();
   });
 
   test("should display on tablet", async ({ parentPage }) => {
@@ -1172,6 +1172,6 @@ test.describe("Parent Journey: Responsive Design", () => {
       return;
     }
 
-    await expect(parentPage.locator("main")).toBeVisible();
+    await expect(parentPage.locator("main").first()).toBeVisible();
   });
 });

@@ -6,7 +6,7 @@ test.describe("Learning Features", () => {
       await page.goto("/");
 
       // Should show main content
-      const main = page.locator("main");
+      const main = page.locator("main").first();
       await expect(main).toBeVisible();
 
       // Should have some learning-related content
@@ -79,7 +79,7 @@ test.describe("Learning Features", () => {
         return;
       }
 
-      const main = page.locator("main");
+      const main = page.locator("main").first();
       await expect(main).toBeVisible();
     });
   });
@@ -176,7 +176,7 @@ test.describe("Learning Features", () => {
       await page.goto("/");
 
       // Content should be visible
-      const main = page.locator("main");
+      const main = page.locator("main").first();
       await expect(main).toBeVisible();
 
       // No horizontal scrolling
@@ -190,7 +190,7 @@ test.describe("Learning Features", () => {
       await page.goto("/");
 
       // Content should be visible
-      const main = page.locator("main");
+      const main = page.locator("main").first();
       await expect(main).toBeVisible();
     });
 
@@ -199,7 +199,7 @@ test.describe("Learning Features", () => {
       await page.goto("/");
 
       // Content should be visible
-      const main = page.locator("main");
+      const main = page.locator("main").first();
       await expect(main).toBeVisible();
     });
   });

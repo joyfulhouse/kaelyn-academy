@@ -863,27 +863,27 @@ test.describe("Admin Journey: Complete Flow", () => {
       return;
     }
 
-    await expect(adminPage.locator("main")).toBeVisible();
+    await expect(adminPage.locator("main").first()).toBeVisible();
 
     // Step 2: Check organizations
     await adminPage.goto("/admin/organizations");
     await adminPage.waitForLoadState("networkidle");
-    await expect(adminPage.locator("main")).toBeVisible();
+    await expect(adminPage.locator("main").first()).toBeVisible();
 
     // Step 3: View users
     await adminPage.goto("/admin/users");
     await adminPage.waitForLoadState("networkidle");
-    await expect(adminPage.locator("main")).toBeVisible();
+    await expect(adminPage.locator("main").first()).toBeVisible();
 
     // Step 4: Check analytics
     await adminPage.goto("/admin/analytics");
     await adminPage.waitForLoadState("networkidle");
-    await expect(adminPage.locator("main")).toBeVisible();
+    await expect(adminPage.locator("main").first()).toBeVisible();
 
     // Step 5: Review audit logs
     await adminPage.goto("/admin/audit");
     await adminPage.waitForLoadState("networkidle");
-    await expect(adminPage.locator("main")).toBeVisible();
+    await expect(adminPage.locator("main").first()).toBeVisible();
   });
 
   test("should navigate between all admin pages", async ({ adminPage }) => {
@@ -958,7 +958,7 @@ test.describe("Admin Journey: Responsive Design", () => {
       return;
     }
 
-    await expect(adminPage.locator("main")).toBeVisible();
+    await expect(adminPage.locator("main").first()).toBeVisible();
   });
 
   test("should display on tablet", async ({ adminPage }) => {
@@ -971,6 +971,6 @@ test.describe("Admin Journey: Responsive Design", () => {
       return;
     }
 
-    await expect(adminPage.locator("main")).toBeVisible();
+    await expect(adminPage.locator("main").first()).toBeVisible();
   });
 });

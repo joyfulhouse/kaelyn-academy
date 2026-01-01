@@ -68,56 +68,53 @@ export const test = base.extend<{
 
 /**
  * Authenticate as a specific persona using dev OAuth
+ *
+ * The login page has dev role buttons labeled "Learner", "Parent", "Teacher", "Admin"
+ * Each button sets the dev-oauth-role cookie and submits the OAuth form
  */
 async function authenticateAs(page: Page, persona: Persona): Promise<void> {
   // Navigate to login page
   await page.goto("/login");
   await page.waitForLoadState("networkidle");
 
-  // Set the dev-oauth-role cookie
-  await page.context().addCookies([
-    {
-      name: "dev-oauth-role",
-      value: persona,
-      domain: "localhost",
-      path: "/",
-    },
-  ]);
-
-  // Look for dev login button
-  const devLoginButton = page.getByRole("button", {
-    name: new RegExp(`dev.*${persona}|${persona}.*dev|login.*${persona}`, "i"),
+  // Wait for providers to load (the login page fetches providers async)
+  await page.waitForSelector('[class*="grid-cols-2"]', { timeout: 5000 }).catch(() => {
+    // Grid might not appear if dev oauth isn't enabled
   });
 
-  // If specific dev login button exists, click it
-  if (await devLoginButton.isVisible().catch(() => false)) {
-    await devLoginButton.click();
-  } else {
-    // Try generic dev login button
-    const genericDevButton = page.getByRole("button", {
-      name: /dev|development|test/i,
-    });
+  // Map persona to button label (capitalize first letter)
+  const buttonLabel = persona.charAt(0).toUpperCase() + persona.slice(1);
 
-    if (await genericDevButton.isVisible().catch(() => false)) {
-      await genericDevButton.click();
-    } else {
-      // Fallback: navigate directly through OAuth flow
-      await page.goto("/api/auth/signin/dev-oauth");
-    }
+  // Look for the dev role button by its label text
+  // The buttons contain the role name as a span with font-medium class
+  const devRoleButton = page.locator(`button:has-text("${buttonLabel}")`).first();
+
+  if (await devRoleButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+    // Click the role button - it sets the cookie and submits the form
+    await devRoleButton.click();
+  } else {
+    // Fallback: set cookie manually and navigate through OAuth flow
+    await page.context().addCookies([
+      {
+        name: "dev-oauth-role",
+        value: persona,
+        domain: "localhost",
+        path: "/",
+      },
+    ]);
+    await page.goto("/api/auth/signin/dev-oauth");
   }
 
-  // Wait for redirect to complete
+  // Wait for OAuth redirect flow to complete
   await page.waitForLoadState("networkidle");
 
-  // Verify authentication by checking we're not on login page
-  const maxRetries = 3;
-  for (let i = 0; i < maxRetries; i++) {
-    const url = page.url();
-    if (!url.includes("/login") && !url.includes("/auth/signin")) {
-      break;
-    }
-    await page.waitForTimeout(500);
-  }
+  // Wait for authentication to complete (should redirect away from login)
+  await page.waitForFunction(
+    () => !window.location.href.includes("/login") && !window.location.href.includes("/auth/signin"),
+    { timeout: 10000 }
+  ).catch(() => {
+    // If still on login, auth may have failed
+  });
 }
 
 /**
