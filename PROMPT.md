@@ -1720,7 +1720,7 @@ Begin by running Phase 1: Discovery & Audit.
 
 ## User Story Implementation Framework
 
-This section defines the systematic approach for implementing all 393 user stories across the platform. Each story follows a rigorous development process that ensures production-ready quality.
+This section defines the systematic approach for implementing all 465 user stories across the platform. Each story follows a rigorous development process that ensures production-ready quality.
 
 ### Story Categories Overview
 
@@ -1735,7 +1735,12 @@ This section defines the systematic approach for implementing all 393 user stori
 | Rating & Tag Systems | 30 | P2 | 2 epics |
 | Lesson Swapping | 15 | P2 | 1 epic |
 | AI Content Generation | 15 | P2 | 1 epic |
-| **Total** | **393** | | **21 epics** |
+| **Onboarding Experience** | **35** | **P0-P1** | **5 epics by persona** |
+| **Avatar System** | **7** | **P1** | **1 epic** |
+| **Bulk Import/Export** | **10** | **P1** | **1 epic** |
+| **Documentation System** | **10** | **P0** | **1 epic** |
+| **MCP Server & AI Agent Support** | **10** | **P0** | **1 epic** |
+| **Total** | **465** | | **30 epics** |
 
 ### Implementation Process Per Story
 
@@ -2151,6 +2156,324 @@ bd create --title="[EPIC] School Admin Experience (US-SA)" \
 bd create --title="[EPIC] Platform Admin Experience (US-A)" \
   --type=feature --priority=2 \
   --description="Implement all platform admin features. 20 stories: US-A01-A20. Organizations, users, content, billing, analytics, operations."
+```
+
+### Onboarding Epics (5)
+
+The onboarding experience is critical for user adoption. Each persona has a unique onboarding flow optimized for their needs.
+
+```bash
+# EPIC: Learner Onboarding Experience
+bd create --title="[EPIC] Learner Onboarding Experience (US-OL)" \
+  --type=feature --priority=0 \
+  --description="Complete learner onboarding flow. 10 stories: US-OL01-OL10. Age verification, grade selection, avatar creation, subject preferences, dashboard tour, first lesson, achievement introduction, AI tutor introduction, goal setting, parent connection."
+
+# EPIC: Parent Onboarding Experience
+bd create --title="[EPIC] Parent Onboarding Experience (US-OP)" \
+  --type=feature --priority=0 \
+  --description="Complete parent onboarding flow. 8 stories: US-OP01-OP08. Account creation, add children wizard, COPPA consent, parental controls setup, notification preferences, subscription selection, dashboard tour, child account linking."
+
+# EPIC: Teacher Onboarding Experience
+bd create --title="[EPIC] Teacher Onboarding Experience (US-OT)" \
+  --type=feature --priority=0 \
+  --description="Complete teacher onboarding flow. 8 stories: US-OT01-OT08. Account verification, school association, profile setup, first classroom creation, student import wizard, curriculum alignment, classroom management tour, first assignment creation."
+
+# EPIC: School Admin Onboarding Experience
+bd create --title="[EPIC] School Admin Onboarding Experience (US-OSA)" \
+  --type=feature --priority=1 \
+  --description="Complete school admin onboarding flow. 9 stories: US-OSA01-OSA09. Organization creation, domain verification, branding setup, SSO configuration, bulk user import, curriculum license setup, admin dashboard tour, teacher invitation, compliance settings."
+
+# EPIC: Family Onboarding Experience
+bd create --title="[EPIC] Family Onboarding Experience (US-OF)" \
+  --type=feature --priority=1 \
+  --description="Unified family onboarding for homeschool families. Creates parent account with children in single streamlined flow."
+```
+
+#### Onboarding User Stories
+
+**Learner Onboarding (US-OL01-OL10)**
+| Story | Title | Description | Age Adaptation |
+|-------|-------|-------------|----------------|
+| US-OL01 | Age verification | Verify learner age during registration for COPPA compliance | Date picker (6+), visual age selector (K-2) |
+| US-OL02 | Grade level selection | Select current grade level with curriculum alignment | Visual grade cards (K-2), dropdown (3+) |
+| US-OL03 | Avatar creation | Create personalized avatar with customization options | Simple presets (K-2), full customization (3+) |
+| US-OL04 | Subject preferences | Select favorite subjects to personalize experience | Icon grid (K-2), checkbox list (3+) |
+| US-OL05 | Dashboard tour | Interactive walkthrough of dashboard features | Animated mascot guide (K-5), tooltip tour (6+) |
+| US-OL06 | First lesson | Guided first lesson experience with success celebration | Extra scaffolding (K-2), standard (3+) |
+| US-OL07 | Achievement introduction | Explain badges, streaks, and progress system | Visual demo (K-2), quick overview (3+) |
+| US-OL08 | AI tutor introduction | Meet the AI tutor with guided first conversation | Character introduction (K-5), feature demo (6+) |
+| US-OL09 | Learning goals | Set initial learning goals with parent/teacher input | Simple goals (K-2), detailed goals (3+) |
+| US-OL10 | Parent/teacher connection | Link to parent or teacher account for oversight | Parent invite email (home), class join code (school) |
+
+**Parent Onboarding (US-OP01-OP08)**
+| Story | Title | Description |
+|-------|-------|-------------|
+| US-OP01 | Account creation flow | Email verification, profile setup, security options |
+| US-OP02 | Add children wizard | Step-by-step flow to add child accounts |
+| US-OP03 | COPPA consent collection | Verifiable parental consent with clear explanation |
+| US-OP04 | Parental controls setup | Configure content filters, time limits, AI restrictions |
+| US-OP05 | Notification preferences | Configure alerts, reports, and communication preferences |
+| US-OP06 | Subscription selection | Choose plan with clear feature comparison |
+| US-OP07 | Parent dashboard tour | Interactive walkthrough of parent features |
+| US-OP08 | Child account linking | Link existing child accounts or create new ones |
+
+**Teacher Onboarding (US-OT01-OT08)**
+| Story | Title | Description |
+|-------|-------|-------------|
+| US-OT01 | Account verification | Verify educator status and credentials |
+| US-OT02 | School/org association | Link to school organization or register new one |
+| US-OT03 | Teacher profile setup | Configure grade levels, subjects, and classroom preferences |
+| US-OT04 | Create first classroom | Guided classroom creation with roster setup |
+| US-OT05 | Student import wizard | Import students from CSV, Clever, ClassLink, or Google Classroom |
+| US-OT06 | Curriculum alignment | Select standards and align with school curriculum |
+| US-OT07 | Classroom management tour | Interactive walkthrough of teacher tools |
+| US-OT08 | First assignment creation | Create and assign first activity with guidance |
+
+**School Admin Onboarding (US-OSA01-OSA09)**
+| Story | Title | Description |
+|-------|-------|-------------|
+| US-OSA01 | Organization creation | Create school/district organization profile |
+| US-OSA02 | Domain verification | Verify ownership of school email domain |
+| US-OSA03 | Branding setup | Configure white-label theme and logo |
+| US-OSA04 | SSO configuration | Set up SAML/OIDC single sign-on |
+| US-OSA05 | Bulk user import | Import all students and teachers from SIS |
+| US-OSA06 | Curriculum license setup | Configure curriculum packages and access levels |
+| US-OSA07 | Admin dashboard tour | Interactive walkthrough of admin features |
+| US-OSA08 | Teacher invitation | Invite and provision teacher accounts |
+| US-OSA09 | Compliance settings | Configure COPPA, FERPA, and state compliance |
+
+### Avatar System Epic (1)
+
+```bash
+# EPIC: Avatar System
+bd create --title="[EPIC] Avatar System (US-AV)" \
+  --type=feature --priority=1 \
+  --description="Complete avatar customization system. 7 stories: US-AV01-AV07. Avatar builder, preset templates, customization options, animated expressions, profile integration, achievement-unlocked items, accessibility alternatives."
+```
+
+**Avatar System Stories (US-AV01-AV07)**
+| Story | Title | Description |
+|-------|-------|-------------|
+| US-AV01 | Avatar builder UI | Interactive avatar creation interface |
+| US-AV02 | Preset templates | Age-appropriate avatar presets by grade band |
+| US-AV03 | Customization options | Hair, skin, eyes, accessories, clothing options |
+| US-AV04 | Animated expressions | Avatar emotions for learning feedback |
+| US-AV05 | Profile integration | Display avatar throughout platform |
+| US-AV06 | Achievement items | Unlock special items through achievements |
+| US-AV07 | Accessibility alternatives | Text descriptions and simple icon alternatives |
+
+### Bulk Import/Export Epic (1)
+
+```bash
+# EPIC: Bulk Import/Export System
+bd create --title="[EPIC] Bulk Import/Export System (US-BIE)" \
+  --type=feature --priority=1 \
+  --description="Complete bulk data management. 10 stories: US-BIE01-BIE10. CSV user import, Excel roster import, teacher roster import, class assignment import, gradebook import/export, progress data export, Clever integration, ClassLink integration, Google Classroom sync, import validation/rollback."
+```
+
+**Bulk Import/Export Stories (US-BIE01-BIE10)**
+| Story | Title | Description |
+|-------|-------|-------------|
+| US-BIE01 | CSV user import | Import users from standard CSV format |
+| US-BIE02 | Excel roster import | Import from Excel with column mapping |
+| US-BIE03 | Teacher roster import | Bulk import teacher accounts |
+| US-BIE04 | Class assignment import | Import class rosters and assignments |
+| US-BIE05 | Gradebook import/export | Two-way gradebook synchronization |
+| US-BIE06 | Progress data export | Export student progress for reporting |
+| US-BIE07 | Clever integration | OneRoster API integration with Clever |
+| US-BIE08 | ClassLink integration | OneRoster API integration with ClassLink |
+| US-BIE09 | Google Classroom sync | Bi-directional sync with Google Classroom |
+| US-BIE10 | Import validation | Validation, preview, and rollback capabilities |
+
+### Documentation System Epic (1)
+
+```bash
+# EPIC: Documentation System
+bd create --title="[EPIC] Documentation System (US-DOC)" \
+  --type=feature --priority=0 \
+  --description="Comprehensive documentation for all users and developers. 10 stories: US-DOC01-DOC10. Learner help center, parent guide, teacher manual, admin documentation, API documentation, developer guide, architecture docs, contextual help, video tutorials, FAQ system."
+```
+
+**Documentation Stories (US-DOC01-DOC10)**
+| Story | Title | Description |
+|-------|-------|-------------|
+| US-DOC01 | Learner help center | Age-appropriate help for students |
+| US-DOC02 | Parent user guide | Comprehensive parent documentation |
+| US-DOC03 | Teacher user manual | Complete teacher feature documentation |
+| US-DOC04 | Admin documentation | School and platform admin guides |
+| US-DOC05 | API documentation | OpenAPI spec and API reference |
+| US-DOC06 | Developer guide | Setup, architecture, and contribution guide |
+| US-DOC07 | Architecture documentation | System design and component diagrams |
+| US-DOC08 | In-app contextual help | Tooltips, help modals, and guided tours |
+| US-DOC09 | Video tutorials | Screen recordings for key workflows |
+| US-DOC10 | Interactive FAQ | Searchable FAQ with AI-powered answers |
+
+### MCP Server & AI Agent Support Epic (1)
+
+```bash
+# EPIC: MCP Server & AI Agent Support
+bd create --title="[EPIC] MCP Server & AI Agent Support (US-MCP)" \
+  --type=feature --priority=0 \
+  --description="Model Context Protocol server for AI agent integration. 10 stories: US-MCP01-MCP10. Core MCP server, auth tools, curriculum tools, progress tools, assessment tools, classroom tools, parent tools, admin tools, llms.txt documentation, testing harness."
+```
+
+**MCP Server Stories (US-MCP01-MCP10)**
+| Story | Title | Description |
+|-------|-------|-------------|
+| US-MCP01 | Core MCP server | Base MCP implementation with tool registration |
+| US-MCP02 | Authentication tools | get-user-info, check-permissions, session context |
+| US-MCP03 | Curriculum browsing | list-subjects, list-lessons, get-lesson-content |
+| US-MCP04 | Progress tracking | get-progress, get-mastery-levels, update-progress |
+| US-MCP05 | Assessment tools | generate-quiz, evaluate-response, get-hints |
+| US-MCP06 | Classroom management | list-students, get-class-progress, assign-work |
+| US-MCP07 | Parent oversight | get-child-progress, approve-activity, set-restrictions |
+| US-MCP08 | Admin management | manage-users, manage-orgs, view-analytics |
+| US-MCP09 | llms.txt documentation | Complete AI-readable documentation file |
+| US-MCP10 | MCP testing harness | Mock AI agent and integration tests |
+
+#### MCP Server Implementation Guide
+
+The MCP (Model Context Protocol) server enables AI agents to interact with the platform programmatically.
+
+**Server Architecture:**
+```
+src/
+├── mcp/
+│   ├── server.ts           # MCP server entry point
+│   ├── tools/              # Tool implementations
+│   │   ├── auth.ts         # Authentication tools
+│   │   ├── curriculum.ts   # Curriculum browsing tools
+│   │   ├── progress.ts     # Progress tracking tools
+│   │   ├── assessment.ts   # Assessment tools
+│   │   ├── classroom.ts    # Teacher tools
+│   │   ├── parent.ts       # Parent oversight tools
+│   │   └── admin.ts        # Admin tools
+│   ├── resources/          # Resource providers
+│   │   ├── lessons.ts      # Lesson content resources
+│   │   ├── students.ts     # Student data resources
+│   │   └── analytics.ts    # Analytics resources
+│   └── prompts/            # Prompt templates
+│       ├── tutoring.ts     # AI tutor prompts
+│       └── assessment.ts   # Assessment generation prompts
+├── public/
+│   └── llms.txt            # AI-readable documentation
+```
+
+**Tool Categories:**
+
+1. **Authentication Tools (US-MCP02)**
+   - `get-user-info`: Get current user profile and permissions
+   - `check-permissions`: Verify user can perform action
+   - `get-session-context`: Get full session with org, role, children
+   - `impersonate-user`: Admin tool for testing/support
+
+2. **Curriculum Tools (US-MCP03)**
+   - `list-subjects`: Get all subjects with grade filtering
+   - `list-lessons`: Get lessons by subject/grade/standard
+   - `get-lesson-content`: Full lesson with activities
+   - `search-curriculum`: Full-text search across content
+   - `get-standards-alignment`: Standards mapping for lesson
+
+3. **Progress Tools (US-MCP04)**
+   - `get-progress`: Student progress summary
+   - `get-mastery-levels`: Per-standard mastery levels
+   - `get-recent-activities`: Recent learning activity
+   - `get-learning-path`: Recommended next steps
+   - `update-progress`: Record activity completion
+
+4. **Assessment Tools (US-MCP05)**
+   - `generate-quiz`: Create quiz for topic/standard
+   - `evaluate-response`: Grade student response
+   - `get-hints`: Progressive hints for stuck students
+   - `explain-concept`: Generate explanation
+   - `adjust-difficulty`: Adaptive difficulty settings
+
+5. **Classroom Tools (US-MCP06)**
+   - `list-students`: Get class roster
+   - `get-class-progress`: Aggregate class progress
+   - `assign-work`: Create and assign activity
+   - `send-announcement`: Post class announcement
+   - `bulk-grade`: Grade multiple submissions
+
+6. **Parent Tools (US-MCP07)**
+   - `get-child-progress`: Child's learning summary
+   - `get-time-reports`: Screen time analytics
+   - `approve-activity`: Approve requested activity
+   - `set-restrictions`: Update parental controls
+   - `receive-alerts`: Get notification stream
+
+7. **Admin Tools (US-MCP08)**
+   - `manage-users`: CRUD user operations
+   - `manage-organizations`: Org management
+   - `view-analytics`: Platform analytics
+   - `configure-settings`: System settings
+   - `audit-logs`: View audit trail
+
+**llms.txt Specification (US-MCP09):**
+
+```markdown
+# Kaelyn's Academy - AI Agent Documentation
+
+> K-12 educational platform with interactive learning, AI tutoring, and progress tracking.
+
+## Authentication
+
+All API calls require authentication via session cookie or API key header.
+
+### Get Current User
+GET /api/auth/session
+
+### Verify Permissions
+POST /api/auth/check-permission
+{ "action": "view_progress", "resource": "student:123" }
+
+## Curriculum
+
+### List Subjects
+GET /api/curriculum/subjects?grade=3
+
+### Get Lesson
+GET /api/curriculum/lessons/{id}
+
+### Search Content
+GET /api/curriculum/search?q=fractions&grade=4&standard=4.NF.A.1
+
+## Progress
+
+### Get Student Progress
+GET /api/progress/{studentId}
+
+### Update Progress
+POST /api/progress/{studentId}/activities/{activityId}
+{ "score": 85, "timeSpent": 300, "completed": true }
+
+## Assessment
+
+### Generate Quiz
+POST /api/assessment/generate
+{ "topic": "multiplication", "grade": 3, "questions": 10 }
+
+### Evaluate Response
+POST /api/assessment/evaluate
+{ "questionId": "123", "response": "12", "showHints": true }
+
+## Tools
+
+This server exposes MCP tools for AI agent integration:
+
+- auth:get-user-info
+- auth:check-permissions
+- curriculum:list-subjects
+- curriculum:list-lessons
+- curriculum:get-lesson-content
+- progress:get-progress
+- progress:update-progress
+- assessment:generate-quiz
+- assessment:evaluate-response
+- classroom:list-students
+- classroom:assign-work
+- parent:get-child-progress
+- admin:manage-users
 ```
 
 ### Marketplace Epics (6)
