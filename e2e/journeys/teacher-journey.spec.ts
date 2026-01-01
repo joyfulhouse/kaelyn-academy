@@ -105,7 +105,7 @@ test.describe("Teacher Journey: Core Features", () => {
         return;
       }
 
-      const addButton = teacherPage.locator(
+      const _addButton = teacherPage.locator(
         'button:has-text("Add"), button:has-text("Invite"), a:has-text("Add")'
       );
 
@@ -344,7 +344,7 @@ test.describe("Teacher Journey: Core Features", () => {
         return;
       }
 
-      const exportButton = teacherPage.locator(
+      const _exportButton = teacherPage.locator(
         'button:has-text("Export"), button:has-text("Download")'
       );
 

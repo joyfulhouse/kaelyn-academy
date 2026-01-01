@@ -576,7 +576,7 @@ test.describe("Content Validation: Quiz Answer Correctness", () => {
     await page.waitForLoadState("networkidle");
 
     // Look for hint functionality
-    const hintButton = page.locator('button:has-text("Hint")');
+    const _hintButton = page.locator('button:has-text("Hint")');
 
     // Hint may or may not be visible
     expect(true).toBeTruthy();

@@ -69,7 +69,7 @@ test.describe("Marketplace Journey: Core Features", () => {
       await page.goto("/marketplace");
       await page.waitForLoadState("networkidle");
 
-      const searchInput = page.locator(
+      const _searchInput = page.locator(
         'input[type="search"], input[placeholder*="Search"]'
       );
 
@@ -80,7 +80,7 @@ test.describe("Marketplace Journey: Core Features", () => {
       await page.goto("/marketplace");
       await page.waitForLoadState("networkidle");
 
-      const filterOptions = page.locator(
+      const _filterOptions = page.locator(
         'select, [role="combobox"], button:has-text("Filter")'
       );
 
@@ -91,7 +91,7 @@ test.describe("Marketplace Journey: Core Features", () => {
       await page.goto("/marketplace");
       await page.waitForLoadState("networkidle");
 
-      const gradeFilter = page.locator(
+      const _gradeFilter = page.locator(
         'select, button:has-text("Grade"), [aria-label*="grade"]'
       );
 
@@ -159,7 +159,7 @@ test.describe("Marketplace Journey: Parent Curriculum - US-PC", () => {
         return;
       }
 
-      const previewButton = parentPage.locator(
+      const _previewButton = parentPage.locator(
         'button:has-text("Preview"), a:has-text("Preview")'
       );
 
@@ -195,7 +195,7 @@ test.describe("Marketplace Journey: Parent Curriculum - US-PC", () => {
         return;
       }
 
-      const searchInput = parentPage.locator('input[type="search"], textarea');
+      const _searchInput = parentPage.locator('input[type="search"], textarea');
 
       expect(true).toBeTruthy();
     });
@@ -232,7 +232,7 @@ test.describe("Marketplace Journey: Parent Curriculum - US-PC", () => {
         return;
       }
 
-      const addButton = parentPage.locator(
+      const _addButton = parentPage.locator(
         'button:has-text("Add"), button:has-text("Supplement")'
       );
 
@@ -350,7 +350,7 @@ test.describe("Marketplace Journey: Parent Curriculum - US-PC", () => {
         return;
       }
 
-      const reviewButton = parentPage.locator(
+      const _reviewButton = parentPage.locator(
         'button:has-text("Review"), a:has-text("Write Review")'
       );
 
@@ -368,7 +368,7 @@ test.describe("Marketplace Journey: Parent Curriculum - US-PC", () => {
         return;
       }
 
-      const reportButton = parentPage.locator('button:has-text("Report")');
+      const _reportButton = parentPage.locator('button:has-text("Report")');
 
       expect(true).toBeTruthy();
     });
@@ -414,7 +414,7 @@ test.describe("Marketplace Journey: Teacher Curriculum - US-TC", () => {
         return;
       }
 
-      const stateFilter = teacherPage.locator(
+      const _stateFilter = teacherPage.locator(
         'select, button:has-text("State")'
       );
 
@@ -452,7 +452,7 @@ test.describe("Marketplace Journey: Teacher Curriculum - US-TC", () => {
         return;
       }
 
-      const previewButton = teacherPage.locator('button:has-text("Preview")');
+      const _previewButton = teacherPage.locator('button:has-text("Preview")');
 
       expect(true).toBeTruthy();
     });
@@ -618,7 +618,7 @@ test.describe("Marketplace Journey: Rating System - US-CR", () => {
     await page.goto("/marketplace");
     await page.waitForLoadState("networkidle");
 
-    const sortOption = page.locator(
+    const _sortOption = page.locator(
       'select, button:has-text("Sort"), [aria-label*="sort"]'
     );
 
@@ -686,7 +686,7 @@ test.describe("Marketplace Journey: Tag System - US-TG", () => {
     await page.goto("/marketplace");
     await page.waitForLoadState("networkidle");
 
-    const filterOptions = page.locator(
+    const _filterOptions = page.locator(
       'button:has-text("Filter"), select, [role="combobox"]'
     );
 
@@ -738,7 +738,7 @@ test.describe("Marketplace Journey: Lesson Swapping - US-LS", () => {
       return;
     }
 
-    const swapButton = parentPage.locator('button:has-text("Swap")');
+    const _swapButton = parentPage.locator('button:has-text("Swap")');
 
     expect(true).toBeTruthy();
   });
@@ -752,7 +752,7 @@ test.describe("Marketplace Journey: Lesson Swapping - US-LS", () => {
       return;
     }
 
-    const revertButton = parentPage.locator(
+    const _revertButton = parentPage.locator(
       'button:has-text("Revert"), button:has-text("Undo")'
     );
 

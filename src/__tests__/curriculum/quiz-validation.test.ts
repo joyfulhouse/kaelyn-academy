@@ -319,7 +319,7 @@ describe("Quiz Answer Validation", () => {
     });
 
     it("all quizzes should have valid question structure", () => {
-      for (const { lessonId, quiz } of allQuizzes) {
+      for (const { quiz } of allQuizzes) {
         expect(quiz.content.questions.length).toBeGreaterThan(0);
 
         for (const question of quiz.content.questions) {
@@ -347,7 +347,7 @@ describe("Quiz Answer Validation", () => {
     });
 
     it("all practice problems should have valid structure", () => {
-      for (const { lessonId, practice } of allPractices) {
+      for (const { practice } of allPractices) {
         expect(practice.content.problems.length).toBeGreaterThan(0);
 
         for (const problem of practice.content.problems) {

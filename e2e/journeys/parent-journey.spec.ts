@@ -51,7 +51,7 @@ test.describe("Parent Journey: Core Features", () => {
       }
 
       // Look for age input or verification elements
-      const ageInput = parentPage.locator(
+      const _ageInput = parentPage.locator(
         'input[name*="age"], input[name*="birth"], select[name*="grade"]'
       );
 
@@ -138,7 +138,7 @@ test.describe("Parent Journey: Core Features", () => {
       }
 
       // Look for child links
-      const childLinks = parentPage.locator(
+      const _childLinks = parentPage.locator(
         'a[href*="/parent/children/"], button:has-text("View")'
       );
 
@@ -311,7 +311,7 @@ test.describe("Parent Journey: Core Features", () => {
       }
 
       // Look for download/export button
-      const downloadButton = parentPage.locator(
+      const _downloadButton = parentPage.locator(
         'button:has-text("Download"), button:has-text("Export")'
       );
 
@@ -328,7 +328,7 @@ test.describe("Parent Journey: Core Features", () => {
       }
 
       // Look for delete button
-      const deleteButton = parentPage.locator('button:has-text("Delete")');
+      const _deleteButton = parentPage.locator('button:has-text("Delete")');
 
       expect(true).toBeTruthy();
     });
@@ -483,7 +483,7 @@ test.describe("Parent Journey: Young Child (Ages 5-8) - US-PY", () => {
     }
 
     // Look for chat toggle
-    const chatToggle = parentPage.locator(
+    const _chatToggle = parentPage.locator(
       'input[type="checkbox"], [role="switch"]'
     );
 

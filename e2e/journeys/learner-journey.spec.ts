@@ -78,7 +78,7 @@ test.describe("Learner Journey: Core Learning Flow", () => {
 
       // Look for streak indicator
       const content = await learnerPage.textContent("body");
-      const hasStreakContent =
+      const _hasStreakContent =
         content?.includes("Streak") ||
         content?.includes("day") ||
         content?.includes("🔥");
@@ -121,7 +121,7 @@ test.describe("Learner Journey: Core Learning Flow", () => {
         return;
       }
 
-      const gradeSelector = learnerPage.locator(
+      const _gradeSelector = learnerPage.locator(
         'select, [role="combobox"], button:has-text("Grade")'
       );
 
@@ -435,7 +435,7 @@ test.describe("Learner Journey: Kindergarten Experience (US-LK)", () => {
     }
 
     // Look for audio controls or read-aloud button
-    const audioElements = learnerPage.locator(
+    const _audioElements = learnerPage.locator(
       'button:has-text("Read"), button:has-text("Listen"), [aria-label*="audio"], audio'
     );
 
@@ -458,7 +458,7 @@ test.describe("Learner Journey: Kindergarten Experience (US-LK)", () => {
     }
 
     // Look for clickable counting elements
-    const countingElements = learnerPage.locator(
+    const _countingElements = learnerPage.locator(
       '[data-countable], .countable, [aria-label*="count"]'
     );
 
@@ -480,7 +480,7 @@ test.describe("Learner Journey: Kindergarten Experience (US-LK)", () => {
     }
 
     // Look for animation-related elements
-    const animationElements = learnerPage.locator(
+    const _animationElements = learnerPage.locator(
       "[class*='animate'], [class*='celebration'], canvas"
     );
 
@@ -502,7 +502,7 @@ test.describe("Learner Journey: Kindergarten Experience (US-LK)", () => {
     }
 
     // Look for draggable elements
-    const draggableElements = learnerPage.locator(
+    const _draggableElements = learnerPage.locator(
       '[draggable="true"], [data-draggable], [class*="drag"]'
     );
 
@@ -524,7 +524,7 @@ test.describe("Learner Journey: Kindergarten Experience (US-LK)", () => {
     }
 
     // Look for 3D canvas
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -585,7 +585,7 @@ test.describe("Learner Journey: Grades 1-2 Experience (US-L12)", () => {
     }
 
     // Look for number line elements or 3D canvas
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -626,7 +626,7 @@ test.describe("Learner Journey: Grades 1-2 Experience (US-L12)", () => {
       return;
     }
 
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -667,7 +667,7 @@ test.describe("Learner Journey: Grades 1-2 Experience (US-L12)", () => {
       return;
     }
 
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 });
@@ -688,7 +688,7 @@ test.describe("Learner Journey: Grades 3-5 Experience (US-L35)", () => {
     }
 
     // Look for text input fields
-    const textInputs = learnerPage.locator(
+    const _textInputs = learnerPage.locator(
       'input[type="text"], input[type="number"], textarea'
     );
 
@@ -709,7 +709,7 @@ test.describe("Learner Journey: Grades 3-5 Experience (US-L35)", () => {
       return;
     }
 
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -728,7 +728,7 @@ test.describe("Learner Journey: Grades 3-5 Experience (US-L35)", () => {
     }
 
     // Look for note-taking elements
-    const noteElements = learnerPage.locator(
+    const _noteElements = learnerPage.locator(
       'button:has-text("Note"), [aria-label*="note"], textarea'
     );
 
@@ -772,7 +772,7 @@ test.describe("Learner Journey: Grades 3-5 Experience (US-L35)", () => {
       return;
     }
 
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -790,7 +790,7 @@ test.describe("Learner Journey: Grades 3-5 Experience (US-L35)", () => {
       return;
     }
 
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -808,7 +808,7 @@ test.describe("Learner Journey: Grades 3-5 Experience (US-L35)", () => {
       return;
     }
 
-    const timelineElements = learnerPage.locator(
+    const _timelineElements = learnerPage.locator(
       '[class*="timeline"], [aria-label*="timeline"]'
     );
 
@@ -831,7 +831,7 @@ test.describe("Learner Journey: Grades 6-8 Experience (US-L68)", () => {
       return;
     }
 
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -849,7 +849,7 @@ test.describe("Learner Journey: Grades 6-8 Experience (US-L68)", () => {
       return;
     }
 
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -889,7 +889,7 @@ test.describe("Learner Journey: Grades 6-8 Experience (US-L68)", () => {
     }
 
     // Look for writing/essay elements
-    const writingElements = learnerPage.locator(
+    const _writingElements = learnerPage.locator(
       'textarea, [contenteditable="true"], [class*="editor"]'
     );
 
@@ -933,7 +933,7 @@ test.describe("Learner Journey: Grades 6-8 Experience (US-L68)", () => {
       return;
     }
 
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -998,7 +998,7 @@ test.describe("Learner Journey: Grades 9-12 Experience (US-L912)", () => {
       return;
     }
 
-    const canvas = learnerPage.locator("canvas");
+    const _canvas = learnerPage.locator("canvas");
     expect(true).toBeTruthy();
   });
 
@@ -1017,7 +1017,7 @@ test.describe("Learner Journey: Grades 9-12 Experience (US-L912)", () => {
     }
 
     // Look for sliders or input controls
-    const controls = learnerPage.locator(
+    const _controls = learnerPage.locator(
       'input[type="range"], input[type="number"], [class*="slider"]'
     );
 
@@ -1084,7 +1084,7 @@ test.describe("Learner Journey: Grades 9-12 Experience (US-L912)", () => {
       return;
     }
 
-    const writingElements = learnerPage.locator(
+    const _writingElements = learnerPage.locator(
       'textarea, [contenteditable="true"]'
     );
 
@@ -1245,7 +1245,7 @@ test.describe("Learner Journey: Accessibility", () => {
     await learnerPage.keyboard.press("Tab");
 
     // Should have focused element
-    const focusedElement = await learnerPage.locator(":focus");
+    const _focusedElement = await learnerPage.locator(":focus");
     expect(true).toBeTruthy();
   });
 
@@ -1297,8 +1297,8 @@ test.describe("Learner Journey: Accessibility", () => {
     }
 
     // Check for ARIA landmarks
-    const main = learnerPage.locator('main, [role="main"]');
-    const nav = learnerPage.locator('nav, [role="navigation"]');
+    const _main = learnerPage.locator('main, [role="main"]');
+    const _nav = learnerPage.locator('nav, [role="navigation"]');
 
     expect(true).toBeTruthy();
   });

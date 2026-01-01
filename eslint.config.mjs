@@ -12,12 +12,23 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated coverage reports
+    "coverage/**",
   ]),
   {
     rules: {
       // Disable overly strict rule for educational text content
       // Apostrophes in "Let's", "don't", "you're" etc. are standard English
       "react/no-unescaped-entities": "off",
+      // Allow unused variables prefixed with underscore (intentionally unused)
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
   // GraphQL Yoga plugins use "use" prefix but are not React hooks

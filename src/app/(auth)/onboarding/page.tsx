@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
@@ -19,7 +19,6 @@ import {
   BookOpen,
   Sparkles,
   Target,
-  Link2,
   Trophy,
   Bot,
   Check,
@@ -28,7 +27,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AVATAR_COLLECTION, getAvatarById } from "@/components/ui/avatar-picker";
 import {
@@ -154,30 +152,6 @@ export default function OnboardingPage() {
     }
     return 7;
   }, [state.role, state.needsCoppaConsent]);
-
-  // Get step config for current step
-  const getStepConfig = useCallback(() => {
-    const learnerSteps = [
-      { id: "role", title: "Welcome", icon: PartyPopper },
-      { id: "birthdate", title: "Your Age", icon: Calendar },
-      { id: "grade", title: "Grade Level", icon: GraduationCap },
-      { id: "avatar", title: "Your Avatar", icon: Palette },
-      { id: "subjects", title: "Favorites", icon: BookOpen },
-      { id: "goals", title: "Goals", icon: Target },
-      { id: "complete", title: "Ready!", icon: Sparkles },
-    ];
-
-    if (state.needsCoppaConsent) {
-      // Insert consent step after birthdate
-      return [
-        ...learnerSteps.slice(0, 2),
-        { id: "consent", title: "Parent Consent", icon: Users },
-        ...learnerSteps.slice(2),
-      ];
-    }
-
-    return learnerSteps;
-  }, [state.needsCoppaConsent]);
 
   // Update state helper
   const updateState = (updates: Partial<OnboardingState>) => {

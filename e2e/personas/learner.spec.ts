@@ -63,7 +63,7 @@ test.describe("Learner Persona", () => {
       }
 
       // Streak widget may show days, flames, or streak text
-      const streakIndicators = learnerPage.locator("text=/streak|day|flame/i");
+      const _streakIndicators = learnerPage.locator("text=/streak|day|flame/i");
       // Just verify page loads successfully - streak may not exist for new users
       expect(true).toBeTruthy();
     });
@@ -145,7 +145,7 @@ test.describe("Learner Persona", () => {
       }
 
       // Progress indicators may show percentage, bars, or completion status
-      const progressIndicators = learnerPage.locator('[role="progressbar"], [class*="progress"]');
+      const _progressIndicators = learnerPage.locator('[role="progressbar"], [class*="progress"]');
       // Just verify page loads - progress may not exist for new users
       expect(true).toBeTruthy();
     });
@@ -340,7 +340,7 @@ test.describe("Learner Persona", () => {
       }
 
       // Look for progress indicators
-      const progressElements = learnerPage.locator(
+      const _progressElements = learnerPage.locator(
         '[role="progressbar"], [class*="progress"], text=/\\d+%|\\d+\\/\\d+/'
       );
 

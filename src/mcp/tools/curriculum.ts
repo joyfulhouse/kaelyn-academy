@@ -10,7 +10,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { subjects, units, lessons, activities } from "@/lib/db/schema/curriculum";
-import { eq, and, like, ilike, desc, asc } from "drizzle-orm";
+import { eq, and, ilike, asc } from "drizzle-orm";
 
 /**
  * Register curriculum tools with the MCP server
@@ -77,7 +77,7 @@ export function registerCurriculumTools(server: McpServer): void {
       unitId: z.string().uuid().optional().describe("Filter by specific unit"),
       limit: z.number().min(1).max(100).default(20).describe("Maximum number of lessons to return"),
     },
-    async ({ subjectId, gradeLevel, unitId, limit }) => {
+    async ({ subjectId, unitId, limit }) => {
       try {
         // Get units for the subject first
         const subjectUnits = await db

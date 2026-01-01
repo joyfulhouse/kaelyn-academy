@@ -99,7 +99,7 @@ test.describe("Parent Persona", () => {
       const addButton = parentPage.getByRole("button", { name: /add|new|create/i }).first();
       const addLink = parentPage.getByRole("link", { name: /add|new|create/i }).first();
 
-      const hasAddOption =
+      const _hasAddOption =
         (await addButton.isVisible().catch(() => false)) ||
         (await addLink.isVisible().catch(() => false));
 
@@ -293,8 +293,8 @@ test.describe("Parent Persona", () => {
       }
 
       // Look for approve/deny buttons or empty state
-      const approveButton = parentPage.getByRole("button", { name: /approve|allow/i }).first();
-      const denyButton = parentPage.getByRole("button", { name: /deny|reject/i }).first();
+      const _approveButton = parentPage.getByRole("button", { name: /approve|allow/i }).first();
+      const _denyButton = parentPage.getByRole("button", { name: /deny|reject/i }).first();
 
       // Either has pending items or shows empty state
       expect(true).toBeTruthy();
@@ -371,7 +371,7 @@ test.describe("Parent Persona", () => {
       }
 
       // Look for time limit inputs or toggles
-      const timeInputs = parentPage.locator(
+      const _timeInputs = parentPage.locator(
         'input[type="number"], input[type="time"], [class*="slider"], [role="slider"]'
       );
 
@@ -411,8 +411,8 @@ test.describe("Parent Persona", () => {
       }
 
       // Look for privacy controls
-      const downloadButton = parentPage.getByRole("button", { name: /download|export/i }).first();
-      const deleteButton = parentPage.getByRole("button", { name: /delete|remove/i }).first();
+      const _downloadButton = parentPage.getByRole("button", { name: /download|export/i }).first();
+      const _deleteButton = parentPage.getByRole("button", { name: /delete|remove/i }).first();
 
       // Should have data management options
       expect(true).toBeTruthy();

@@ -103,8 +103,8 @@ test.describe("Teacher Persona", () => {
       }
 
       // Look for class cards or create button
-      const classCards = teacherPage.locator('[class*="card"], [class*="class"]');
-      const createButton = teacherPage.getByRole("button", { name: /add|create|new/i }).first();
+      const _classCards = teacherPage.locator('[class*="card"], [class*="class"]');
+      const _createButton = teacherPage.getByRole("button", { name: /add|create|new/i }).first();
 
       // Either has classes or shows create option
       expect(true).toBeTruthy();
@@ -176,7 +176,7 @@ test.describe("Teacher Persona", () => {
       const table = teacherPage.locator("table, [role='grid']");
       const list = teacherPage.locator('[role="list"], ul, ol');
 
-      const hasStudentList =
+      const _hasStudentList =
         (await table.isVisible().catch(() => false)) ||
         (await list.first().isVisible().catch(() => false));
 
@@ -269,7 +269,7 @@ test.describe("Teacher Persona", () => {
 
       // Look for form inputs
       const titleInput = teacherPage.locator('input[name*="title"], input[placeholder*="title" i]');
-      const submitButton = teacherPage.getByRole("button", { name: /create|save|submit/i }).first();
+      const _submitButton = teacherPage.getByRole("button", { name: /create|save|submit/i }).first();
 
       if (await titleInput.isVisible().catch(() => false)) {
         await expect(titleInput).toBeVisible();
@@ -339,7 +339,7 @@ test.describe("Teacher Persona", () => {
       }
 
       // Look for table/grid structure
-      const table = teacherPage.locator("table, [role='grid'], [class*='gradebook']");
+      const _table = teacherPage.locator("table, [role='grid'], [class*='gradebook']");
 
       // May show empty state or setup instructions
       expect(true).toBeTruthy();
@@ -375,7 +375,7 @@ test.describe("Teacher Persona", () => {
         return;
       }
 
-      const createButton = teacherPage.getByRole("button", { name: /add|create|new/i }).first();
+      const _createButton = teacherPage.getByRole("button", { name: /add|create|new/i }).first();
 
       // Either has rubrics or can create
       expect(true).toBeTruthy();

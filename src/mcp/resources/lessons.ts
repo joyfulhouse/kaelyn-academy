@@ -8,8 +8,8 @@
 
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { db } from "@/lib/db";
-import { subjects, units, lessons, activities } from "@/lib/db/schema/curriculum";
-import { eq, asc } from "drizzle-orm";
+import { subjects } from "@/lib/db/schema/curriculum";
+import { asc } from "drizzle-orm";
 
 /**
  * Register lesson resources with the MCP server

@@ -63,7 +63,7 @@ export function registerAssessmentTools(server: McpServer): void {
       correctAnswer: z.string().optional().describe("The expected correct answer"),
       gradeLevel: z.number().min(0).max(12).describe("Student's grade level"),
     },
-    async ({ questionId, questionText, studentResponse, correctAnswer, gradeLevel }) => {
+    async ({ questionId, studentResponse, correctAnswer }) => {
       // Response evaluation would integrate with AI provider
       return {
         content: [
@@ -96,7 +96,7 @@ export function registerAssessmentTools(server: McpServer): void {
       currentHintLevel: z.number().min(0).max(3).default(0).describe("Current hint level (0-3)"),
       gradeLevel: z.number().min(0).max(12).describe("Student's grade level"),
     },
-    async ({ questionId, questionText, topic, currentHintLevel, gradeLevel }) => {
+    async ({ questionId, currentHintLevel }) => {
       const hints = [
         "Think about what you already know about this topic.",
         "Try breaking the problem into smaller parts.",
@@ -133,7 +133,7 @@ export function registerAssessmentTools(server: McpServer): void {
       gradeLevel: z.number().min(0).max(12).describe("Student's grade level"),
       context: z.string().optional().describe("Additional context about what the student is struggling with"),
     },
-    async ({ concept, gradeLevel, context }) => {
+    async ({ concept, gradeLevel }) => {
       // Concept explanation would integrate with AI provider
       const gradeDescriptor = gradeLevel <= 2 ? "young learner" : gradeLevel <= 5 ? "elementary student" : gradeLevel <= 8 ? "middle schooler" : "high school student";
 

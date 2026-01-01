@@ -100,8 +100,8 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const table = adminPage.locator("table, [role='grid']");
-      const list = adminPage.locator('[role="list"], [class*="list"]');
+      const _table = adminPage.locator("table, [role='grid']");
+      const _list = adminPage.locator('[role="list"], [class*="list"]');
 
       // Either has table, list, or empty state
       expect(true).toBeTruthy();
@@ -116,8 +116,8 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const createButton = adminPage.getByRole("button", { name: /add|create|new/i }).first();
-      const createLink = adminPage.getByRole("link", { name: /add|create|new/i }).first();
+      const _createButton = adminPage.getByRole("button", { name: /add|create|new/i }).first();
+      const _createLink = adminPage.getByRole("link", { name: /add|create|new/i }).first();
 
       // Should have create option
       expect(true).toBeTruthy();
@@ -185,7 +185,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const table = adminPage.locator("table, [role='grid']");
+      const _table = adminPage.locator("table, [role='grid']");
 
       // May show table or empty state
       expect(true).toBeTruthy();
@@ -201,7 +201,7 @@ test.describe("Admin Persona", () => {
       }
 
       // Look for action buttons
-      const actionButtons = adminPage.getByRole("button", {
+      const _actionButtons = adminPage.getByRole("button", {
         name: /edit|delete|suspend|invite/i,
       });
 
@@ -241,8 +241,8 @@ test.describe("Admin Persona", () => {
       }
 
       // Look for tree view or hierarchical structure
-      const treeView = adminPage.locator('[role="tree"], [class*="tree"]');
-      const accordion = adminPage.locator('[data-state="open"], [data-state="closed"]');
+      const _treeView = adminPage.locator('[role="tree"], [class*="tree"]');
+      const _accordion = adminPage.locator('[data-state="open"], [data-state="closed"]');
 
       // May have tree view or list
       expect(true).toBeTruthy();
@@ -257,7 +257,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const editButtons = adminPage.getByRole("button", { name: /edit|add|create/i });
+      const _editButtons = adminPage.getByRole("button", { name: /edit|add|create/i });
 
       // Should have editing options
       expect(true).toBeTruthy();
@@ -314,10 +314,10 @@ test.describe("Admin Persona", () => {
       }
 
       // Look for editor elements
-      const titleInput = adminPage.locator(
+      const _titleInput = adminPage.locator(
         'input[name*="title"], input[placeholder*="title" i]'
       );
-      const editor = adminPage.locator(
+      const _editor = adminPage.locator(
         '[contenteditable="true"], textarea, [class*="editor"]'
       );
 
@@ -369,8 +369,8 @@ test.describe("Admin Persona", () => {
       }
 
       // Look for plan cards or table
-      const planCards = adminPage.locator('[class*="card"], [class*="plan"]');
-      const planTable = adminPage.locator("table");
+      const _planCards = adminPage.locator('[class*="card"], [class*="plan"]');
+      const _planTable = adminPage.locator("table");
 
       expect(true).toBeTruthy();
     });
@@ -441,7 +441,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const dateSelector = adminPage.locator(
+      const _dateSelector = adminPage.locator(
         'input[type="date"], [class*="date-picker"], button:has-text("date")'
       );
 
@@ -480,8 +480,8 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const table = adminPage.locator("table, [role='grid']");
-      const list = adminPage.locator('[role="list"]');
+      const _table = adminPage.locator("table, [role='grid']");
+      const _list = adminPage.locator('[role="list"]');
 
       // Should have table or list of logs
       expect(true).toBeTruthy();
@@ -496,7 +496,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const filterInputs = adminPage.locator(
+      const _filterInputs = adminPage.locator(
         'input[type="search"], input[placeholder*="search" i], select, [class*="filter"]'
       );
 
@@ -535,10 +535,10 @@ test.describe("Admin Persona", () => {
       }
 
       // Look for settings form elements
-      const toggles = adminPage.locator(
+      const _toggles = adminPage.locator(
         '[role="switch"], input[type="checkbox"], [class*="toggle"]'
       );
-      const inputs = adminPage.locator('input:not([type="hidden"])');
+      const _inputs = adminPage.locator('input:not([type="hidden"])');
 
       // Should have configuration options
       expect(true).toBeTruthy();
@@ -592,7 +592,7 @@ test.describe("Admin Persona", () => {
       }
 
       // Look for AI configuration elements
-      const providerOptions = adminPage.locator(
+      const _providerOptions = adminPage.locator(
         'select, [role="combobox"], [class*="select"]'
       );
 
@@ -630,8 +630,8 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const fileInput = adminPage.locator('input[type="file"]');
-      const uploadButton = adminPage.getByRole("button", { name: /upload|import/i }).first();
+      const _fileInput = adminPage.locator('input[type="file"]');
+      const _uploadButton = adminPage.getByRole("button", { name: /upload|import/i }).first();
 
       // Should have upload capability
       expect(true).toBeTruthy();
@@ -686,7 +686,7 @@ test.describe("Admin Persona", () => {
         return;
       }
 
-      const breadcrumb = adminPage.locator('[aria-label*="breadcrumb" i], nav ol, [class*="breadcrumb"]');
+      const _breadcrumb = adminPage.locator('[aria-label*="breadcrumb" i], nav ol, [class*="breadcrumb"]');
 
       // May or may not have breadcrumbs
       expect(true).toBeTruthy();
@@ -803,7 +803,7 @@ test.describe("Admin Persona", () => {
 
       // Forms should have hidden CSRF tokens or rely on cookies
       const forms = adminPage.locator("form");
-      const formCount = await forms.count();
+      const _formCount = await forms.count();
 
       // Just verify page loads correctly
       expect(true).toBeTruthy();
