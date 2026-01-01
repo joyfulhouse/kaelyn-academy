@@ -27,6 +27,13 @@ const eslintConfig = defineConfig([
       "react-hooks/rules-of-hooks": "off",
     },
   },
+  // Playwright e2e tests use "use" for fixtures, not React hooks
+  {
+    files: ["e2e/**/*.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

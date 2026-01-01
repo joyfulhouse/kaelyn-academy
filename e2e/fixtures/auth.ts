@@ -1,4 +1,4 @@
-import { test as base, expect, Page, BrowserContext } from "@playwright/test";
+import { test as base, expect, type Page } from "@playwright/test";
 
 /**
  * Playwright Auth Fixtures for Kaelyn's Academy
