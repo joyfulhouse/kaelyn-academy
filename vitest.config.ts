@@ -30,6 +30,10 @@ export default defineConfig({
         "src/test/",
         "**/*.d.ts",
         "**/*.config.*",
+        // Exclude Drizzle schema files - they're declarative table/type definitions
+        "src/lib/db/schema/**",
+        // Exclude MCP server - it's integration code tested via E2E
+        "src/mcp/**",
       ],
     },
   },
