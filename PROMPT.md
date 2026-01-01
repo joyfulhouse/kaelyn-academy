@@ -1715,3 +1715,672 @@ output("<promise>IAMFINALLYDONE</promise>")
 ```
 
 Begin by running Phase 1: Discovery & Audit.
+
+---
+
+## User Story Implementation Framework
+
+This section defines the systematic approach for implementing all 393 user stories across the platform. Each story follows a rigorous development process that ensures production-ready quality.
+
+### Story Categories Overview
+
+| Category | Stories | Priority | Epic Structure |
+|----------|---------|----------|----------------|
+| Learner Experience (Core + Grade-Specific) | 64 | P0-P1 | 5 epics by grade band |
+| Parent Experience (Core + Age-Specific) | 53 | P0-P1 | 4 epics by child age |
+| Teacher Experience (Core + Grade-Specific) | 57 | P1-P2 | 4 epics by student grade |
+| School Admin | 24 | P2 | 1 epic |
+| Platform Admin | 20 | P2 | 1 epic |
+| Curriculum Marketplace | 115 | P1-P2 | 6 epics by function |
+| Rating & Tag Systems | 30 | P2 | 2 epics |
+| Lesson Swapping | 15 | P2 | 1 epic |
+| AI Content Generation | 15 | P2 | 1 epic |
+| **Total** | **393** | | **21 epics** |
+
+### Implementation Process Per Story
+
+Every user story follows this mandatory implementation flow:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    USER STORY IMPLEMENTATION FLOW                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  1. RESEARCH      Use docs-seeker, context7, WebSearch                      │
+│       ↓           Research best practices for feature type                  │
+│                   Check MUI, shadcn/ui documentation for UI patterns        │
+│                   Review Three.js examples for 3D visualizations            │
+│                                                                             │
+│  2. EXPLORE       Use feature-dev:code-explorer                             │
+│       ↓           Analyze existing patterns in codebase                     │
+│                   Identify reusable components and utilities                │
+│                   Map dependencies and integration points                   │
+│                                                                             │
+│  3. DESIGN        Use feature-dev:code-architect                            │
+│       ↓           Create component blueprint                                │
+│                   Define data models and API contracts                      │
+│                   Plan 3D visualization approach (if applicable)            │
+│                   Design responsive, accessible UI                          │
+│                                                                             │
+│  4. UI DESIGN     Use /frontend-design skill                                │
+│       ↓           Generate high-quality UI components                       │
+│                   Apply age-adaptive styling                                │
+│                   Ensure WCAG 2.1 AA compliance                             │
+│                   Create responsive layouts                                 │
+│                                                                             │
+│  5. IMPLEMENT     Write clean, type-safe code                               │
+│       ↓           Follow existing patterns                                  │
+│                   Include comprehensive error handling                      │
+│                   Add loading/empty/error states                            │
+│                                                                             │
+│  6. VALIDATE      Data validation with Zod schemas                          │
+│       ↓           Input sanitization                                        │
+│                   COPPA compliance verification                             │
+│                   Multi-tenant scoping                                      │
+│                                                                             │
+│  7. TEST          Write unit tests for utilities                            │
+│       ↓           Write component tests                                     │
+│                   Write API route tests                                     │
+│                   Write E2E Playwright tests                                │
+│                                                                             │
+│  8. REVIEW        Use feature-dev:code-reviewer                             │
+│       ↓           Fix all identified issues                                 │
+│                   Verify accessibility                                      │
+│                   Check age-appropriateness                                 │
+│                                                                             │
+│  9. E2E VERIFY    Run Playwright journey tests                              │
+│       ↓           Verify full user flow works                               │
+│                   Check cross-browser compatibility                         │
+│                   Validate on mobile viewports                              │
+│                                                                             │
+│  10. CLOSE        Close story task in beads                                 │
+│                   Document in PR                                            │
+│                   Update epic progress                                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Research Phase Requirements
+
+Before implementing ANY story, conduct thorough research:
+
+#### 1. Best Practices Research
+```bash
+# Use docs-seeker for library documentation
+/docs-seeker "Next.js 16 server components data fetching patterns"
+
+# Use context7 for specific library APIs
+# Use mcp__context7__resolve-library-id then mcp__context7__query-docs
+
+# Use WebSearch for industry patterns
+# Search for "[feature type] best practices 2025"
+```
+
+#### 2. UI Pattern Research
+```bash
+# For MUI components
+# Use mcp__mui-mcp__useMuiDocs for Material UI documentation
+
+# For shadcn/ui patterns
+/docs-seeker "shadcn/ui [component type] examples"
+
+# For Three.js/R3F visualizations
+/docs-seeker "react-three-fiber [visualization type] tutorial"
+```
+
+#### 3. Educational Platform Research
+```markdown
+□ Age-appropriate interaction patterns for target grade
+□ COPPA compliance requirements for data collection
+□ Accessibility patterns for educational content
+□ Gamification best practices for student engagement
+□ Assessment validity and reliability standards
+```
+
+### Feature-Dev Agent Usage Per Story Type
+
+#### Learner Stories (US-L*, US-LK*, US-L12*, US-L35*, US-L68*, US-L912*)
+
+```markdown
+**code-explorer prompt:**
+"Analyze the learner experience for [grade band]. I need to understand:
+1. Existing dashboard components in src/app/(learner)/
+2. Age-adaptive UI patterns already implemented
+3. 3D visualization components in src/components/3d/
+4. Progress tracking data models
+5. AI tutor integration patterns
+6. Activity and quiz component patterns
+
+Focus on: [specific story requirements]
+Goal: Implement [US-XXX story description]"
+
+**code-architect prompt:**
+"Design the implementation for [story]. Requirements:
+- Grade level: [K/1-2/3-5/6-8/9-12]
+- UI adaptation: [specific age requirements from user-stories.md]
+- 3D visualization: [if applicable]
+- COPPA considerations: [parental consent requirements]
+
+Provide component breakdown, file structure, and test strategy."
+```
+
+#### Parent Stories (US-P*, US-PY*, US-PE*, US-PM*, US-PH*)
+
+```markdown
+**code-explorer prompt:**
+"Analyze parent dashboard functionality. I need to understand:
+1. Child account management patterns
+2. Progress monitoring components
+3. Parental controls implementation
+4. COPPA consent flow
+5. Activity reporting components
+6. Communication tools
+
+Focus on: Parent of [young child/elementary/middle schooler/high schooler]
+Goal: Implement [US-XXX story description]"
+
+**code-architect prompt:**
+"Design parental control feature for [child age group]. Requirements:
+- Child age range: [5-8/8-11/11-14/14-18]
+- Monitoring depth: [strict/moderate/light/oversight]
+- COPPA requirements: [specific consent needs]
+- Privacy controls: [data access, deletion, export]
+
+Provide component breakdown with COPPA compliance checklist."
+```
+
+#### Teacher Stories (US-T*, US-TK*, US-TE*, US-TM*, US-TH*)
+
+```markdown
+**code-explorer prompt:**
+"Analyze teacher dashboard for [grade band]. I need to understand:
+1. Classroom management patterns
+2. Student roster components
+3. Assignment creation workflows
+4. Grading system implementation
+5. Standards alignment tools
+6. Analytics components
+
+Focus on: Teacher of [K-2/3-5/6-8/9-12] students
+Goal: Implement [US-XXX story description]"
+
+**code-architect prompt:**
+"Design teacher feature for [student grade band]. Requirements:
+- Student age range: [K-2/3-5/6-8/9-12]
+- Activity type: [developmental/mastery/academic/college-prep]
+- Assessment format: [picture-based/written/rubric-based/AP-level]
+- Reporting needs: [visual/numerical/analytics/detailed]
+
+Provide component breakdown with differentiation strategy."
+```
+
+#### Admin Stories (US-A*, US-SA*)
+
+```markdown
+**code-explorer prompt:**
+"Analyze admin functionality. I need to understand:
+1. Organization management patterns
+2. User administration flows
+3. Billing/subscription integration
+4. Analytics dashboard components
+5. Audit logging implementation
+6. Multi-tenant data isolation
+
+Focus on: [Platform/School] admin features
+Goal: Implement [US-XXX story description]"
+```
+
+#### Marketplace Stories (US-PC*, US-TC*, US-SC*, US-MC*)
+
+```markdown
+**code-explorer prompt:**
+"Analyze curriculum marketplace. I need to understand:
+1. Content discovery patterns
+2. Rating/review system
+3. Tag organization
+4. Content creation workflows
+5. AI content generation integration
+6. Licensing and monetization
+
+Focus on: [Discovery/Creation/Rating/AI/Monetization]
+Goal: Implement [US-XXX story description]"
+```
+
+### Frontend Design Skill Usage
+
+For ALL UI components, invoke the frontend-design skill:
+
+```markdown
+/frontend-design
+
+Context: Implementing [US-XXX story]
+Target: [Grade level/User type]
+Requirements:
+- [Specific UI requirements from user-stories.md]
+- [Age-adaptive characteristics]
+- [Accessibility requirements]
+
+Create: [Component/Page/Widget description]
+```
+
+#### Age-Adaptive Design Requirements
+
+| Grade Band | Design Requirements |
+|------------|---------------------|
+| K | 60px min button size, primary colors, icons only, read-aloud mandatory |
+| 1-2 | 48px buttons, colorful organized layout, icons + short labels |
+| 3-5 | 40px buttons, standard layout, gamification elements |
+| 6-8 | Compact UI, data-dense layouts, detailed progress |
+| 9-12 | Professional UI, customizable, college-prep styling |
+
+### Data Validation Requirements
+
+#### Zod Schema Requirements
+
+Every form and API endpoint MUST have Zod validation:
+
+```typescript
+// Example: Learner profile update
+import { z } from "zod";
+
+export const learnerProfileSchema = z.object({
+  displayName: z.string().min(1).max(50),
+  avatarUrl: z.string().url().optional(),
+  gradeLevel: z.number().int().min(0).max(12),
+  preferredSubjects: z.array(z.string()).max(5),
+  // COPPA: No PII collection without parent consent
+  parentConsentVerified: z.boolean(),
+});
+
+// API route must validate
+const validated = learnerProfileSchema.parse(await req.json());
+```
+
+#### Validation by Story Category
+
+| Category | Required Validations |
+|----------|---------------------|
+| Learner | Grade level bounds, age verification, content filters |
+| Parent | Child relationship verification, consent status |
+| Teacher | Class ownership, student roster membership |
+| Admin | Organization scope, role permissions |
+| Marketplace | Content ownership, licensing terms |
+| AI Content | Safety filtering, age-appropriateness |
+
+### E2E Testing Requirements
+
+Every story MUST have corresponding Playwright tests in `e2e/journeys/`:
+
+#### Test File Mapping
+
+| Story Prefix | Test File |
+|--------------|-----------|
+| US-L*, US-LK*, US-L12*, US-L35*, US-L68*, US-L912* | learner-journey.spec.ts |
+| US-P*, US-PY*, US-PE*, US-PM*, US-PH* | parent-journey.spec.ts |
+| US-T*, US-TK*, US-TE*, US-TM*, US-TH*, US-TL* | teacher-journey.spec.ts |
+| US-A*, US-SA* | admin-journey.spec.ts |
+| US-PC*, US-TC*, US-SC*, US-MC*, US-CR*, US-TG*, US-LS*, US-AI* | marketplace-journey.spec.ts |
+
+#### Test Verification Command
+
+```bash
+# Run specific story tests
+bunx playwright test --grep "US-L01" e2e/journeys/learner-journey.spec.ts
+
+# Run all tests for a grade band
+bunx playwright test --grep "US-LK" e2e/journeys/learner-journey.spec.ts
+
+# Run full journey suite
+bunx playwright test e2e/journeys/
+```
+
+### Story Completion Criteria
+
+A story is ONLY complete when ALL of the following are verified:
+
+```markdown
+□ Research phase completed (best practices documented)
+□ code-explorer analysis completed
+□ code-architect blueprint created
+□ /frontend-design skill used for UI components
+□ Implementation follows clean architecture
+□ Zod validation for all inputs
+□ COPPA compliance verified (if child data)
+□ Accessibility verified (WCAG 2.1 AA)
+□ Age-appropriate UI verified
+□ Unit tests written and passing
+□ Component tests written and passing
+□ API route tests written and passing
+□ E2E Playwright tests written and passing
+□ code-reviewer passed with no issues
+□ Cross-browser compatibility verified
+□ Mobile responsiveness verified
+□ Story bead closed in beads system
+```
+
+---
+
+## Epic Structure for User Stories
+
+### Learner Experience Epics (5)
+
+```bash
+# EPIC 1: Kindergarten Learner Experience
+bd create --title="[EPIC] Kindergarten Learner Experience (US-LK)" \
+  --type=feature --priority=0 \
+  --description="Implement all kindergarten-specific learner features. 10 stories: US-LK01-LK10. Age 5-6, extra-large UI, icon navigation, read-aloud mandatory, drag-and-drop, animated celebrations."
+
+# EPIC 2: Grades 1-2 Learner Experience
+bd create --title="[EPIC] Grades 1-2 Learner Experience (US-L12)" \
+  --type=feature --priority=0 \
+  --description="Implement all 1st-2nd grade learner features. 10 stories: US-L12-01 to US-L12-10. Ages 6-8, large buttons, icons with labels, read-aloud optional, star rewards."
+
+# EPIC 3: Grades 3-5 Learner Experience
+bd create --title="[EPIC] Grades 3-5 Learner Experience (US-L35)" \
+  --type=feature --priority=0 \
+  --description="Implement all 3rd-5th grade learner features. 10 stories: US-L35-01 to US-L35-10. Ages 8-11, standard buttons, keyboard input, points system."
+
+# EPIC 4: Grades 6-8 Learner Experience
+bd create --title="[EPIC] Grades 6-8 Learner Experience (US-L68)" \
+  --type=feature --priority=1 \
+  --description="Implement all middle school learner features. 10 stories: US-L68-01 to US-L68-10. Ages 11-14, compact UI, extended writing, mastery levels."
+
+# EPIC 5: Grades 9-12 Learner Experience
+bd create --title="[EPIC] Grades 9-12 Learner Experience (US-L912)" \
+  --type=feature --priority=1 \
+  --description="Implement all high school learner features. 10 stories: US-L912-01 to US-L912-10. Ages 14-18, professional UI, college prep, portfolio building."
+```
+
+### Parent Experience Epics (4)
+
+```bash
+# EPIC 6: Parent of Young Child (5-8)
+bd create --title="[EPIC] Parent of Young Child Experience (US-PY)" \
+  --type=feature --priority=0 \
+  --description="Implement all parent features for young children. 10 stories: US-PY01-PY10. Strict controls, read-aloud enable, AI logging, daily summaries."
+
+# EPIC 7: Parent of Elementary Child (8-11)
+bd create --title="[EPIC] Parent of Elementary Child Experience (US-PE)" \
+  --type=feature --priority=1 \
+  --description="Implement all parent features for elementary children. 10 stories: US-PE01-PE10. Homework tracking, goal setting, weekly reports."
+
+# EPIC 8: Parent of Middle Schooler (11-14)
+bd create --title="[EPIC] Parent of Middle Schooler Experience (US-PM)" \
+  --type=feature --priority=1 \
+  --description="Implement all parent features for middle schoolers. 10 stories: US-PM01-PM10. GPA tracking, test prep monitoring, increased independence."
+
+# EPIC 9: Parent of High Schooler (14-18)
+bd create --title="[EPIC] Parent of High Schooler Experience (US-PH)" \
+  --type=feature --priority=2 \
+  --description="Implement all parent features for high schoolers. 10 stories: US-PH01-PH10. SAT/ACT prep, college planning, full independence with oversight."
+```
+
+### Teacher Experience Epics (4)
+
+```bash
+# EPIC 10: K-2 Teacher Experience
+bd create --title="[EPIC] K-2 Teacher Experience (US-TK)" \
+  --type=feature --priority=1 \
+  --description="Implement all early childhood teacher features. 10 stories: US-TK01-TK10. Letter recognition, phonics, developmental tracking."
+
+# EPIC 11: Grades 3-5 Teacher Experience
+bd create --title="[EPIC] Grades 3-5 Teacher Experience (US-TE)" \
+  --type=feature --priority=1 \
+  --description="Implement all elementary teacher features. 10 stories: US-TE01-TE10. Multiplication mastery, reading comprehension, Common Core alignment."
+
+# EPIC 12: Grades 6-8 Teacher Experience
+bd create --title="[EPIC] Grades 6-8 Teacher Experience (US-TM)" \
+  --type=feature --priority=1 \
+  --description="Implement all middle school teacher features. 10 stories: US-TM01-TM10. Pre-algebra, essays with rubrics, collaborative projects."
+
+# EPIC 13: Grades 9-12 Teacher Experience
+bd create --title="[EPIC] Grades 9-12 Teacher Experience (US-TH)" \
+  --type=feature --priority=2 \
+  --description="Implement all high school teacher features. 10 stories: US-TH01-TH10. AP content, SAT prep, research papers, coding assignments."
+```
+
+### Admin Epics (2)
+
+```bash
+# EPIC 14: School Admin Experience
+bd create --title="[EPIC] School Admin Experience (US-SA)" \
+  --type=feature --priority=2 \
+  --description="Implement all school admin features. 24 stories: US-SA01-SA24. Onboarding, management, curriculum, compliance, community."
+
+# EPIC 15: Platform Admin Experience
+bd create --title="[EPIC] Platform Admin Experience (US-A)" \
+  --type=feature --priority=2 \
+  --description="Implement all platform admin features. 20 stories: US-A01-A20. Organizations, users, content, billing, analytics, operations."
+```
+
+### Marketplace Epics (6)
+
+```bash
+# EPIC 16: Marketplace Discovery
+bd create --title="[EPIC] Curriculum Marketplace Discovery" \
+  --type=feature --priority=1 \
+  --description="Implement marketplace browsing and search. Stories: US-PC01-05, US-TC01-05. Subject/grade filtering, ratings, previews."
+
+# EPIC 17: Content Selection & Swapping
+bd create --title="[EPIC] Content Selection & Lesson Swapping" \
+  --type=feature --priority=2 \
+  --description="Implement lesson selection and swapping. Stories: US-PC06-10, US-TC06-10, US-LS01-15. Alternative lessons, custom paths, swap analytics."
+
+# EPIC 18: Content Creation
+bd create --title="[EPIC] Curriculum Content Creation" \
+  --type=feature --priority=2 \
+  --description="Implement content creation tools. Stories: US-PC11-15, US-TC11-15. Lesson creation, AI assistance, material upload."
+
+# EPIC 19: Rating & Review System
+bd create --title="[EPIC] Rating & Review System (US-CR)" \
+  --type=feature --priority=2 \
+  --description="Implement rating and review system. 15 stories: US-CR01-15. 5-star ratings, written reviews, quality indicators."
+
+# EPIC 20: Tag Organization System
+bd create --title="[EPIC] Tag Organization System (US-TG)" \
+  --type=feature --priority=2 \
+  --description="Implement tag organization system. 15 stories: US-TG01-15. Subject/grade/topic tags, advanced filtering, tag management."
+
+# EPIC 21: AI Content Generation
+bd create --title="[EPIC] AI Content Generation (US-AI)" \
+  --type=feature --priority=2 \
+  --description="Implement AI content generation. 15 stories: US-AI01-15. Quiz generation, differentiation, hints, explanations, quality control."
+```
+
+---
+
+## Ralph-Loop Integration
+
+The `ralph-loop` (or `academy-loop`) skill orchestrates the implementation of all features. It processes stories in priority order, ensuring complete implementation.
+
+### Invoking Ralph-Loop for Epics
+
+```bash
+# Process entire epic
+/ralph-loop "Implement [EPIC] Kindergarten Learner Experience - all US-LK stories"
+
+# Process specific story
+/ralph-loop "Implement US-LK01: Big colorful buttons for kindergarten navigation"
+
+# Process multiple stories
+/ralph-loop "Implement US-L12-01 through US-L12-05 for 1st-2nd grade learner experience"
+```
+
+### Ralph-Loop Story Processing
+
+For each story, ralph-loop will:
+
+1. **Research best practices** using docs-seeker, context7, WebSearch
+2. **Explore codebase** using feature-dev:code-explorer
+3. **Design architecture** using feature-dev:code-architect
+4. **Create UI** using /frontend-design skill
+5. **Implement feature** following clean architecture
+6. **Validate data** with Zod schemas
+7. **Test thoroughly** with unit, component, API, and E2E tests
+8. **Review code** using feature-dev:code-reviewer
+9. **Verify E2E** with Playwright journey tests
+10. **Close bead** only when all criteria met
+
+### Story Processing Order
+
+Process stories in this priority order:
+
+```markdown
+1. P0 Critical (Core Learning + COPPA Safety)
+   - US-L01-07 (Core learner features)
+   - US-LK01-05 (Kindergarten essentials)
+   - US-P01, US-P05-06, US-P09-11 (Parent safety)
+   - US-PY01-05 (Young child protection)
+
+2. P1 High (Progress + Teacher Core + Marketplace Core)
+   - US-L08-11 (Progress features)
+   - US-LK06-10, US-L12-*, US-L35-* (Grade-specific learner)
+   - US-T01-09 (Core teacher)
+   - US-PC01-10, US-TC01-10 (Marketplace discovery)
+
+3. P2 Medium (Communication + Admin + Curriculum Creation)
+   - US-P12-13, US-T16-17 (Communication)
+   - US-A01-10, US-SA01-10 (Admin core)
+   - US-PC11-15, US-TC11-20, US-AI01-10 (Content creation)
+
+4. P3 Low (Advanced + Monetization)
+   - US-L912-05-10 (Advanced high school)
+   - US-MC11-15, US-TC21-25 (Monetization)
+```
+
+### Epic Completion Verification
+
+An EPIC is only complete when:
+
+```bash
+# Check all story tasks are closed
+bd show <epic-id>  # Should show all tasks closed
+
+# Run all related E2E tests
+bunx playwright test --grep "<story-prefix>" e2e/journeys/
+
+# Verify coverage
+bun test --coverage --grep "<component-path>"
+
+# Close epic
+bd close <epic-id> --reason="All stories implemented and verified"
+```
+
+---
+
+## Content Validation Testing
+
+### Math Content Validation
+
+```typescript
+// e2e/journeys/content-validation.spec.ts
+test.describe("Math Content Validation", () => {
+  test("Kindergarten: counting sequences 0-20 are correct", async () => {
+    // Verify every counting activity has correct sequence
+  });
+
+  test("Grades 1-2: addition within 100 yields correct answers", async () => {
+    // Verify all addition quiz answers are mathematically correct
+  });
+
+  test("Grades 3-5: multiplication tables through 12 are accurate", async () => {
+    // Verify multiplication practice has correct products
+  });
+
+  test("Grades 6-8: algebraic equations have verifiable solutions", async () => {
+    // Verify equation solving activities have correct answers
+  });
+
+  test("Grades 9-12: quadratic formula yields correct roots", async () => {
+    // Verify all quadratic problems have mathematically valid answers
+  });
+});
+```
+
+### Reading Content Validation
+
+```typescript
+test.describe("Reading Content Validation", () => {
+  test("K-2: sight words match Dolch/Fry lists", async () => {
+    // Verify sight word activities use grade-appropriate words
+  });
+
+  test("3-5: vocabulary matches grade-level Lexile", async () => {
+    // Verify reading passages are within 520-1010 Lexile
+  });
+
+  test("6-8: comprehension questions have text-supported answers", async () => {
+    // Verify all comprehension answers can be found in text
+  });
+
+  test("9-12: AP texts are accurately excerpted", async () => {
+    // Verify primary sources are authentic
+  });
+});
+```
+
+### 3D Visualization Accuracy
+
+```typescript
+test.describe("3D Visualization Accuracy", () => {
+  test("fraction visualizations represent correct proportions", async () => {
+    // Verify 1/2 shows exactly half shaded
+  });
+
+  test("geometry shapes have correct properties", async () => {
+    // Verify triangle has 3 sides, square has 4 equal sides
+  });
+
+  test("molecular structures follow correct bonding rules", async () => {
+    // Verify H2O shows 2 hydrogen, 1 oxygen with correct bonds
+  });
+});
+```
+
+---
+
+## Ambiguity Resolution Protocol
+
+When encountering ambiguous requirements, research thoroughly instead of asking:
+
+### Research Priority Order
+
+1. **Existing Codebase**: Use code-explorer to find similar implementations
+2. **Documentation**: Use docs-seeker, context7 for library patterns
+3. **Industry Standards**: Use WebSearch for educational best practices
+4. **Age-Appropriateness**: Reference user-stories.md grade-level tables
+5. **COPPA Requirements**: Default to most protective interpretation
+6. **Accessibility**: Default to WCAG 2.1 AA minimum
+
+### Decision Documentation
+
+Document all ambiguity resolutions in code comments:
+
+```typescript
+/**
+ * Implementation Decision: US-LK03 - Counting by tapping
+ *
+ * Ambiguity: How many objects to count?
+ * Research: Kindergarten counting typically 0-20 (Common Core K.CC.A.1)
+ * Decision: Start with 1-10, unlock 11-20 after mastery
+ *
+ * Ambiguity: Touch feedback type?
+ * Research: Young children need multi-sensory feedback
+ * Decision: Visual highlight + sound + haptic (if available)
+ */
+```
+
+---
+
+## Summary: Comprehensive Implementation Approach
+
+1. **Every story gets thorough research** before implementation
+2. **Feature-dev agents are used** for exploration, architecture, and review
+3. **Frontend-design skill is used** for all UI components
+4. **Clean architecture is mandatory** - no shortcuts
+5. **Data validation with Zod** on all inputs
+6. **E2E Playwright tests** verify complete user flows
+7. **Ralph-loop orchestrates** the entire implementation process
+8. **Epics are only closed** when all stories are fully verified
+9. **No interactive questions** - research resolves ambiguity
+10. **Beads track everything** - all work is documented and traceable
