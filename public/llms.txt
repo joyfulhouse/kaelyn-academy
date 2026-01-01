@@ -1,0 +1,137 @@
+# Kaelyn's Academy MCP Server
+
+> A comprehensive K-12 educational platform with AI tutoring support via Model Context Protocol (MCP).
+
+Kaelyn's Academy provides a complete learning management system for K-12 education with:
+- Interactive 3D visualizations (Three.js/React Three Fiber)
+- AI-powered tutoring with multi-provider support (Claude, OpenAI, Gemini)
+- COPPA-compliant child privacy protections
+- Multi-tenant white-label support for schools and families
+
+## MCP Server Capabilities
+
+### Tools
+
+#### Authentication (`auth:*`)
+- `auth:get-user-info` - Get current authenticated user information
+- `auth:check-permissions` - Check if user has permission for an action
+- `auth:get-session-context` - Get full session context including organization and role
+- `auth:validate-api-key` - Validate an API key and return permissions
+
+#### Curriculum (`curriculum:*`)
+- `curriculum:list-subjects` - List all available subjects, filtered by grade level
+- `curriculum:list-lessons` - List lessons for a subject, filtered by grade and unit
+- `curriculum:get-lesson-content` - Get full lesson content including activities
+- `curriculum:search` - Search across curriculum content by keyword
+
+#### Progress Tracking (`progress:*`)
+- `progress:get-summary` - Get a learner's overall progress summary
+- `progress:get-mastery-levels` - Get mastery levels for subjects/standards
+- `progress:get-recent-activity` - Get recent learning activity
+- `progress:record-activity` - Record completion of an activity
+- `progress:get-learning-path` - Get recommended next steps based on progress
+
+#### Assessment (`assessment:*`)
+- `assessment:generate-quiz` - Generate a quiz for a topic and grade level
+- `assessment:evaluate-response` - Evaluate a student's response
+- `assessment:get-hints` - Get progressive hints for stuck students
+- `assessment:explain-concept` - Generate age-appropriate concept explanations
+- `assessment:adjust-difficulty` - Recommend difficulty adjustment based on performance
+
+#### Classroom (`classroom:*`)
+- `classroom:list-classes` - List all classes for a teacher
+- `classroom:get-class-details` - Get detailed class information with enrollment
+- `classroom:get-performance-summary` - Get aggregate class performance metrics
+- `classroom:enroll-student` - Enroll a student in a class
+- `classroom:list-assignments` - List assignments for a class
+
+#### Parent Oversight (`parent:*`)
+- `parent:list-children` - List children linked to a parent account
+- `parent:get-child-activity` - Get a child's recent learning activity
+- `parent:get-controls` - Get parental control settings for a child
+- `parent:update-controls` - Update parental control settings
+- `parent:get-weekly-report` - Get weekly progress report for a child
+
+#### Admin (`admin:*`)
+- `admin:list-organizations` - List all organizations
+- `admin:get-organization` - Get detailed organization information
+- `admin:get-platform-stats` - Get overall platform statistics
+- `admin:search-users` - Search for users across the platform
+- `admin:get-system-health` - Check system health and connectivity
+- `admin:update-organization-status` - Update an organization's status
+
+### Resources
+
+#### Lessons (`lessons://`)
+- `lessons://list` - List all available lesson resources
+- `lessons://subject/{slug}` - Get lessons for a specific subject
+- `lessons://lesson/{id}` - Get a specific lesson by ID
+
+#### Students (`students://`)
+- `students://profile/{id}` - Get a student's profile and preferences
+- `students://progress/{id}` - Get a student's learning progress
+- `students://achievements/{id}` - Get a student's earned achievements
+
+#### Analytics (`analytics://`)
+- `analytics://organization/{id}` - Get analytics for an organization
+- `analytics://subject/{id}` - Get analytics for a subject
+- `analytics://daily` - Get today's platform-wide activity
+
+### Prompts
+
+#### Tutoring Prompts
+- `tutoring:explain-concept` - Generate age-appropriate concept explanations
+- `tutoring:help-stuck-student` - Help a student stuck on a problem
+- `tutoring:socratic-dialogue` - Engage in Socratic dialogue
+- `tutoring:encourage` - Provide encouragement and motivation
+- `tutoring:learning-path` - Suggest a personalized learning path
+
+#### Assessment Prompts
+- `assessment:generate-quiz` - Generate a quiz for a topic
+- `assessment:evaluate-response` - Evaluate a student's response
+- `assessment:practice-problems` - Generate practice problems
+- `assessment:analyze-misconceptions` - Analyze common misconceptions
+- `assessment:adaptive-difficulty` - Recommend difficulty adjustments
+
+## API Endpoints
+
+- `POST /api/mcp` - MCP server endpoint (requires authentication)
+- `GET /api/curriculum/subjects` - List subjects
+- `GET /api/curriculum/lessons` - List lessons
+- `GET /api/progress/:learnerId` - Get learner progress
+- `POST /api/assessment/evaluate` - Evaluate responses
+
+## Authentication
+
+The MCP server supports multiple authentication methods:
+- Session-based (Auth.js integration)
+- API key authentication
+- Organization-scoped tokens
+
+## Grade Levels
+
+- K (Kindergarten) = 0
+- 1st-12th grade = 1-12
+
+Each grade level has age-appropriate content, UI adaptations, and learning objectives.
+
+## Subjects
+
+- Mathematics
+- Reading (US English)
+- History
+- Science (Physical, Life, Earth, Chemistry, Physics, Biology)
+- Technology
+
+## Compliance
+
+- COPPA compliant for children under 13
+- WCAG 2.1 AA accessible
+- Multi-tenant data isolation
+- Comprehensive audit logging
+
+## Links
+
+- Documentation: https://docs.kaelyns.academy
+- API Reference: https://api.kaelyns.academy/docs
+- MCP Specification: https://modelcontextprotocol.io

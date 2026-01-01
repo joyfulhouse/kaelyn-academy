@@ -37,24 +37,21 @@ describe("handleApiError", () => {
   });
 
   it("should include Zod issues in development", async () => {
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
+
+    const schema = z.object({ email: z.string().email() });
 
     try {
-      const schema = z.object({ email: z.string().email() });
+      schema.parse({ email: "invalid" });
+    } catch (error) {
+      const response = handleApiError(error, "test");
+      const body = await response.json();
 
-      try {
-        schema.parse({ email: "invalid" });
-      } catch (error) {
-        const response = handleApiError(error, "test");
-        const body = await response.json();
-
-        expect(body.details).toBeDefined();
-        expect(body.details).toBeInstanceOf(Array);
-      }
-    } finally {
-      process.env.NODE_ENV = originalEnv;
+      expect(body.details).toBeDefined();
+      expect(body.details).toBeInstanceOf(Array);
     }
+
+    vi.unstubAllEnvs();
   });
 
   it("should detect 404 errors from message", async () => {
