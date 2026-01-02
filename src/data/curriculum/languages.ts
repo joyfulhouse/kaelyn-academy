@@ -274,6 +274,20 @@ const frenchElementary: Unit[] = [
     ],
   },
   {
+    id: "2-french-daily",
+    title: "Daily Life in French",
+    slug: "daily-life",
+    description: "Vocabulary for everyday activities and routines",
+    gradeLevel: 2,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.2.1"],
+    lessons: [
+      createLesson("2-fr-food", "Food & Meals", "Learn food vocabulary: le petit-déjeuner, le déjeuner", 25),
+      createLesson("2-fr-weather", "Weather", "Describe le temps: il fait beau, il pleut", 25),
+      createLesson("2-fr-body", "Parts of the Body", "Learn body parts: la tête, les bras, les jambes", 25),
+      createLesson("2-fr-clothes", "Clothing", "Describe what you wear: les vêtements", 25),
+    ],
+  },
+  {
     id: "3-french-grammar",
     title: "Basic French Grammar",
     slug: "basic-grammar",
@@ -284,6 +298,20 @@ const frenchElementary: Unit[] = [
       createLesson("3-fr-articles", "Articles", "Use le, la, les, un, une, des", 30),
       createLesson("3-fr-etre-avoir", "Être and Avoir", "Master the two essential verbs", 35),
       createLesson("3-fr-negation", "Negation", "Form negative sentences with ne...pas", 30),
+    ],
+  },
+  {
+    id: "4-french-verbs",
+    title: "Present Tense Verbs",
+    slug: "present-tense",
+    description: "Master regular verb conjugations in present tense",
+    gradeLevel: 4,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.4.1"],
+    lessons: [
+      createLesson("4-fr-er-verbs", "-ER Verbs", "Conjugate regular -er verbs: parler, manger, jouer", 35),
+      createLesson("4-fr-ir-re-verbs", "-IR and -RE Verbs", "Conjugate regular -ir and -re verbs", 35),
+      createLesson("4-fr-aller-faire", "Aller and Faire", "Master these common irregular verbs", 40),
+      createLesson("4-fr-questions", "Asking Questions", "Form questions with est-ce que and inversion", 35),
     ],
   },
   {
@@ -316,6 +344,20 @@ const frenchMiddle: Unit[] = [
     ],
   },
   {
+    id: "7-french-complex",
+    title: "Complex Structures",
+    slug: "complex-structures",
+    description: "Advanced grammar and cultural exploration",
+    gradeLevel: 7,
+    standardsAlignment: ["ACTFL.2.2", "ACTFL.3.1"],
+    lessons: [
+      createLesson("7-fr-relative-pronouns", "Relative Pronouns", "Use qui, que, dont, où in complex sentences", 50),
+      createLesson("7-fr-future-tense", "Future Tense", "Express future events with le futur simple", 45),
+      createLesson("7-fr-comparisons", "Comparisons", "Compare using plus, moins, aussi...que", 45),
+      createLesson("7-fr-francophone-lit", "Francophone Literature", "Read stories from French-speaking Africa and Canada", 50),
+    ],
+  },
+  {
     id: "8-french-advanced",
     title: "Advanced French",
     slug: "advanced",
@@ -345,6 +387,20 @@ const frenchHigh: Unit[] = [
     ],
   },
   {
+    id: "10-french-literature-2",
+    title: "French Literature II",
+    slug: "literature-2",
+    description: "In-depth study of French literary movements",
+    gradeLevel: 10,
+    standardsAlignment: ["ACTFL.3.2", "ACTFL.4.1"],
+    lessons: [
+      createLesson("10-fr-enlightenment", "Les Lumières", "Enlightenment writers: Voltaire, Rousseau", 55),
+      createLesson("10-fr-romanticism", "Le Romantisme", "Hugo, Lamartine, and the Romantic movement", 55),
+      createLesson("10-fr-realism", "Le Réalisme", "Balzac, Flaubert, and French realism", 55),
+      createLesson("10-fr-theater", "French Theater", "Molière and modern French drama", 55),
+    ],
+  },
+  {
     id: "11-french-ap",
     title: "AP French Preparation",
     slug: "ap-french",
@@ -355,6 +411,20 @@ const frenchHigh: Unit[] = [
       createLesson("11-fr-ap-themes", "AP Themes", "Explore the six AP themes", 60),
       createLesson("11-fr-ap-speaking", "Interpersonal Tasks", "Conversations and presentations", 60),
       createLesson("11-fr-ap-essay", "AP Essay Writing", "Persuasive writing in French", 60),
+    ],
+  },
+  {
+    id: "12-french-capstone",
+    title: "French Capstone",
+    slug: "capstone",
+    description: "Advanced topics and real-world application",
+    gradeLevel: 12,
+    standardsAlignment: ["ACTFL.5.1", "ACTFL.5.2"],
+    lessons: [
+      createLesson("12-fr-current-events", "L'Actualité", "Discuss current events in French", 55),
+      createLesson("12-fr-business", "Le Français Professionnel", "Business and professional French", 55),
+      createLesson("12-fr-film", "Le Cinéma Français", "Analyze French and Francophone films", 55),
+      createLesson("12-fr-capstone-project", "Projet Final", "Create a French portfolio and presentation", 60),
     ],
   },
 ];
@@ -369,12 +439,17 @@ export const frenchCurriculum: Subject = {
   grades: {
     0: frenchKindergarten,
     1: frenchElementary.filter(u => u.gradeLevel === 1),
+    2: frenchElementary.filter(u => u.gradeLevel === 2),
     3: frenchElementary.filter(u => u.gradeLevel === 3),
+    4: frenchElementary.filter(u => u.gradeLevel === 4),
     5: frenchElementary.filter(u => u.gradeLevel === 5),
     6: frenchMiddle.filter(u => u.gradeLevel === 6),
+    7: frenchMiddle.filter(u => u.gradeLevel === 7),
     8: frenchMiddle.filter(u => u.gradeLevel === 8),
     9: frenchHigh.filter(u => u.gradeLevel === 9),
+    10: frenchHigh.filter(u => u.gradeLevel === 10),
     11: frenchHigh.filter(u => u.gradeLevel === 11),
+    12: frenchHigh.filter(u => u.gradeLevel === 12),
   },
 };
 
@@ -400,6 +475,33 @@ const germanKindergarten: Unit[] = [
 
 const germanElementary: Unit[] = [
   {
+    id: "1-german-intro",
+    title: "Introduction to German",
+    slug: "german-intro",
+    description: "Basic German vocabulary and phrases",
+    gradeLevel: 1,
+    standardsAlignment: ["ACTFL.1.1", "ACTFL.2.1"],
+    lessons: [
+      createLesson("1-de-intro-self", "Introducing Yourself", "Ich heiße..., Wie heißt du?", 20),
+      createLesson("1-de-family", "My Family", "Learn die Familie vocabulary", 20),
+      createLesson("1-de-classroom", "In the Classroom", "Learn classroom objects in German", 25),
+    ],
+  },
+  {
+    id: "2-german-daily",
+    title: "Daily Life in German",
+    slug: "daily-life",
+    description: "Vocabulary for everyday activities",
+    gradeLevel: 2,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.2.1"],
+    lessons: [
+      createLesson("2-de-food", "Food & Meals", "Learn das Essen vocabulary", 25),
+      createLesson("2-de-weather", "Weather", "Describe das Wetter: Es ist sonnig, es regnet", 25),
+      createLesson("2-de-animals", "Animals", "Learn die Tiere in German", 25),
+      createLesson("2-de-clothes", "Clothing", "Describe die Kleidung", 25),
+    ],
+  },
+  {
     id: "3-german-grammar",
     title: "German Grammar Basics",
     slug: "grammar-basics",
@@ -410,6 +512,20 @@ const germanElementary: Unit[] = [
       createLesson("3-de-articles", "Articles & Cases", "Der, die, das and case system intro", 35),
       createLesson("3-de-verbs-present", "Present Tense", "Regular verb conjugation", 35),
       createLesson("3-de-sein-haben", "Sein and Haben", "Master the essential verbs", 35),
+    ],
+  },
+  {
+    id: "4-german-verbs",
+    title: "Verb Conjugation",
+    slug: "verb-conjugation",
+    description: "Master German verb patterns",
+    gradeLevel: 4,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.4.1"],
+    lessons: [
+      createLesson("4-de-regular-verbs", "Regular Verbs", "Conjugate regular verbs: spielen, lernen, machen", 35),
+      createLesson("4-de-stem-change", "Stem-Changing Verbs", "Learn sprechen, lesen, fahren patterns", 40),
+      createLesson("4-de-separable", "Separable Verbs", "Understand aufstehen, ankommen, mitkommen", 40),
+      createLesson("4-de-questions", "Asking Questions", "Form questions with wo, was, wann, wer", 35),
     ],
   },
   {
@@ -429,8 +545,22 @@ const germanElementary: Unit[] = [
 
 const germanMiddleHigh: Unit[] = [
   {
+    id: "6-german-intermediate-1",
+    title: "Intermediate German I",
+    slug: "intermediate-1",
+    description: "Build intermediate skills and vocabulary",
+    gradeLevel: 6,
+    standardsAlignment: ["ACTFL.2.1", "ACTFL.2.2"],
+    lessons: [
+      createLesson("6-de-preterite", "Präteritum", "Simple past tense for storytelling", 45),
+      createLesson("6-de-prepositions", "Prepositions", "Two-way prepositions with Akkusativ and Dativ", 50),
+      createLesson("6-de-pronouns", "Pronouns", "Personal and reflexive pronouns", 45),
+      createLesson("6-de-reading", "Reading Practice", "Short stories and articles", 45),
+    ],
+  },
+  {
     id: "7-german-intermediate",
-    title: "Intermediate German",
+    title: "Intermediate German II",
     slug: "intermediate",
     description: "Develop intermediate proficiency",
     gradeLevel: 7,
@@ -439,6 +569,34 @@ const germanMiddleHigh: Unit[] = [
       createLesson("7-de-perfect", "Perfekt Tense", "Past tense with haben and sein", 50),
       createLesson("7-de-cases", "Case System", "Nominativ, Akkusativ, Dativ", 55),
       createLesson("7-de-modal", "Modal Verbs", "können, müssen, wollen, dürfen", 45),
+    ],
+  },
+  {
+    id: "8-german-advanced-grammar",
+    title: "Advanced Grammar",
+    slug: "advanced-grammar",
+    description: "Master complex German structures",
+    gradeLevel: 8,
+    standardsAlignment: ["ACTFL.2.2", "ACTFL.3.1"],
+    lessons: [
+      createLesson("8-de-genitive", "Genitive Case", "The fourth case in German", 50),
+      createLesson("8-de-relative", "Relative Clauses", "Complex sentence construction", 55),
+      createLesson("8-de-future", "Future Tenses", "Futur I and Futur II", 50),
+      createLesson("8-de-culture", "German Culture", "History, arts, and current events", 50),
+    ],
+  },
+  {
+    id: "9-german-high-1",
+    title: "German I High School",
+    slug: "high-school-1",
+    description: "High school German fundamentals",
+    gradeLevel: 9,
+    standardsAlignment: ["ACTFL.3.1", "ACTFL.3.2"],
+    lessons: [
+      createLesson("9-de-review", "Comprehensive Review", "Solidify all grammar concepts", 55),
+      createLesson("9-de-writing", "Writing Skills", "Paragraph and essay structure", 55),
+      createLesson("9-de-conversation", "Conversation Practice", "Extended conversations on various topics", 50),
+      createLesson("9-de-media", "German Media", "Films, music, and current events", 50),
     ],
   },
   {
@@ -454,6 +612,34 @@ const germanMiddleHigh: Unit[] = [
       createLesson("10-de-literature", "German Literature", "Kafka, Goethe, modern works", 60),
     ],
   },
+  {
+    id: "11-german-literature",
+    title: "German Literature",
+    slug: "literature",
+    description: "Survey of German literary traditions",
+    gradeLevel: 11,
+    standardsAlignment: ["ACTFL.3.2", "ACTFL.4.1"],
+    lessons: [
+      createLesson("11-de-enlightenment", "Die Aufklärung", "Enlightenment literature", 55),
+      createLesson("11-de-romantik", "Die Romantik", "German Romantic movement", 55),
+      createLesson("11-de-modern", "Moderne Literatur", "20th century German authors", 55),
+      createLesson("11-de-film", "Deutscher Film", "German cinema history and analysis", 55),
+    ],
+  },
+  {
+    id: "12-german-capstone",
+    title: "German Capstone",
+    slug: "capstone",
+    description: "Advanced topics and real-world application",
+    gradeLevel: 12,
+    standardsAlignment: ["ACTFL.5.1", "ACTFL.5.2"],
+    lessons: [
+      createLesson("12-de-current-events", "Aktuelle Ereignisse", "Discuss current events in German", 55),
+      createLesson("12-de-business", "Geschäftsdeutsch", "Business and professional German", 55),
+      createLesson("12-de-history", "Deutsche Geschichte", "In-depth study of German history", 55),
+      createLesson("12-de-capstone", "Abschlussprojekt", "Create a German portfolio and presentation", 60),
+    ],
+  },
 ];
 
 export const germanCurriculum: Subject = {
@@ -465,10 +651,18 @@ export const germanCurriculum: Subject = {
   color: "#FFC107",
   grades: {
     0: germanKindergarten,
+    1: germanElementary.filter(u => u.gradeLevel === 1),
+    2: germanElementary.filter(u => u.gradeLevel === 2),
     3: germanElementary.filter(u => u.gradeLevel === 3),
+    4: germanElementary.filter(u => u.gradeLevel === 4),
     5: germanElementary.filter(u => u.gradeLevel === 5),
+    6: germanMiddleHigh.filter(u => u.gradeLevel === 6),
     7: germanMiddleHigh.filter(u => u.gradeLevel === 7),
+    8: germanMiddleHigh.filter(u => u.gradeLevel === 8),
+    9: germanMiddleHigh.filter(u => u.gradeLevel === 9),
     10: germanMiddleHigh.filter(u => u.gradeLevel === 10),
+    11: germanMiddleHigh.filter(u => u.gradeLevel === 11),
+    12: germanMiddleHigh.filter(u => u.gradeLevel === 12),
   },
 };
 
@@ -494,6 +688,34 @@ const mandarinKindergarten: Unit[] = [
 
 const mandarinElementary: Unit[] = [
   {
+    id: "1-mandarin-intro",
+    title: "Introduction to Mandarin",
+    slug: "mandarin-intro",
+    description: "Basic vocabulary and pinyin",
+    gradeLevel: 1,
+    standardsAlignment: ["ACTFL.1.1", "ACTFL.2.1"],
+    lessons: [
+      createLesson("1-zh-intro-self", "Introducing Yourself", "我叫..., 你叫什么名字?", 20),
+      createLesson("1-zh-pinyin", "Pinyin Basics", "Learn pinyin romanization system", 25),
+      createLesson("1-zh-family", "My Family", "Learn 家人 family vocabulary", 20),
+      createLesson("1-zh-colors", "Colors", "Learn 颜色: 红, 蓝, 绿, 黄", 20),
+    ],
+  },
+  {
+    id: "2-mandarin-daily",
+    title: "Daily Life in Mandarin",
+    slug: "daily-life",
+    description: "Vocabulary for everyday activities",
+    gradeLevel: 2,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.2.1"],
+    lessons: [
+      createLesson("2-zh-food", "Food & Meals", "Learn 食物 food vocabulary", 25),
+      createLesson("2-zh-animals", "Animals", "Learn 动物 animal vocabulary", 25),
+      createLesson("2-zh-school", "At School", "Learn school vocabulary: 学校, 老师, 学生", 25),
+      createLesson("2-zh-body", "Parts of the Body", "Learn body parts in Mandarin", 25),
+    ],
+  },
+  {
     id: "3-mandarin-characters",
     title: "Chinese Characters",
     slug: "characters",
@@ -504,6 +726,20 @@ const mandarinElementary: Unit[] = [
       createLesson("3-zh-radicals", "Radicals", "Learn common radicals (部首)", 35),
       createLesson("3-zh-strokes", "Stroke Order", "Write characters correctly", 35),
       createLesson("3-zh-basic-chars", "Basic Characters", "100 most common characters", 40),
+    ],
+  },
+  {
+    id: "4-mandarin-reading",
+    title: "Reading and Writing",
+    slug: "reading-writing",
+    description: "Develop character recognition and writing",
+    gradeLevel: 4,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.4.1"],
+    lessons: [
+      createLesson("4-zh-character-comp", "Character Components", "Understand how characters are built", 40),
+      createLesson("4-zh-sentences", "Simple Sentences", "Read and write basic sentences", 40),
+      createLesson("4-zh-numbers-dates", "Numbers and Dates", "Express quantities and calendar dates", 35),
+      createLesson("4-zh-questions", "Asking Questions", "Form questions with 吗, 什么, 哪里", 40),
     ],
   },
   {
@@ -523,8 +759,22 @@ const mandarinElementary: Unit[] = [
 
 const mandarinMiddleHigh: Unit[] = [
   {
+    id: "6-mandarin-intermediate-1",
+    title: "Intermediate Mandarin I",
+    slug: "intermediate-1",
+    description: "Build reading and writing fluency",
+    gradeLevel: 6,
+    standardsAlignment: ["ACTFL.2.1", "ACTFL.2.2"],
+    lessons: [
+      createLesson("6-zh-300-chars", "300 Characters", "Expand character recognition", 50),
+      createLesson("6-zh-direction", "Direction Complements", "上, 下, 进, 出 with verbs", 45),
+      createLesson("6-zh-comparison", "Comparisons", "Use 比 to compare", 45),
+      createLesson("6-zh-culture", "Chinese Culture", "Festivals and traditions", 45),
+    ],
+  },
+  {
     id: "7-mandarin-intermediate",
-    title: "Intermediate Mandarin",
+    title: "Intermediate Mandarin II",
     slug: "intermediate",
     description: "Expand vocabulary and grammar",
     gradeLevel: 7,
@@ -533,6 +783,34 @@ const mandarinMiddleHigh: Unit[] = [
       createLesson("7-zh-aspect", "Aspect Markers", "了, 过, 着 for tense/aspect", 50),
       createLesson("7-zh-complements", "Result Complements", "Verb compounds", 50),
       createLesson("7-zh-reading", "Reading Passages", "Short texts and stories", 50),
+    ],
+  },
+  {
+    id: "8-mandarin-advanced-grammar",
+    title: "Advanced Grammar",
+    slug: "advanced-grammar",
+    description: "Master complex Mandarin structures",
+    gradeLevel: 8,
+    standardsAlignment: ["ACTFL.2.2", "ACTFL.3.1"],
+    lessons: [
+      createLesson("8-zh-ba-sentence", "把 Sentences", "Disposal construction", 55),
+      createLesson("8-zh-bei-passive", "被 Passive", "Passive voice in Mandarin", 55),
+      createLesson("8-zh-relative-clause", "Relative Clauses", "Complex sentence structures", 55),
+      createLesson("8-zh-formal-informal", "Register", "Formal vs informal speech", 50),
+    ],
+  },
+  {
+    id: "9-mandarin-high-1",
+    title: "Mandarin I High School",
+    slug: "high-school-1",
+    description: "High school Mandarin fundamentals",
+    gradeLevel: 9,
+    standardsAlignment: ["ACTFL.3.1", "ACTFL.3.2"],
+    lessons: [
+      createLesson("9-zh-500-chars", "500 Characters", "Expand to 500 character vocabulary", 55),
+      createLesson("9-zh-writing", "Writing Skills", "Paragraph and essay structure", 55),
+      createLesson("9-zh-conversation", "Conversation Practice", "Extended conversations", 50),
+      createLesson("9-zh-media", "Chinese Media", "Films, music, and current events", 50),
     ],
   },
   {
@@ -548,6 +826,34 @@ const mandarinMiddleHigh: Unit[] = [
       createLesson("10-zh-culture", "Chinese Culture", "Philosophy, history, arts", 55),
     ],
   },
+  {
+    id: "11-mandarin-literature",
+    title: "Chinese Literature",
+    slug: "literature",
+    description: "Survey of Chinese literary traditions",
+    gradeLevel: 11,
+    standardsAlignment: ["ACTFL.3.2", "ACTFL.4.1"],
+    lessons: [
+      createLesson("11-zh-classical", "Classical Chinese", "Introduction to 文言文", 60),
+      createLesson("11-zh-poetry", "Chinese Poetry", "Tang and Song dynasty poetry", 55),
+      createLesson("11-zh-modern-lit", "Modern Literature", "20th century Chinese authors", 55),
+      createLesson("11-zh-film", "Chinese Cinema", "Chinese film history and analysis", 55),
+    ],
+  },
+  {
+    id: "12-mandarin-capstone",
+    title: "Chinese Capstone",
+    slug: "capstone",
+    description: "Advanced topics and real-world application",
+    gradeLevel: 12,
+    standardsAlignment: ["ACTFL.5.1", "ACTFL.5.2"],
+    lessons: [
+      createLesson("12-zh-current-events", "当前事件", "Discuss current events in Mandarin", 55),
+      createLesson("12-zh-business", "商务汉语", "Business Mandarin", 55),
+      createLesson("12-zh-history", "中国历史", "In-depth study of Chinese history", 55),
+      createLesson("12-zh-capstone", "毕业项目", "Create a Mandarin portfolio and presentation", 60),
+    ],
+  },
 ];
 
 export const mandarinCurriculum: Subject = {
@@ -559,10 +865,18 @@ export const mandarinCurriculum: Subject = {
   color: "#F44336",
   grades: {
     0: mandarinKindergarten,
+    1: mandarinElementary.filter(u => u.gradeLevel === 1),
+    2: mandarinElementary.filter(u => u.gradeLevel === 2),
     3: mandarinElementary.filter(u => u.gradeLevel === 3),
+    4: mandarinElementary.filter(u => u.gradeLevel === 4),
     5: mandarinElementary.filter(u => u.gradeLevel === 5),
+    6: mandarinMiddleHigh.filter(u => u.gradeLevel === 6),
     7: mandarinMiddleHigh.filter(u => u.gradeLevel === 7),
+    8: mandarinMiddleHigh.filter(u => u.gradeLevel === 8),
+    9: mandarinMiddleHigh.filter(u => u.gradeLevel === 9),
     10: mandarinMiddleHigh.filter(u => u.gradeLevel === 10),
+    11: mandarinMiddleHigh.filter(u => u.gradeLevel === 11),
+    12: mandarinMiddleHigh.filter(u => u.gradeLevel === 12),
   },
 };
 
@@ -588,6 +902,34 @@ const japaneseKindergarten: Unit[] = [
 
 const japaneseElementary: Unit[] = [
   {
+    id: "1-japanese-intro",
+    title: "Introduction to Japanese",
+    slug: "japanese-intro",
+    description: "Basic vocabulary and sounds",
+    gradeLevel: 1,
+    standardsAlignment: ["ACTFL.1.1", "ACTFL.2.1"],
+    lessons: [
+      createLesson("1-jp-intro-self", "Introducing Yourself", "わたしは...です, おなまえは?", 20),
+      createLesson("1-jp-family", "My Family", "Learn かぞく family vocabulary", 20),
+      createLesson("1-jp-colors", "Colors", "Learn いろ: あか, あお, きいろ", 20),
+      createLesson("1-jp-animals", "Animals", "Learn どうぶつ animal names", 20),
+    ],
+  },
+  {
+    id: "2-japanese-daily",
+    title: "Daily Life in Japanese",
+    slug: "daily-life",
+    description: "Vocabulary for everyday activities",
+    gradeLevel: 2,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.2.1"],
+    lessons: [
+      createLesson("2-jp-food", "Food & Meals", "Learn たべもの food vocabulary", 25),
+      createLesson("2-jp-school", "At School", "Learn school vocabulary: がっこう, せんせい", 25),
+      createLesson("2-jp-hiragana-start", "Hiragana Introduction", "Learn first 10 hiragana characters", 30),
+      createLesson("2-jp-body", "Parts of the Body", "Learn body parts in Japanese", 25),
+    ],
+  },
+  {
     id: "3-japanese-writing",
     title: "Japanese Writing Systems",
     slug: "writing-systems",
@@ -598,6 +940,20 @@ const japaneseElementary: Unit[] = [
       createLesson("3-jp-hiragana", "Hiragana", "Master the 46 hiragana characters", 40),
       createLesson("3-jp-katakana", "Katakana", "Master the 46 katakana characters", 40),
       createLesson("3-jp-basic-kanji", "Basic Kanji", "First 50 kanji characters", 45),
+    ],
+  },
+  {
+    id: "4-japanese-reading",
+    title: "Reading and Writing",
+    slug: "reading-writing",
+    description: "Develop reading fluency",
+    gradeLevel: 4,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.4.1"],
+    lessons: [
+      createLesson("4-jp-100-kanji", "100 Kanji", "Learn 100 essential kanji", 45),
+      createLesson("4-jp-sentences", "Simple Sentences", "Read and write basic sentences", 40),
+      createLesson("4-jp-time-dates", "Time and Dates", "Express time and calendar dates", 35),
+      createLesson("4-jp-counters", "Counters", "Learn Japanese counting systems", 40),
     ],
   },
   {
@@ -617,8 +973,22 @@ const japaneseElementary: Unit[] = [
 
 const japaneseMiddleHigh: Unit[] = [
   {
+    id: "6-japanese-intermediate-1",
+    title: "Intermediate Japanese I",
+    slug: "intermediate-1",
+    description: "Build intermediate skills",
+    gradeLevel: 6,
+    standardsAlignment: ["ACTFL.2.1", "ACTFL.2.2"],
+    lessons: [
+      createLesson("6-jp-200-kanji", "200 Kanji", "Expand kanji recognition", 50),
+      createLesson("6-jp-te-form", "Te-form Applications", "Connecting sentences and requests", 45),
+      createLesson("6-jp-casual", "Casual Speech", "Informal conversation patterns", 45),
+      createLesson("6-jp-culture", "Japanese Culture", "Festivals and traditions", 45),
+    ],
+  },
+  {
     id: "7-japanese-intermediate",
-    title: "Intermediate Japanese",
+    title: "Intermediate Japanese II",
     slug: "intermediate",
     description: "Develop conversational fluency",
     gradeLevel: 7,
@@ -627,6 +997,34 @@ const japaneseMiddleHigh: Unit[] = [
       createLesson("7-jp-potential", "Potential Form", "Express ability (できる)", 50),
       createLesson("7-jp-volitional", "Volitional Form", "Express intention and suggestions", 50),
       createLesson("7-jp-keigo-intro", "Keigo Introduction", "Polite language basics", 50),
+    ],
+  },
+  {
+    id: "8-japanese-advanced-grammar",
+    title: "Advanced Grammar",
+    slug: "advanced-grammar",
+    description: "Master complex Japanese structures",
+    gradeLevel: 8,
+    standardsAlignment: ["ACTFL.2.2", "ACTFL.3.1"],
+    lessons: [
+      createLesson("8-jp-passive", "Passive Form", "Express passive voice in Japanese", 55),
+      createLesson("8-jp-causative", "Causative Form", "Express making/letting someone do", 55),
+      createLesson("8-jp-conditionals", "Conditionals", "たら, ば, なら patterns", 55),
+      createLesson("8-jp-media", "Japanese Media", "Anime, manga, and current events", 50),
+    ],
+  },
+  {
+    id: "9-japanese-high-1",
+    title: "Japanese I High School",
+    slug: "high-school-1",
+    description: "High school Japanese fundamentals",
+    gradeLevel: 9,
+    standardsAlignment: ["ACTFL.3.1", "ACTFL.3.2"],
+    lessons: [
+      createLesson("9-jp-300-kanji", "300 Kanji", "Expand to 300 kanji vocabulary", 55),
+      createLesson("9-jp-writing", "Writing Skills", "Paragraph and essay structure", 55),
+      createLesson("9-jp-conversation", "Conversation Practice", "Extended conversations", 50),
+      createLesson("9-jp-business", "Business Japanese", "Professional communication basics", 50),
     ],
   },
   {
@@ -642,6 +1040,34 @@ const japaneseMiddleHigh: Unit[] = [
       createLesson("10-jp-culture", "Japanese Culture", "Traditions, anime, modern Japan", 55),
     ],
   },
+  {
+    id: "11-japanese-literature",
+    title: "Japanese Literature",
+    slug: "literature",
+    description: "Survey of Japanese literary traditions",
+    gradeLevel: 11,
+    standardsAlignment: ["ACTFL.3.2", "ACTFL.4.1"],
+    lessons: [
+      createLesson("11-jp-classical", "Classical Japanese", "Introduction to 古文", 60),
+      createLesson("11-jp-poetry", "Japanese Poetry", "Haiku, tanka, and modern poetry", 55),
+      createLesson("11-jp-modern-lit", "Modern Literature", "Murakami, Kawabata, and contemporary authors", 55),
+      createLesson("11-jp-film", "Japanese Cinema", "Japanese film history and analysis", 55),
+    ],
+  },
+  {
+    id: "12-japanese-capstone",
+    title: "Japanese Capstone",
+    slug: "capstone",
+    description: "Advanced topics and real-world application",
+    gradeLevel: 12,
+    standardsAlignment: ["ACTFL.5.1", "ACTFL.5.2"],
+    lessons: [
+      createLesson("12-jp-current-events", "時事問題", "Discuss current events in Japanese", 55),
+      createLesson("12-jp-advanced-business", "上級ビジネス日本語", "Advanced business Japanese", 55),
+      createLesson("12-jp-history", "日本の歴史", "In-depth study of Japanese history", 55),
+      createLesson("12-jp-capstone", "卒業プロジェクト", "Create a Japanese portfolio and presentation", 60),
+    ],
+  },
 ];
 
 export const japaneseCurriculum: Subject = {
@@ -653,10 +1079,18 @@ export const japaneseCurriculum: Subject = {
   color: "#9C27B0",
   grades: {
     0: japaneseKindergarten,
+    1: japaneseElementary.filter(u => u.gradeLevel === 1),
+    2: japaneseElementary.filter(u => u.gradeLevel === 2),
     3: japaneseElementary.filter(u => u.gradeLevel === 3),
+    4: japaneseElementary.filter(u => u.gradeLevel === 4),
     5: japaneseElementary.filter(u => u.gradeLevel === 5),
+    6: japaneseMiddleHigh.filter(u => u.gradeLevel === 6),
     7: japaneseMiddleHigh.filter(u => u.gradeLevel === 7),
+    8: japaneseMiddleHigh.filter(u => u.gradeLevel === 8),
+    9: japaneseMiddleHigh.filter(u => u.gradeLevel === 9),
     10: japaneseMiddleHigh.filter(u => u.gradeLevel === 10),
+    11: japaneseMiddleHigh.filter(u => u.gradeLevel === 11),
+    12: japaneseMiddleHigh.filter(u => u.gradeLevel === 12),
   },
 };
 
@@ -696,6 +1130,20 @@ const aslElementary: Unit[] = [
     ],
   },
   {
+    id: "2-asl-daily",
+    title: "Daily Life in ASL",
+    slug: "daily-life",
+    description: "Signs for everyday activities",
+    gradeLevel: 2,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.2.1"],
+    lessons: [
+      createLesson("2-asl-food", "Food Signs", "Signs for foods and meals", 25),
+      createLesson("2-asl-school", "School Signs", "Classroom and school vocabulary", 25),
+      createLesson("2-asl-animals", "Animal Signs", "Common animal signs", 25),
+      createLesson("2-asl-time", "Time Signs", "Days, weeks, and time concepts", 25),
+    ],
+  },
+  {
     id: "3-asl-grammar",
     title: "ASL Grammar",
     slug: "grammar",
@@ -706,6 +1154,20 @@ const aslElementary: Unit[] = [
       createLesson("3-asl-structure", "Sentence Structure", "Topic-comment structure", 35),
       createLesson("3-asl-facial", "Facial Grammar", "Non-manual markers", 35),
       createLesson("3-asl-classifiers", "Classifiers Intro", "Handshape classifiers", 40),
+    ],
+  },
+  {
+    id: "4-asl-conversation",
+    title: "Conversational ASL",
+    slug: "conversation",
+    description: "Develop conversational skills",
+    gradeLevel: 4,
+    standardsAlignment: ["ACTFL.1.2", "ACTFL.2.1"],
+    lessons: [
+      createLesson("4-asl-intros", "Introductions", "Introduce yourself and others", 35),
+      createLesson("4-asl-descriptions", "Descriptions", "Describe people and places", 40),
+      createLesson("4-asl-directions", "Directions", "Give and follow directions", 35),
+      createLesson("4-asl-requests", "Requests", "Make polite requests in ASL", 35),
     ],
   },
   {
@@ -725,8 +1187,22 @@ const aslElementary: Unit[] = [
 
 const aslMiddleHigh: Unit[] = [
   {
+    id: "6-asl-intermediate-1",
+    title: "Intermediate ASL I",
+    slug: "intermediate-1",
+    description: "Build intermediate signing skills",
+    gradeLevel: 6,
+    standardsAlignment: ["ACTFL.2.1", "ACTFL.2.2"],
+    lessons: [
+      createLesson("6-asl-numbers-adv", "Advanced Numbers", "Numbers beyond 100 and money signs", 45),
+      createLesson("6-asl-time-adv", "Time and Scheduling", "Complex time expressions", 45),
+      createLesson("6-asl-locations", "Locations and Space", "Use of space for reference", 50),
+      createLesson("6-asl-deaf-events", "Deaf Events", "Deaf community gatherings and events", 45),
+    ],
+  },
+  {
     id: "7-asl-intermediate",
-    title: "Intermediate ASL",
+    title: "Intermediate ASL II",
     slug: "intermediate",
     description: "Develop fluent conversation skills",
     gradeLevel: 7,
@@ -735,6 +1211,34 @@ const aslMiddleHigh: Unit[] = [
       createLesson("7-asl-classifiers-adv", "Advanced Classifiers", "Complex classifier predicates", 50),
       createLesson("7-asl-storytelling", "Storytelling", "Narrative techniques in ASL", 50),
       createLesson("7-asl-roleshift", "Role Shifting", "Perspective changes in signing", 50),
+    ],
+  },
+  {
+    id: "8-asl-advanced-grammar",
+    title: "Advanced ASL Grammar",
+    slug: "advanced-grammar",
+    description: "Master complex ASL structures",
+    gradeLevel: 8,
+    standardsAlignment: ["ACTFL.2.2", "ACTFL.3.1"],
+    lessons: [
+      createLesson("8-asl-conditionals", "Conditionals", "If-then structures in ASL", 55),
+      createLesson("8-asl-temporal", "Temporal Aspect", "Express duration and frequency", 55),
+      createLesson("8-asl-comparison", "Comparisons", "Compare and contrast in ASL", 50),
+      createLesson("8-asl-deaf-lit", "Deaf Literature", "ASL stories and folklore", 55),
+    ],
+  },
+  {
+    id: "9-asl-high-1",
+    title: "ASL I High School",
+    slug: "high-school-1",
+    description: "High school ASL fundamentals",
+    gradeLevel: 9,
+    standardsAlignment: ["ACTFL.3.1", "ACTFL.3.2"],
+    lessons: [
+      createLesson("9-asl-review", "Comprehensive Review", "Solidify all ASL concepts", 55),
+      createLesson("9-asl-discourse", "ASL Discourse", "Extended conversations and presentations", 55),
+      createLesson("9-asl-education", "Deaf Education", "History of Deaf schools", 50),
+      createLesson("9-asl-advocacy", "Self-Advocacy", "Advocating for accessibility", 50),
     ],
   },
   {
@@ -750,6 +1254,34 @@ const aslMiddleHigh: Unit[] = [
       createLesson("10-asl-deafhood", "Deafhood", "Identity and empowerment", 55),
     ],
   },
+  {
+    id: "11-asl-professional",
+    title: "Professional ASL",
+    slug: "professional",
+    description: "ASL for professional contexts",
+    gradeLevel: 11,
+    standardsAlignment: ["ACTFL.3.2", "ACTFL.4.1"],
+    lessons: [
+      createLesson("11-asl-interpret-adv", "Advanced Interpreting", "Interpreting techniques and ethics", 60),
+      createLesson("11-asl-medical", "Medical ASL", "Healthcare vocabulary and scenarios", 55),
+      createLesson("11-asl-legal", "Legal ASL", "Legal vocabulary and scenarios", 55),
+      createLesson("11-asl-careers", "Careers in ASL", "Career paths using ASL skills", 50),
+    ],
+  },
+  {
+    id: "12-asl-capstone",
+    title: "ASL Capstone",
+    slug: "capstone",
+    description: "Advanced topics and community engagement",
+    gradeLevel: 12,
+    standardsAlignment: ["ACTFL.5.1", "ACTFL.5.2"],
+    lessons: [
+      createLesson("12-asl-linguistics", "ASL Linguistics", "Analyze ASL as a language", 55),
+      createLesson("12-asl-research", "Deaf Studies Research", "Research Deaf history and culture", 55),
+      createLesson("12-asl-service", "Community Service", "Volunteer with Deaf community", 55),
+      createLesson("12-asl-capstone", "Capstone Project", "Create an ASL portfolio and presentation", 60),
+    ],
+  },
 ];
 
 export const aslCurriculum: Subject = {
@@ -762,10 +1294,17 @@ export const aslCurriculum: Subject = {
   grades: {
     0: aslKindergarten,
     1: aslElementary.filter(u => u.gradeLevel === 1),
+    2: aslElementary.filter(u => u.gradeLevel === 2),
     3: aslElementary.filter(u => u.gradeLevel === 3),
+    4: aslElementary.filter(u => u.gradeLevel === 4),
     5: aslElementary.filter(u => u.gradeLevel === 5),
+    6: aslMiddleHigh.filter(u => u.gradeLevel === 6),
     7: aslMiddleHigh.filter(u => u.gradeLevel === 7),
+    8: aslMiddleHigh.filter(u => u.gradeLevel === 8),
+    9: aslMiddleHigh.filter(u => u.gradeLevel === 9),
     10: aslMiddleHigh.filter(u => u.gradeLevel === 10),
+    11: aslMiddleHigh.filter(u => u.gradeLevel === 11),
+    12: aslMiddleHigh.filter(u => u.gradeLevel === 12),
   },
 };
 
