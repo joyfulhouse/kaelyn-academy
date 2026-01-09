@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Kaelyn's Academy is an interactive learning website for young children featuring colorful animations, visual learning aids, and progressive modules for math and reading fundamentals.
+Kaelyn's Academy (kaelyns.academy) is an interactive learning platform designed to help parents work with their children on foundational academic skills. The site provides visual, engaging tools that make learning together fun and effective.
+
+**Current Focus Areas:**
+- **Math**: Place value, addition/subtraction (with carrying and borrowing), multiplication, and division
+- **Reading**: Sight words (Dolch word lists) and alphabet/phonics fundamentals
+
+The platform emphasizes parent-child collaboration with colorful animations, audio feedback, and progressive difficulty levels that adapt to the child's learning pace.
 
 ## Commands
 
